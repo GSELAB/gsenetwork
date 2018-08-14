@@ -1,0 +1,2 @@
+# gseio
+GSENetwork Public Chain 
