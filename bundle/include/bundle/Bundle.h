@@ -9,27 +9,14 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
+#ifndef __BUNDLE_BUNDLE_HEADER__
+#define __BUNDLE_BUNDLE_HEADER__
 
-#ifndef __TRANSACTION_HEADER__
-#define __TRANSACTION_HEADER__
+namespace bundle {
 
-#include "Types.h"
-
-namespace core {
-
-class Transaction {
+class Bundle {
 public:
-
-private:
-
+    virtual char *getData();
 };
-
-using Transactions = vector<Transaction>;
-
-} /* end of namespace */
-
+} // end of namespace bundle
 #endif

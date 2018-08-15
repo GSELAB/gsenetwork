@@ -14,22 +14,27 @@
  * @date 2018
  */
 
-#ifndef __TRANSACTION_HEADER__
-#define __TRANSACTION_HEADER__
+#ifndef __CHAIN_SUB_CHAIN_CONTROLLER_HEADER__
+#define __CHAIN_SUB_CHAIN_CONTROLLER_HEADER__
 
-#include "Types.h"
+namespace chain {
 
-namespace core {
-
-class Transaction {
+class SubChainController {
 public:
+    SubChainController();
+
+    SubChainController(uint64_t chainId);
+
+    ~SubChainController();
+
+    void setSubChainId(uint64_t id);
+
+    uint64_t getSubChainId();
+
 
 private:
+    uint64_t subChainId;
 
 };
-
-using Transactions = vector<Transaction>;
-
-} /* end of namespace */
-
+}
 #endif

@@ -14,38 +14,27 @@
  * @date 2018
  */
 
+#ifndef __BUNDLE_TRANSACTION_BUNDLE_HEADER__
+#define __BUNDLE_TRANSACTION_BUNDLE_HEADER__
 
-#ifndef __DATABASE_HEADER__
-#define __DATABASE_HEADER__
+#include "PChain.pb.h"
 
-#include <string>
+#include "bundle/Bundle.h"
 
-#include "leveldb/db.h"
+namespace bundle {
 
-namespace database {
-
-class Database {
+class TransactionBundle : public Bundle {
 public:
-    Database(std::string &db_file);
+    TransactionBundle(char *data);
 
-    virtual ~Database();
+    TransactionBundle(pchain::Transaction &transaction);
 
-    void put(std::string &key, std::string &value);
+    ~TransactionBundle();
 
-    bool get(std::string &key, std::string *value);
-
-    void delete(std::string &key);
-
-
+    char *getData();
 
 private:
-    leveldb::DB *m_db;
-    leveldb::Options m_options;
-
-
-
+    pchain::Transaction &transaction;
 };
-
-}
-
+} // end of namespace bundle
 #endif

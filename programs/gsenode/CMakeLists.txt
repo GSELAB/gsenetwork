@@ -1,0 +1,1 @@
+add_executable( ${NODE_EXECUTABLE_NAME} main.cpp )

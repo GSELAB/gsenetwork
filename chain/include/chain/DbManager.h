@@ -14,22 +14,31 @@
  * @date 2018
  */
 
-#ifndef __TRANSACTION_HEADER__
-#define __TRANSACTION_HEADER__
 
-#include "Types.h"
+#ifndef __CHAIN_DB_MANAGER_HEADER__
+#define __CHAIN_DB_MANAGER_HEADER__
 
-namespace core {
+#include "database/Database.h"
 
-class Transaction {
+
+
+namespace chain {
+
+class DbManager {
 public:
+    DbManager();
+
+    virtual ~DbManager();
+
 
 private:
+    database::Database   m_database;
+    database::Database   m_reversibleBlocks;
+
+    OSODatabase         m_osoDatabase;
 
 };
 
-using Transactions = vector<Transaction>;
 
-} /* end of namespace */
-
+} // end of namespace
 #endif

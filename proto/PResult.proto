@@ -9,27 +9,17 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
+syntax = "proto3";
 
-#ifndef __TRANSACTION_HEADER__
-#define __TRANSACTION_HEADER__
+package presult;
 
-#include "Types.h"
+// Record the transaction's result (filled by witness node)
+enum TransactionFailed {
+    NORMAL = 0;
+}
 
-namespace core {
+message TransactionResult {
+    TransactionFailed type = 1;
+    bytes data = 2;
+}
 
-class Transaction {
-public:
-
-private:
-
-};
-
-using Transactions = vector<Transaction>;
-
-} /* end of namespace */
-
-#endif

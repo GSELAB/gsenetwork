@@ -14,22 +14,10 @@
  * @date 2018
  */
 
-#ifndef __TRANSACTION_HEADER__
-#define __TRANSACTION_HEADER__
+#include "chain/DbManager.h"
 
-#include "Types.h"
+namespace chain {
 
-namespace core {
 
-class Transaction {
-public:
 
-private:
-
-};
-
-using Transactions = vector<Transaction>;
-
-} /* end of namespace */
-
-#endif
+} // end of namespace chain

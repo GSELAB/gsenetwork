@@ -14,22 +14,16 @@
  * @date 2018
  */
 
-#ifndef __TRANSACTION_HEADER__
-#define __TRANSACTION_HEADER__
+#ifndef __UTILS_UTILS_HEADER__
+#define __UTILS_UTILS_HEADER__
 
-#include "Types.h"
+/*
+ * Json to Proto
+ */
 
-namespace core {
 
-class Transaction {
-public:
-
-private:
-
-};
-
-using Transactions = vector<Transaction>;
-
-} /* end of namespace */
+/*
+ * Proto to Json
+ */
 
 #endif

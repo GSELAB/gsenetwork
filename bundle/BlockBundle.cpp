@@ -14,22 +14,28 @@
  * @date 2018
  */
 
-#ifndef __TRANSACTION_HEADER__
-#define __TRANSACTION_HEADER__
+#include "bundle/BlockBundle.h"
 
-#include "Types.h"
+namespace bundle {
 
-namespace core {
+BlockBundle::BlockBundle(char *data)
+{
 
-class Transaction {
-public:
+}
 
-private:
+BlockBundle::BlockBundle(pchain::Block &block)
+{
 
-};
+}
 
-using Transactions = vector<Transaction>;
+BlockBundle::BlockBundle(BlockBundle &blockBundle)
+{
 
-} /* end of namespace */
+}
 
-#endif
+char *BlockBundle::getData()
+{
+
+}
+
+} // end of namespace bundle

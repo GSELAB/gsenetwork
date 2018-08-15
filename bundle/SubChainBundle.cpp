@@ -14,22 +14,28 @@
  * @date 2018
  */
 
-#ifndef __TRANSACTION_HEADER__
-#define __TRANSACTION_HEADER__
+#include "bundle/SubChainBundle.h"
 
-#include "Types.h"
+namespace bundle {
 
-namespace core {
+SubChainBundle::SubChainBundle(char *data)
+{
 
-class Transaction {
-public:
+}
 
-private:
+SubChainBundle::SubChainBundle(pchain::SubChain &subChain)
+{
 
-};
+}
 
-using Transactions = vector<Transaction>;
+SubChainBundle::~SubChainBundle()
+{
 
-} /* end of namespace */
+}
 
-#endif
+char *SubChainBundle::getData()
+{
+
+}
+
+} // end of namespace bundle
