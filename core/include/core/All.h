@@ -9,17 +9,9 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
-#ifndef __CORE_ALL_HEADER__
-#define __CORE_ALL_HEADER__
+#pragma once
 
 #include "core/Types.h"
 #include "core/Account.h"
 #include "core/Transaction.h"
 #include "core/Block.h"
-
-#endif

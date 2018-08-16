@@ -9,13 +9,7 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
-#ifndef __ACCOUNT_HEADER__
-#define __ACCOUNT_HEADER__
+#pragma once
 
 #include "Timestamp.h"
 
@@ -34,5 +28,3 @@ private:
 };
 
 } /* namespace */
-
-#endif

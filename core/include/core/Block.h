@@ -9,13 +9,7 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
-#ifndef __BLOCK_HEADER__
-#define __BLOCK_HEADER__
+#pragma once
 
 #include "Transaction.h"
 #include "Timestamp.h"
@@ -46,4 +40,3 @@ private:
 };
 
 }  /* namespace end */
-#endif

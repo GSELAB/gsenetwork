@@ -9,13 +9,7 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
-#ifndef __TIMESTAMP_HEADER__
-#define __TIMESTAMP_HEADER__
+#pragma once
 
 namespace core {
 
@@ -74,4 +68,3 @@ private:
 };
 
 } /* end of namespace */
-#endif

@@ -9,13 +9,7 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
-#ifndef __TYPES_HEADER__
-#define __TYPES_HEADER__
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -42,5 +36,4 @@ using                               std::forward;
 using                               std::to_string;
 using                               std::all_of;
 
-}
-#endif
+} // end of namespace

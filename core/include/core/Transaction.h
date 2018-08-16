@@ -9,13 +9,7 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
-#ifndef __TRANSACTION_HEADER__
-#define __TRANSACTION_HEADER__
+#pragma once
 
 #include "Types.h"
 
@@ -31,5 +25,3 @@ private:
 using Transactions = vector<Transaction>;
 
 } /* end of namespace */
-
-#endif
