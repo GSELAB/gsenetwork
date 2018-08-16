@@ -15,12 +15,9 @@
  */
 
 
-#ifndef __CHAIN_DB_MANAGER_HEADER__
-#define __CHAIN_DB_MANAGER_HEADER__
+#pragma once
 
 #include "database/Database.h"
-
-
 
 namespace chain {
 
@@ -41,4 +38,3 @@ private:
 
 
 } // end of namespace
-#endif
