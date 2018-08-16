@@ -18,6 +18,29 @@
 
 namespace chain {
 
+DbManager::DbManager()
+{
 
+}
+
+DbManager::~DbManager()
+{
+
+}
+
+database::AccountStore &DbManager::getAccoutStore()
+{
+    return this->accoutStore;
+}
+
+database::ProducerStore &DbManager::getProducerStore()
+{
+    return this->producerStore;
+}
+
+database::SubChainStore &DbManager::getSubChainStore()
+{
+    return this->subChainStore;
+}
 
 } // end of namespace chain

@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "database/Database.h"
+#include "database/All.h"
 
 namespace chain {
 
@@ -27,12 +27,21 @@ public:
 
     virtual ~DbManager();
 
+    database::AccountStore &getAccoutStore();
+
+    database::ProducerStore &getProducerStore();
+
+    database::SubChainStore &getSubChainStore();
+
 
 private:
-    database::Database   m_database;
-    database::Database   m_reversibleBlocks;
+    database::AccountStore &accountStore;
 
-    OSODatabase         m_osoDatabase;
+    database::ProducerStore &producerStore;
+
+    database::SubChainStore &subChainStore;
+
+    // OSODatabase         m_osoDatabase;
 
 };
 
