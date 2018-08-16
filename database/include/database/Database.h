@@ -14,9 +14,7 @@
  * @date 2018
  */
 
-
-#ifndef __DATABASE_HEADER__
-#define __DATABASE_HEADER__
+#pragma once
 
 #include <string>
 
@@ -47,5 +45,3 @@ private:
 };
 
 }
-
-#endif
