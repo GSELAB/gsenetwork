@@ -14,6 +14,8 @@ include_directories (
     "${PROJECT_SOURCE_DIR}/core/include"
     "${PROJECT_SOURCE_DIR}/database/include"
     "${PROJECT_SOURCE_DIR}/net/include"
+    "${PROJECT_SOURCE_DIR}/producer/include"
+    "${PROJECT_SOURCE_DIR}/rpc/include"
     "${PROJECT_SOURCE_DIR}/proto"
     "${PROJECT_SOURCE_DIR}/utils/include")
 
