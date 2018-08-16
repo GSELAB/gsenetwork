@@ -20,8 +20,7 @@
  * @date 2014
  */
 
-#ifndef __NET_UPNP_HEADER__
-#define __NET_UPNP_HEADER__
+#pragma once
 
 #include <set>
 #include <string>
@@ -53,5 +52,3 @@ private:
 };
 
 }
-
-#endif

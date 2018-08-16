@@ -19,8 +19,7 @@
  * @date 2015
  */
 
-#ifndef __NET_FRAME_CODER_HEADER__
-#define __NET_FRAME_CODER_HEADER__
+#pragma once
 
 #include <memory>
 #include <libdevcore/Guards.h>
@@ -124,5 +123,3 @@ private:
 };
 
 } // endof namespace
-
-#endif

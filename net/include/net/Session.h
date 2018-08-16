@@ -20,8 +20,7 @@
  * @date 2014
  */
 
-#ifndef __NET_SESSION_HEADER__
-#define __NET_SESSION_HEADER__
+#pragma once
 
 #include <mutex>
 #include <array>
@@ -179,9 +178,4 @@ std::shared_ptr<PeerCap> capabilityFromSession(SessionFace const& _session, u256
 	}
 }
 
-
-
-
-
 } // endof namespace
-#endif

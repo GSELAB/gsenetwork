@@ -19,9 +19,7 @@
  * @date 2015
  */
 
-
-#ifndef __NET_PACKET_HEADER__
-#define __NET_PACKET_HEADER__
+#pragma once
 
 #include <algorithm>
 #include "Common.h"
@@ -69,4 +67,3 @@ protected:
 
 
 } // end of namespace
-#endif

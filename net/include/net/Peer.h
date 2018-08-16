@@ -20,8 +20,7 @@
  * @date 2014
  */
 
-#ifndef __NET_PEER_HEADER__
-#define __NET_PEER_HEADER__
+#pragma once
 
 #include "Common.h"
 
@@ -97,5 +96,3 @@ protected:
 using Peers = std::vector<Peer>;
 
 } // eod fo spacename
-
-#endif

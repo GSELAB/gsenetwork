@@ -21,8 +21,7 @@
  * Miscellanea required for the Host/Session classes.
  */
 
-#ifndef __NET_HOST_CAPABILITY_HEADER__
-#define __NET_HOST_CAPABILITY_HEADER__
+#pragma once
 
 #include <memory>
 #include "Peer.h"
@@ -86,5 +85,3 @@ protected:
 };
 
 } // endof namespace
-
-#endif

@@ -19,8 +19,7 @@
  * @date 2015
  */
 
-#ifndef __NET_SOCKET_HEADER__
-#define __NET_SOCKET_HEADER__
+#pragma once
 
 #include "Common.h"
 
@@ -50,4 +49,3 @@ protected:
 };
 
 } // endof namespace
-#endif

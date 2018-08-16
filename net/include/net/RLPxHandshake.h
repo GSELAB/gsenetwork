@@ -19,9 +19,7 @@
  * @date 2015
  */
 
-
-#ifndef __NET_HAND_SHAKE_HEADER__
-#define __NET_HAND_SHAKE_HEADER__
+#pragma once
 
 #include <memory>
 #include <libdevcrypto/Common.h>
@@ -144,4 +142,3 @@ protected:
 };
 
 }
-#endif

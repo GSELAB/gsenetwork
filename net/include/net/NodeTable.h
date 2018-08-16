@@ -19,8 +19,7 @@
  * @date 2014
  */
 
-#ifndef __NET_NODE_TABLE_HEADER__
-#define __NET_NODE_TABLE_HEADER__
+#pragma once
 
 #include <algorithm>
 
@@ -458,4 +457,3 @@ struct Neighbours: DiscoveryDatagram
 
 
 } // end of namespace
-#endif

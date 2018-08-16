@@ -22,8 +22,7 @@
  * Miscellanea required for the Host/Session/NodeTable classes.
  */
 
-#ifndef __NET_COMMON_HEADER__
-#define __NET_COMMON_HEADER__
+#pragma once
 
 #include <atomic>
 #include <string>
@@ -297,5 +296,3 @@ std::ostream& operator<<(std::ostream& _out, dev::p2p::NodeIPEndpoint const& _ep
 
 
 } // end of namespace
-
-#endif

@@ -19,8 +19,7 @@
  * @date 2014
  */
 
-#ifndef __NET_UDP_HEADER__
-#define __NET_UDP_HEADER__
+#pragma once
 
 #include <atomic>
 #include <memory>
@@ -274,5 +273,3 @@ void UDPSocket<Handler, MaxDatagramSize>::disconnectWithError(boost::system::err
 
 
 } // end of namespace
-
-#endif

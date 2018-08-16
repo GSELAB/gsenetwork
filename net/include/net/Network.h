@@ -20,8 +20,7 @@
  * @date 2014
  */
 
-#ifndef __NET_NETWORK_HEADER__
-#define __NET_NETWORK_HEADER__
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -84,5 +83,3 @@ public:
 
 
 } // endof namespace
-
-#endif

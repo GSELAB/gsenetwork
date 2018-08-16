@@ -19,8 +19,7 @@
  * @date 2014
  */
 
-#ifndef __NET_CAPABILITY_HEADER__
-#define __NET_CAPABILITY_HEADER__
+#pragma once
 
 #include "Common.h"
 #include "HostCapability.h"
@@ -63,4 +62,3 @@ private:
 };
 
 } // endof namespace
-#endif

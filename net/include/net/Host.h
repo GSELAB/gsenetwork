@@ -20,8 +20,7 @@
  * @date 2014
  */
 
-#ifndef __NET_HOST_HEADER__
-#define __NET_HOST_HEADER__
+#pragma once
 
 #include <mutex>
 #include <map>
@@ -343,4 +342,3 @@ private:
 
 
 } // end of namespace
-#endif
