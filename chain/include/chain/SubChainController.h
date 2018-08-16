@@ -14,8 +14,7 @@
  * @date 2018
  */
 
-#ifndef __CHAIN_SUB_CHAIN_CONTROLLER_HEADER__
-#define __CHAIN_SUB_CHAIN_CONTROLLER_HEADER__
+#pragma once
 
 namespace chain {
 
@@ -36,5 +35,4 @@ private:
     uint64_t subChainId;
 
 };
-}
-#endif
+} // end of namespace chain

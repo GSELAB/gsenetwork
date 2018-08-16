@@ -15,8 +15,8 @@
  */
 
 #pragma once
-#include "PChain.pb.h"
 
+#include "PChain.pb.h"
 #include "bundle/Bundle.h"
 
 namespace bundle {
