@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef __BUNDLE_BUNDLE_HEADER__
-#define __BUNDLE_BUNDLE_HEADER__
+#pragma once
 
 namespace bundle {
 
@@ -19,4 +18,3 @@ public:
     virtual char *getData();
 };
 } // end of namespace bundle
-#endif

@@ -14,8 +14,7 @@
  * @date 2018
  */
 
-#ifndef __BUNDLE_BLOCK_BUNDLE_HEADER__
-#define __BUNDLE_BLOCK_BUNDLE_HEADER__
+#pragma once
 
 #include "PChain.pb.h"
 
@@ -38,5 +37,3 @@ private:
 };
 
 } // end of namespace bundle
-
-#endif
