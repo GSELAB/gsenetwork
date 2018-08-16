@@ -1,1 +1,1 @@
-add_executable( ${NODE_EXECUTABLE_NAME} main.cpp )
+add_executable( gsenode main.cpp )
