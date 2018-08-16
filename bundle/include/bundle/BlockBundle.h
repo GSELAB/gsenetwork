@@ -15,7 +15,6 @@
  */
 
 #pragma once
-
 #include "PChain.pb.h"
 
 #include "bundle/Bundle.h"
