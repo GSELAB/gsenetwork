@@ -13,4 +13,24 @@
 
 namespace database {
 
+ProducerStore::ProducerStore()
+{
+
+}
+
+ProducerStore::~ProducerStore()
+{
+
+}
+
+ProducerBundle &ProducerStore::getProducer(char *address)
+{
+    return new ProducerBundle();
+}
+
+void ProducerStore::putProducer(ProducerBundle &producerBundle)
+{
+
+}
+
 } // end of namespace database

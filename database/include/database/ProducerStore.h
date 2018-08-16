@@ -12,6 +12,7 @@
 #pragma once
 
 #include "database/Database.h"
+#include "bundle/ProducerBundle.h"
 
 namespace database {
 
@@ -20,6 +21,10 @@ public:
     ProducerStore();
 
     ~ProducerStore();
+
+    ProducerBundle &getProducer(char *address);
+
+    void putProducer(ProducerBundle &producerBundle);
 
 private:
 
