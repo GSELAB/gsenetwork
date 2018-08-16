@@ -8,3 +8,17 @@ Welcome to the c++ implementation of GSENetwork protocol. GSENetwork is a decent
 3. Support D-Service Component
 4. Conditional execution virtual machine environment
  
+## Introduction
+  * bundle: the protobuf class packaged by bundle.
+  * chain: GSENetwork block chain control code.
+  * config: network, storage, consensus synchronization configuration.
+  * core: core common code.
+  * database: GSENetwork data storage related code.
+  * net: network code, including network discovery and data transfer
+  * producer: GSENetwork node block logic code.
+  * programs: executable program entry.
+  * proto: data format definition.
+  * rpc: GSENetwork remote procedure call protocol.
+  * runtime: virtual machine operating environment.
+  * utils: tool class directory.
+  
