@@ -68,3 +68,10 @@ message SubChain {
     uint64 blockNumber = 3;
     bytes description = 4;
 }
+
+// Producer
+message Producer {
+    bytes address = 1;
+    uint64 votes = 2;
+    uint64 weights = 3;
+}
