@@ -9,11 +9,6 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
 #include "chain/DbManager.h"
 
 namespace chain {
@@ -24,6 +19,11 @@ DbManager::DbManager()
 }
 
 DbManager::~DbManager()
+{
+
+}
+
+void DbManager::init()
 {
 
 }

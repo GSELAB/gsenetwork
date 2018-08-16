@@ -9,12 +9,9 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
 #pragma once
+
+#include "bundle/"
 
 namespace chain {
 
@@ -26,6 +23,8 @@ public:
 
     ~SubChainController();
 
+    void init();
+
     void setSubChainId(uint64_t id);
 
     uint64_t getSubChainId();
@@ -33,6 +32,8 @@ public:
 
 private:
     uint64_t subChainId;
+
+    vector<int>t
 
 };
 } // end of namespace chain

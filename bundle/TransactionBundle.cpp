@@ -9,10 +9,6 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
 
 #include "bundle/TransactionBundle.h"
 

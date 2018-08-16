@@ -9,12 +9,6 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
-
 #pragma once
 
 #include "database/All.h"
@@ -26,6 +20,8 @@ public:
     DbManager();
 
     virtual ~DbManager();
+
+    void init();
 
     database::AccountStore &getAccoutStore();
 

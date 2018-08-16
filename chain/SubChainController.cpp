@@ -9,11 +9,6 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
 #include "chain/SubChainController.h"
 
 namespace chain {
@@ -27,6 +22,11 @@ SubChainController::SubChainController(uint64_t chainId)
 }
 
 SubChainController::~SubChainController()
+{
+
+}
+
+void SubChainController::init()
 {
 
 }

@@ -9,11 +9,6 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
 #include "bundle/SubChainBundle.h"
 
 namespace bundle {
