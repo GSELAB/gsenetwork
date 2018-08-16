@@ -14,6 +14,8 @@
  * @date 2018
  */
 
+#pragma once
+
 namespace rpc {
 
 class RpcService {
