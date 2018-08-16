@@ -14,8 +14,7 @@
  * @date 2018
  */
 
-#ifndef __UTILS_UTILS_HEADER__
-#define __UTILS_UTILS_HEADER__
+#pragma once
 
 /*
  * Json to Proto
@@ -25,5 +24,3 @@
 /*
  * Proto to Json
  */
-
-#endif
