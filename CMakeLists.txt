@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 
-project (GSE)
+project (GSENetwork)
 
 enable_language(CXX)
 enable_language(C)
@@ -28,5 +28,7 @@ add_subdirectory (config)
 add_subdirectory (core)
 add_subdirectory (runtime)
 add_subdirectory (bundle)
+add_subdirectory (rpc)
+add_subdirectory (producer)
 add_subdirectory (chain)
 add_subdirectory (programs)
