@@ -16,8 +16,10 @@
 
 namespace bundle {
 
-class BlockBundle : public Bundle {
+class BlockBundle : public Bundle<pchain::Block> {
 public:
+    BlockBundle() {}
+
     BlockBundle(char *data);
 
     BlockBundle(pchain::Block &block);
@@ -27,6 +29,8 @@ public:
     char *getData();
 
     uint64_t getSize();
+
+    pchain::Block& getInstance();
 
 private:
     pchain::Block block;

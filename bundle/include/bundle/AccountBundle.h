@@ -30,7 +30,7 @@ public:
 
     void setBalance(uint64_t balance);
 
-    string getData();
+    char* getData();
 
     pchain::Account& getInstance();
 

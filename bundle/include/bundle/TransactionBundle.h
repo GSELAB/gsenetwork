@@ -16,7 +16,7 @@
 
 namespace bundle {
 
-class TransactionBundle : public Bundle {
+class TransactionBundle : public Bundle<pchain::Transaction> {
 public:
     TransactionBundle(char *data);
 
@@ -28,7 +28,9 @@ public:
 
     uint64_t getSize();
 
+    pchain::Transaction& getInstance();
+
 private:
-    <pchain::Transaction transaction;
+    pchain::Transaction transaction;
 };
 } // end of namespace bundle

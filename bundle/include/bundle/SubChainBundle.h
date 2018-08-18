@@ -16,7 +16,7 @@
 
 namespace bundle {
 
-class SubChainBundle : public Bundle {
+class SubChainBundle : public Bundle<pchain::SubChain> {
 public:
     SubChainBundle(char *data);
 
@@ -27,6 +27,8 @@ public:
     char *getData();
 
     uint64_t getSize();
+
+    pchain::SubChain& getInstance();
 
 private:
     pchain::SubChain subChain;

@@ -1,5 +1,9 @@
 set (bundle_source
-     *.cpp)
+     AccountBundle.cpp
+     TransactionBundle.cpp
+     BlockBundle.cpp
+     ProducerBundle.cpp
+     SubChainBundle.cpp)
 
 add_library (bundle STATIC ${bundle_source})
 

@@ -31,12 +31,17 @@ BlockBundle::BlockBundle(BlockBundle &blockBundle)
 
 char* BlockBundle::getData()
 {
-
+    return NULL;
 }
 
 uint64_t BlockBundle::getSize()
 {
+    return 0;
+}
 
+pchain::Block& BlockBundle::getInstance()
+{
+    return this->block;
 }
 
 } // end of namespace bundle

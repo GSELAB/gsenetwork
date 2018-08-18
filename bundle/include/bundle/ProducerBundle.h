@@ -16,8 +16,10 @@
 
 namespace bundle {
 
-class ProducerBundle : public Bundle {
+class ProducerBundle : public Bundle<pchain::Producer> {
 public:
+    ProducerBundle();
+
     ProducerBundle(char *data);
 
     ProducerBundle(pchain::Producer &producer);
@@ -27,6 +29,8 @@ public:
     char *getData();
 
     uint64_t getSize();
+
+    pchain::Producer& getInstance();
 
 private:
     pchain::Producer producer;

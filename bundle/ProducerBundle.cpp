@@ -13,6 +13,10 @@
 
 namespace bundle {
 
+ProducerBundle::ProducerBundle()
+{
+
+}
 
 ProducerBundle::ProducerBundle(char *data)
 {
@@ -31,7 +35,17 @@ ProducerBundle::ProducerBundle(ProducerBundle &producerBundle)
 
 char *ProducerBundle::getData()
 {
+    return NULL;
+}
 
+uint64_t ProducerBundle::getSize()
+{
+    return 0;
+}
+
+pchain::Producer& ProducerBundle::getInstance()
+{
+    return this->producer;
 }
 
 } // end of namespace bundle

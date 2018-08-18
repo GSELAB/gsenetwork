@@ -31,7 +31,18 @@ TransactionBundle::~TransactionBundle()
 
 char *TransactionBundle::getData()
 {
+    return NULL;
+}
 
+uint64_t TransactionBundle::getSize()
+{
+    return 0;
+}
+
+
+pchain::Transaction& TransactionBundle::getInstance()
+{
+    return this->transaction;
 }
 
 } // end of namespace bundle

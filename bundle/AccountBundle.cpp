@@ -13,7 +13,7 @@
 
 namespace bundle {
 
-AccountBundle::AccountBundle(const string& data)
+AccountBundle::AccountBundle(const std::string& data)
 {
     account.ParseFromString(data);
 }
@@ -25,7 +25,7 @@ AccountBundle::AccountBundle(pchain::Account &account)
 
 AccountBundle::AccountBundle(AccountBundle &accountBundle)
 {
-    this->account =
+    this->account = accountBundle.getInstance();
 }
 
 AccountBundle::~AccountBundle()
@@ -43,12 +43,12 @@ void AccountBundle::setBalance(uint64_t balance)
 
 }
 
-char *AccountBundle::getData()
+char* AccountBundle::getData()
 {
     return NULL;
 }
 
-pchain::Account& getInstance()
+pchain::Account& AccountBundle::getInstance()
 {
     return this->account;
 }

@@ -9,12 +9,17 @@
  *
  */
 
-#include <iosteam>
+#include <iostream>
+
+void printGSELogo()
+{
+    cout << "" << endl;
+}
 
 
 int main(int argc, char **argv)
 {
 
-
+    cout << "GSENetwork protocol!" << endl;
 }
 

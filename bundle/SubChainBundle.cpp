@@ -30,7 +30,16 @@ SubChainBundle::~SubChainBundle()
 
 char *SubChainBundle::getData()
 {
-
+    return NULL;
 }
 
+uint64_t getSize()
+{
+    return 0;
+}
+
+pchain::SubChain& SubChainBundle::getInstance()
+{
+    return subChain;
+}
 } // end of namespace bundle
