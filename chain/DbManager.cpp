@@ -28,17 +28,17 @@ void DbManager::init()
 
 }
 
-database::AccountStore &DbManager::getAccoutStore()
+database::AccountStore* DbManager::getAccountStore()
 {
-    return this->accoutStore;
+    return this->accountStore;
 }
 
-database::ProducerStore &DbManager::getProducerStore()
+database::ProducerStore* DbManager::getProducerStore()
 {
     return this->producerStore;
 }
 
-database::SubChainStore &DbManager::getSubChainStore()
+database::SubChainStore* DbManager::getSubChainStore()
 {
     return this->subChainStore;
 }

@@ -13,6 +13,8 @@
 
 #include <queue>
 
+#include "bundle/All.h"
+
 namespace chain {
 
 class NetController {
@@ -28,9 +30,15 @@ public:
 
     void broadcast(char *msg);
 
-    void broadcast(std::shared_ptr<TransactionBundle> tMsg);
+    void broadcast(std::shared_ptr<bundle::TransactionBundle> tMsg);
 
-    void broadcast(std::shared_ptr<BlockBundle> bMsg);
+    void broadcast(std::shared_ptr<bundle::BlockBundle> bMsg);
+
+    // std::queue<TransactionBundle> getTransactionCache();
+
+    std::shared_ptr<bundle::TransactionBundle> getTransactionFromCache();
+
+    std::shared_ptr<bundle::BlockBundle> getBlockFromCache();
 
 
 private:
@@ -39,9 +47,9 @@ private:
     NetController() {}
     ~NetController() {}
 
-    queue<TransactionBundle> transactionsQueue;
+    std::queue<std::shared_ptr<bundle::TransactionBundle>> transactionsQueue;
 
-    queue<BlockBundle> transactionsQueue;
+    std::queue<std::shared_ptr<bundle::BlockBundle>> blocksQueue;
 
 };
 

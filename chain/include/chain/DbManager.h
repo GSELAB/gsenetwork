@@ -23,19 +23,19 @@ public:
 
     void init();
 
-    database::AccountStore &getAccoutStore();
+    database::AccountStore* getAccountStore();
 
-    database::ProducerStore &getProducerStore();
+    database::ProducerStore* getProducerStore();
 
-    database::SubChainStore &getSubChainStore();
+    database::SubChainStore* getSubChainStore();
 
 
 private:
-    database::AccountStore &accountStore;
+    database::AccountStore *accountStore;
 
-    database::ProducerStore &producerStore;
+    database::ProducerStore *producerStore;
 
-    database::SubChainStore &subChainStore;
+    database::SubChainStore *subChainStore;
 
     // OSODatabase         m_osoDatabase;
 

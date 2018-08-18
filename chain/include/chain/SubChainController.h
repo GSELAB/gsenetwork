@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "bundle/"
+#include "bundle/All.h"
 
 namespace chain {
 
@@ -33,7 +33,7 @@ public:
 private:
     uint64_t subChainId;
 
-    vector<int>t
+    //vector<int>t
 
 };
 } // end of namespace chain
