@@ -22,9 +22,9 @@ public:
 
     ~ProducerStore();
 
-    ProducerBundle &getProducer(char *address);
+    bundle::ProducerBundle &getProducer(char* address);
 
-    void putProducer(ProducerBundle &producerBundle);
+    void putProducer(bundle::ProducerBundle& producerBundle);
 
 private:
 

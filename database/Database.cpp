@@ -9,45 +9,60 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
 #include <cassert>
 
 #include "database/Database.h"
+#include "leveldb/db.h"
 
 namespace database {
 
-Database::Database(std::string &db_file)
+class DatabaseImpl {
+
+private:
+    leveldb::DB *db;
+    leveldb::Options options;
+};
+
+Database::Database()
 {
-    m_options.create_if_missing = true;
-    leveldb::Status status = leveldb::DB::Open(m_options, db_file, &m_db);
+
+}
+
+Database::Database(std::string &dbFile)
+{
+    /*
+    options.create_if_missing = true;
+    leveldb::Status status = leveldb::DB::Open(options, dbFile, &db);
     assert(status.ok());
+    */
 }
 
 Database::~Database()
 {
-    delete m_db;
+    //delete db;
 }
 
 void Database::put(std::string &key, std::string &value)
 {
-    leveldb::Status status = db->Put(leveldb::WriteOptions(), key, &value);
+    /*
+    leveldb::Status status = db->Put(leveldb::WriteOptions(), key, value);
     assert(status.ok());
+    */
 }
 
-bool Database::get(std::string &key, std::string *value)
+bool Database::get(std::string& key, std::string* value)
 {
+    /*
     leveldb::Status status = db->Get(leveldb::ReadOptions(), key, value);
     // assert(status.ok());
     return true;
+    */
+    return true;
 }
 
-void Database::delete(std::string &key)
+void Database::del(std::string& key)
 {
-    leveldb::Status status = db->Delete(leveldb::WriteOptions(), key);
+    //leveldb::Status status = db->Delete(leveldb::WriteOptions(), key);
 }
 
 } // endof namespace

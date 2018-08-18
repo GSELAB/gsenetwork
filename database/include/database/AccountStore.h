@@ -22,9 +22,9 @@ public:
 
     ~AccountStore();
 
-    AccountBundle &getAccount(char *address);
+    bundle::AccountBundle &getAccount(char *address);
 
-    void putAccount(AccountBundle &accountBundle);
+    void putAccount(bundle::AccountBundle &accountBundle);
 
 private:
     uint8_t isOpened;

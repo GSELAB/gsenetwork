@@ -23,12 +23,12 @@ ProducerStore::~ProducerStore()
 
 }
 
-ProducerBundle &ProducerStore::getProducer(char *address)
+bundle::ProducerBundle& ProducerStore::getProducer(char *address)
 {
-    return new ProducerBundle();
+    return *(new bundle::ProducerBundle());
 }
 
-void ProducerStore::putProducer(ProducerBundle &producerBundle)
+void ProducerStore::putProducer(bundle::ProducerBundle &producerBundle)
 {
 
 }

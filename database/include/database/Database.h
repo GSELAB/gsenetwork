@@ -9,39 +9,34 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
 #pragma once
 
 #include <string>
 
-#include "leveldb/db.h"
+// #include "leveldb/db.h"
 
 namespace database {
 
+class DatabaseImpl;
+
 class Database {
 public:
-    Database(std::string &db_file);
+    Database();
 
-    virtual ~Database();
+    Database(std::string& dbFile);
 
-    void put(std::string &key, std::string &value);
+    ~Database();
 
-    bool get(std::string &key, std::string *value);
+    void put(std::string& key, std::string& value);
 
-    void delete(std::string &key);
+    bool get(std::string& key, std::string* value);
 
-
+    void del(std::string& key);
 
 private:
-    leveldb::DB *m_db;
-    leveldb::Options m_options;
-
-
-
+    DatabaseImpl *impl;
+    //leveldb::DB *db;
+    //leveldb::Options options;
 };
 
 }
