@@ -3,4 +3,4 @@ set (core_source
 
 add_library (core STATIC ${core_source})
 
-target_link_libraries (net utils bundle)
+# target_link_libraries (net utils bundle)

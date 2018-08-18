@@ -1,5 +1,5 @@
 set (utils_source
-     *.cpp)
+     Utils.cpp)
 
 add_library (utils STATIC ${utils_source})
 

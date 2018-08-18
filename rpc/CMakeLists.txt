@@ -1,5 +1,5 @@
 set (rpc_source
-     *.cpp)
+     RpcService.cpp)
 
 add_library (rpc STATIC ${rpc_source})
 
