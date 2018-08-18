@@ -12,8 +12,13 @@
 #pragma once
 namespace bundle {
 
+template<class T>
 class Bundle {
 public:
     virtual char *getData();
+
+    virtual uint64_t getSize();
+
+    virtual T &getInstance();
 };
 } // end of namespace bundle

@@ -26,8 +26,10 @@ public:
 
     char *getData();
 
+    uint64_t getSize();
+
 private:
-    pchain::SubChain &subChain;
+    pchain::SubChain subChain;
 
 };
 

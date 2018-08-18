@@ -26,8 +26,10 @@ public:
 
     char *getData();
 
+    uint64_t getSize();
+
 private:
-    pchain::Producer &producer;
+    pchain::Producer producer;
 };
 
 } // end of namespace bundle

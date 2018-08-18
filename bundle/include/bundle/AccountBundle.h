@@ -16,9 +16,9 @@
 
 namespace bundle {
 
-class AccountBundle : public Bundle {
+class AccountBundle : public Bundle<pchain::Account> {
 public:
-    AccountBundle(char *data);
+    AccountBundle(const std::string& data);
 
     AccountBundle(pchain::Account &account);
 
@@ -30,11 +30,15 @@ public:
 
     void setBalance(uint64_t balance);
 
-    char *getData();
+    string getData();
+
+    pchain::Account& getInstance();
 
 private:
-    pchain::Account &account;
+    pchain::Account account;
 
 };
+
+using AccountBundlePtr = std::shared_ptr<AccountBundle>;
 
 } // end of namespace bundle

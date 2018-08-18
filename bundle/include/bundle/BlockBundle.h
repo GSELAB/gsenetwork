@@ -26,8 +26,10 @@ public:
 
     char *getData();
 
+    uint64_t getSize();
+
 private:
-    pchain::Block &block;
+    pchain::Block block;
 };
 
 } // end of namespace bundle

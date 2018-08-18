@@ -29,7 +29,12 @@ BlockBundle::BlockBundle(BlockBundle &blockBundle)
 
 }
 
-char *BlockBundle::getData()
+char* BlockBundle::getData()
+{
+
+}
+
+uint64_t BlockBundle::getSize()
 {
 
 }

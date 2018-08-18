@@ -26,7 +26,9 @@ public:
 
     char *getData();
 
+    uint64_t getSize();
+
 private:
-    pchain::Transaction &transaction;
+    <pchain::Transaction transaction;
 };
 } // end of namespace bundle
