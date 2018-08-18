@@ -15,6 +15,7 @@
 
 #include "bundle/All.h"
 #include "chain/DbManager.h"
+#include "chain/NetController.h"
 
 namespace producer {
 
@@ -37,7 +38,7 @@ class ProducerServer {
 public:
     ProducerServer();
 
-    ProducerServer(DbManager &dbManager);
+    ProducerServer(chain::DbManager &dbManager);
 
     ~ProducerServer();
 
@@ -52,13 +53,17 @@ public:
     void generateBlock();
 
 private:
-    vector<bundle::Producer> producers;
+    std::vector<std::shared_ptr<bundle::ProducerBundle>> producers;
 
-    DbManager &dbManager;
+    chain::DbManager *dbManager;
+    chain::NetController *netController;
+
 
     ProducerState state;
 
-    AccountBundlePtr currentAccout;
+    std::shared_ptr<bundle::AccountBundle> currentAccout;
+
+    uint64_t chainId;
 };
 
 } // end of namespace

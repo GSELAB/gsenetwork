@@ -1,5 +1,5 @@
 set (producer_source
-     *.cpp)
+     ProducerServer.cpp)
 
 add_library (producer STATIC ${producer_source})
 

@@ -9,12 +9,11 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
 #pragma once
+
+#include<vector>
+
+#include "bundle/All.h"
 
 namespace producer {
 
@@ -24,7 +23,10 @@ public:
 
     ~Producer();
 
+    void generateBlock();
+
 private:
+    //vector<bundle::Producer>
 
 
 };

@@ -10,6 +10,7 @@
  */
 
 #include "producer/ProducerServer.h"
+#include "config/Constant.h"
 
 namespace producer {
 
@@ -18,9 +19,9 @@ ProducerServer::ProducerServer()
     this->state = Undefined;
 }
 
-ProducerServer::ProducerServer(DbManager &dbManager)
+ProducerServer::ProducerServer(chain::DbManager &dbManager)
 {
-    this->dbManager = dbManager;
+    this->dbManager = &dbManager;
 
     this->state = Undefined;
 }
@@ -33,10 +34,11 @@ ProducerServer::~ProducerServer()
 int ProducerServer::init()
 {
     if (this->state != Undefined)
-        return;
+        return -1;
 
     // init the procuders
     this->state = Ready;
+    return 0;
 }
 
 int ProducerServer::start()
@@ -48,6 +50,8 @@ int ProducerServer::start()
     while (this->state == Running) {
         generateBlock();
     }
+
+    return 0;
 }
 
 int ProducerServer::suspend()
@@ -56,16 +60,25 @@ int ProducerServer::suspend()
         return -1;
 
     this->state = Suspend;
+    return 0;
 }
 
 int ProducerServer::stop()
 {
     this->state = Stop;
+    return 0;
 }
 
 void ProducerServer::generateBlock()
 {
+    /*
+    std::shared_ptr<bundle::BlockBundle> block = std::make_shared<bundle::BlockBundle>(new bundle::BlockBundle());
 
+    while (block->getSize() < MAX_BLOCK_SIZE) {
+        //std::shared_ptr<bundle::TransactionBundle> transaction = netController->getTransactionFromCache();
+
+    }
+    */
 }
 
 } // end of namespace
