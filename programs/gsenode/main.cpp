@@ -13,13 +13,14 @@
 
 void printGSELogo()
 {
-    cout << "" << endl;
+    std::cout << "" << std::endl;
 }
 
 
 int main(int argc, char **argv)
 {
 
-    cout << "GSENetwork protocol!" << endl;
+    std::cout << "GSENetwork protocol!" << std::endl;
+    return 0;
 }
 
