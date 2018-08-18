@@ -8,8 +8,3 @@
  * Foundation, either version 3 of the License, or any later version.
  *
  */
-
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
