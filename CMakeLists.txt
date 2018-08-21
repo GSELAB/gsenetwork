@@ -32,13 +32,17 @@ else()
     include ("${CMAKE_CURRENT_LIST_DIR}/cmake/install_boost.cmake")
 endif()
 
+## install secp256k1
+include ("${CMAKE_CURRENT_LIST_DIR}/cmake/install_secp256k1.cmake")
+
 
 include_directories (
     "${PROJECT_SOURCE_DIR}/database/include/leveldb/include"
+    "${PROJECT_SOURCE_DIR}/core/include"
+    "${PROJECT_SOURCE_DIR}/crypto/include"
     "${PROJECT_SOURCE_DIR}/bundle/include"
     "${PROJECT_SOURCE_DIR}/chain/include"
     "${PROJECT_SOURCE_DIR}/config/include"
-    "${PROJECT_SOURCE_DIR}/core/include"
     "${PROJECT_SOURCE_DIR}/database/include"
     "${PROJECT_SOURCE_DIR}/net/include"
     "${PROJECT_SOURCE_DIR}/producer/include"
@@ -53,10 +57,11 @@ link_directories(
 
 add_subdirectory (proto)
 add_subdirectory (utils)
+add_subdirectory (core)
+add_subdirectory (crypto)
 add_subdirectory (net)
 add_subdirectory (database)
 add_subdirectory (config)
-add_subdirectory (core)
 add_subdirectory (runtime)
 add_subdirectory (bundle)
 add_subdirectory (rpc)
