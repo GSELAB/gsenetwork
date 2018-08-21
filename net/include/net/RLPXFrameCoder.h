@@ -27,7 +27,7 @@
 #include <net/Common.h>
 
 namespace net {
-struct RLPXFrameDecryptFailed: virtual dev::Exception {};
+struct RLPXFrameDecryptFailed: virtual core::Exception {};
 
 /**
  * @brief Encapsulation of Frame

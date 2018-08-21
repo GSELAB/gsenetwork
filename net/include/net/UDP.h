@@ -199,8 +199,9 @@ void UDPSocket<Handler, MaxDatagramSize>::doRead()
         if (m_closed)
             return disconnectWithError(_ec);
 
-        if (_ec != boost::system::errc::success)
-            cnetlog << "Receiving UDP message failed. " << _ec.value() << " : " << _ec.message();
+        if (_ec != boost::system::errc::success) {
+            //cnetlog << "Receiving UDP message failed. " << _ec.value() << " : " << _ec.message();
+        }
 
         if (_len)
             m_host.onReceived(this, m_recvEndpoint, bytesConstRef(m_recvData.data(), _len));
@@ -222,8 +223,9 @@ void UDPSocket<Handler, MaxDatagramSize>::doWrite()
         if (m_closed)
             return disconnectWithError(_ec);
 
-        if (_ec != boost::system::errc::success)
-            cnetlog << "Failed delivering UDP message. " << _ec.value() << " : " << _ec.message();
+        if (_ec != boost::system::errc::success) {
+            // cnetlog << "Failed delivering UDP message. " << _ec.value() << " : " << _ec.message();
+        }
 
         Guard l(x_sendQ);
         m_sendQ.pop_front();

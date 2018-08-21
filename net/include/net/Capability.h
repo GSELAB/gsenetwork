@@ -21,10 +21,10 @@
 
 #pragma once
 
-#include "net/Common.h"
-#include "net/HostCapability.h"
+#include <net/Common.h>
+#include <net/HostCapability.h>
 
-namespace {
+namespace net {
 
 class ReputationManager;
 

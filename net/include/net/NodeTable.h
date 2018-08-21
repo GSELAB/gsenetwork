@@ -332,7 +332,7 @@ struct PingNode: DiscoveryDatagram
     void streamRLP(RLPStream& _s) const
     {
         _s.appendList(4);
-        _s << dev::p2p::c_protocolVersion;
+        _s << net::c_protocolVersion;
         source.streamRLP(_s);
         destination.streamRLP(_s);
         _s << ts;

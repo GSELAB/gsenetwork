@@ -34,13 +34,16 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include <chrono>
-//#include <libdevcrypto/Common.h>
+#include <core/Common.h>
+#include <crypto/Common.h>
 
 #include <core/Log.h>
-//#include <libdevcore/Exceptions.h>
-//#include <libdevcore/RLP.h>
+#include <core/Exceptions.h>
+#include <core/RLP.h>
 #include <core/Guards.h>
 
+using namespace core;
+using namespace crypto;
 
 namespace ba = boost::asio;
 namespace bi = boost::asio::ip;
@@ -68,6 +71,14 @@ class UPnP;
 class Capability;
 class Host;
 class Session;
+
+struct NetworkStartRequired: virtual core::Exception {};
+struct InvalidPublicIPAddress: virtual core::Exception {};
+
+/// The ECDHE agreement failed during RLPx handshake.
+struct ECDHEError: virtual Exception {};
+
+
 
 enum PacketType
 {
@@ -287,10 +298,32 @@ private:
     std::atomic<bool> m_stopped;
 };
 
-}
-
 /// Simple stream output for a NodeIPEndpoint.
-std::ostream& operator<<(std::ostream& _out, dev::p2p::NodeIPEndpoint const& _ep);
+std::ostream& operator<<(std::ostream& _out, net::NodeIPEndpoint const& _ep);
 
 
 } // end of namespace
+
+
+/// std::hash for asio::adress
+namespace std
+{
+
+template <> struct hash<bi::address>
+{
+    size_t operator()(bi::address const& _a) const
+    {
+        if (_a.is_v4())
+            return std::hash<unsigned long>()(_a.to_v4().to_ulong());
+        if (_a.is_v6())
+        {
+            auto const& range = _a.to_v6().to_bytes();
+            return boost::hash_range(range.begin(), range.end());
+        }
+        if (_a.is_unspecified())
+            return static_cast<size_t>(0x3487194039229152ull);  // Chosen by fair dice roll, guaranteed to be random
+        return std::hash<std::string>()(_a.to_string());
+    }
+};
+
+}
