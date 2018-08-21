@@ -25,7 +25,7 @@
 #include <thread>
 #include <atomic>
 
-#include "core/Guards.h"
+#include <core/Guards.h>
 
 namespace core
 {

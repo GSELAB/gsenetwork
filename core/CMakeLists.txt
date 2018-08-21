@@ -1,5 +1,11 @@
 set (core_source
-     *.cpp)
+     FixedHash.cpp
+     CommonData.cpp
+     Common.cpp
+     Log.cpp
+     RLP.cpp
+     Address.cpp
+     Worker.cpp)
 
 add_library (core STATIC ${core_source})
 
