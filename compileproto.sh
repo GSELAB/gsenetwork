@@ -5,6 +5,8 @@
 #
 #
 
+
+
 # 1. Install cmake system
 
 
@@ -25,4 +27,22 @@ protoc --proto_path=proto --cpp_out=proto proto/PResult.proto
 
 protoc --proto_path=proto --cpp_out=proto proto/PNet.proto proto/PChain.proto
 
+
+#3. Install boost (Move it to cmake file ? or create file deps-install.sh)
+# download
+
+# ./bootstrap.sh
+# ./b2
+
+
+
+
+# 4. Install secp256k1
+# download
+
+# $ ./autogen.sh
+# $ ./configure
+# $ make
+# $ ./tests
+# $ sudo make install  # optional
 
