@@ -14,6 +14,9 @@
 #include <queue>
 
 #include "bundle/All.h"
+#include <net/All.h>
+
+using namespace net;
 
 namespace chain {
 
@@ -27,6 +30,8 @@ public:
 
         return netController;
     }
+
+    void init();
 
     void broadcast(char *msg);
 
@@ -44,8 +49,11 @@ public:
 private:
     static NetController *netController;
 
-    NetController() {}
+    NetController() { isInit = false; }
     ~NetController() {}
+
+    bool isInit;
+    Host *host;
 
     std::queue<std::shared_ptr<bundle::TransactionBundle>> transactionsQueue;
 
