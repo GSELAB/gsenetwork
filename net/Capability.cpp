@@ -19,13 +19,13 @@
  * @date 2014
  */
 
-#include "Capability.h"
+#include <net/Capability.h>
 
 //#include <libdevcore/Log.h>
-#include "Session.h"
-#include "Host.h"
+#include <net/Session.h>
+#include <net/Host.h>
 using namespace std;
-using namespace dev;
+//using namespace dev;
 
 namespace net {
 

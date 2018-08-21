@@ -19,13 +19,13 @@
  * @date 2015
  */
 
-#include "Host.h"
-#include "Session.h"
-#include "Peer.h"
-#include "RLPxHandshake.h"
+#include <net/Host.h>
+#include <net/Session.h>
+#include <net/Peer.h>
+#include <net/RLPxHandshake.h>
 using namespace std;
-using namespace dev;
-using namespace dev::crypto;
+//using namespace dev;
+//using namespace dev::crypto;
 
 namespace net {
 void RLPXHandshake::writeAuth()

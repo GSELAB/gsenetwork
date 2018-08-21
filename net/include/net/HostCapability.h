@@ -24,9 +24,9 @@
 #pragma once
 
 #include <memory>
-#include "Peer.h"
-#include "Common.h"
-#include "Session.h"
+#include <net/Peer.h>
+#include <net/Common.h>
+#include <net/Session.h>
 
 namespace net {
 

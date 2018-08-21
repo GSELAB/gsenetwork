@@ -19,14 +19,14 @@
  * @date 2015
  */
 
-#include "RLPXFrameCoder.h"
-#include <cryptopp/aes.h>
-#include <cryptopp/keccak.h>
-#include <cryptopp/modes.h>
-#include <libdevcore/Assertions.h>
-#include <libdevcore/SHA3.h>
-#include "RLPxHandshake.h"
-#include "RLPXPacket.h"
+#include <net/RLPXFrameCoder.h>
+//#include <cryptopp/aes.h>
+//#include <cryptopp/keccak.h>
+//#include <cryptopp/modes.h>
+//#include <libdevcore/Assertions.h>
+//#include <libdevcore/SHA3.h>
+#include <net/RLPxHandshake.h>
+#include <net/RLPXPacket.h>
 
 static_assert(CRYPTOPP_VERSION == 565, "Wrong Crypto++ version");
 

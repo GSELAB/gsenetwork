@@ -34,15 +34,13 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include <chrono>
-#include <libdevcrypto/Common.h>
+//#include <libdevcrypto/Common.h>
 
-//#include <libdevcore/Log.h>
+#include <core/Log.h>
 //#include <libdevcore/Exceptions.h>
 //#include <libdevcore/RLP.h>
-//#include <libdevcore/Guards.h>
+#include <core/Guards.h>
 
-//core
-#include "Guards.h"
 
 namespace ba = boost::asio;
 namespace bi = boost::asio::ip;

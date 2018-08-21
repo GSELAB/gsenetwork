@@ -19,7 +19,7 @@
  * @date 2014
  */
 
-#include "NodeTable.h"
+#include <net/NodeTable.h>
 using namespace std;
 
 namespace net {

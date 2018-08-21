@@ -20,17 +20,17 @@
  * @date 2014
  */
 
-#include "Session.h"
+#include <net/Session.h>
 
 #include <chrono>
-#include <libdevcore/Common.h>
-#include <libdevcore/CommonIO.h>
-#include <libdevcore/Exceptions.h>
-#include "Host.h"
-#include "Capability.h"
+//#include <libdevcore/Common.h>
+//#include <libdevcore/CommonIO.h>
+//#include <libdevcore/Exceptions.h>
+#include <net/Host.h>
+#include <net/Capability.h>
 
 using namespace std;
-using namespace dev;
+//using namespace dev;
 
 namespace net {
 

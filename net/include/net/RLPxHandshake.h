@@ -22,10 +22,11 @@
 #pragma once
 
 #include <memory>
-#include <libdevcrypto/Common.h>
-#include "RLPXSocket.h"
-#include "RLPXFrameCoder.h"
-#include "Common.h"
+//#include <libdevcrypto/Common.h>
+
+#include <net/RLPXSocket.h>
+#include <net/RLPXFrameCoder.h>
+#include <net/Common.h>
 namespace ba = boost::asio;
 namespace bi = boost::asio::ip;
 

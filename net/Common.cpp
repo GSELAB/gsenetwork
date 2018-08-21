@@ -19,8 +19,8 @@
  * @date 2014
  */
 
-#include "Common.h"
-#include "Network.h"
+#include "net/Common.h"
+#include "net/Network.h"
 using namespace std;
 
 

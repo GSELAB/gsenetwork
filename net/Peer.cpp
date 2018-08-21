@@ -20,7 +20,7 @@
  * @date 2014
  */
 
-#include "Peer.h"
+#include <net/Peer.h>
 using namespace std;
 //using namespace dev;
 

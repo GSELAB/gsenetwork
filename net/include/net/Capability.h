@@ -21,8 +21,8 @@
 
 #pragma once
 
-#include "Common.h"
-#include "HostCapability.h"
+#include "net/Common.h"
+#include "net/HostCapability.h"
 
 namespace {
 

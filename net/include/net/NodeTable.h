@@ -25,8 +25,8 @@
 
 #include <boost/integer/static_log2.hpp>
 
-#include "UDP.h"
-#include "Common.h"
+#include <net/UDP.h>
+#include <net/Common.h>
 
 namespace net {
 

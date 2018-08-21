@@ -32,19 +32,19 @@
 #include <chrono>
 
 
-#include <libdevcrypto/Common.h>
+//#include <libdevcrypto/Common.h>
 
 // core
-#include "Task.h"
-#include "Guards.h"
+#include <core/Worker.h>
+#include <core/Guards.h>
 
-#include "NodeTable.h"
-#include "HostCapability.h"
-#include "Network.h"
-#include "Peer.h"
-#include "RLPXSocket.h"
-#include "RLPXFrameCoder.h"
-#include "Common.h"
+#include "net/NodeTable.h"
+#include "net/HostCapability.h"
+#include "net/Network.h"
+#include "net/Peer.h"
+#include "net/RLPXSocket.h"
+#include "net/RLPXFrameCoder.h"
+#include "net/Common.h"
 namespace ba = boost::asio;
 namespace bi = ba::ip;
 

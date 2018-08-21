@@ -1,5 +1,16 @@
 set (net_source
-     *.cpp)
+     Common.cpp
+     Capability.cpp
+     Host.cpp
+     HostCapability.cpp
+     Network.cpp
+     NodeTable.cpp
+     Peer.cpp
+     RLPXFrameCoder.cpp
+     RLPxHandshake.cpp
+     Session.cpp
+     UDP.cpp
+     UPnp.cpp)
 
 add_library (net STATIC ${net_source})
 

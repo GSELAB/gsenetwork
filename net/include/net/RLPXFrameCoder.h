@@ -22,9 +22,9 @@
 #pragma once
 
 #include <memory>
-#include <libdevcore/Guards.h>
-#include <libdevcrypto/CryptoPP.h>
-#include "Common.h"
+#include <core/Guards.h>
+//#include <libdevcrypto/CryptoPP.h>
+#include <net/Common.h>
 
 namespace net {
 struct RLPXFrameDecryptFailed: virtual dev::Exception {};

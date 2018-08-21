@@ -26,19 +26,21 @@
 #include <mutex>
 #include <memory>
 #include <boost/algorithm/string.hpp>
-#include <libdevcore/Common.h>
-#include <libdevcore/Assertions.h>
-#include <libdevcore/CommonIO.h>
-#include <libdevcore/Exceptions.h>
-#include <libdevcore/FileSystem.h>
-#include "Session.h"
-#include "Common.h"
-#include "Capability.h"
-#include "UPnP.h"
-#include "RLPxHandshake.h"
-#include "Host.h"
+
+//#include <libdevcore/Common.h>
+//#include <libdevcore/Assertions.h>
+//#include <libdevcore/CommonIO.h>
+//#include <libdevcore/Exceptions.h>
+//#include <libdevcore/FileSystem.h>
+#include "net/Session.h"
+#include "net/Common.h"
+#include "net/Capability.h"
+#include "net/UPnP.h"
+#include "net/RLPxHandshake.h"
+#include "net/Host.h"
+
 using namespace std;
-//using namespace dev;
+using namespace core;
 
 namespace net {
 

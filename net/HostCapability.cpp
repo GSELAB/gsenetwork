@@ -19,12 +19,12 @@
  * @date 2014
  */
 
-#include "HostCapability.h"
+#include <net/HostCapability.h>
 
-#include "Session.h"
-#include "Host.h"
+#include <net/Session.h>
+#include <net/Host.h>
 using namespace std;
-//using namespace dev;
+using namespace core;
 
 namespace net {
 

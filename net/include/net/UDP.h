@@ -27,12 +27,12 @@
 #include <deque>
 #include <array>
 
-#include <libdevcore/Guards.h>
-#include <libdevcrypto/Common.h>
-#include <libdevcore/SHA3.h>
-#include <libdevcore/Log.h>
-#include <libdevcore/RLP.h>
-#include "Common.h"
+#include <core/Guards.h>
+//#include <libdevcrypto/Common.h>
+//#include <libdevcore/SHA3.h>
+#include <core/Log.h>
+//#include <libdevcore/RLP.h>
+#include <net/Common.h>
 namespace ba = boost::asio;
 namespace bi = ba::ip;
 

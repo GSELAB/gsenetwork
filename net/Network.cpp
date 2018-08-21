@@ -29,16 +29,16 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-#include <libdevcore/Common.h>
-#include <libdevcore/Assertions.h>
-#include <libdevcore/CommonIO.h>
-#include <libdevcore/Exceptions.h>
-#include "Common.h"
-#include "UPnP.h"
-#include "Network.h"
+//#include <libdevcore/Common.h>
+//#include <libdevcore/Assertions.h>
+//#include <libdevcore/CommonIO.h>
+//#include <libdevcore/Exceptions.h>
+#include <net/Common.h>
+#include <net/UPnP.h>
+#include <net/Network.h>
 
 using namespace std;
-using namespace dev;
+using namespace core;
 
 namespace net {
 
