@@ -11,6 +11,10 @@
 
 #include "chain/NetController.h"
 
+#include <net/All.h>
+
+using namespace net;
+
 namespace chain {
 
 NetController *NetController::netController = nullptr;
@@ -28,14 +32,14 @@ void NetController::broadcast(std::shared_ptr<bundle::TransactionBundle> tMsg)
 void NetController::init()
 {
     if (!isInit) {
-
+/*
         const char *const localhost = "127.0.0.1";
-        NetworkConfig conf(localhost, 0, false);
+        net::NetworkConfig conf(localhost, 0, false);
 
         host = new Host("GSEGeneisNN", conf);
-        host.start();
-        host.listenPort();
-
+        host->start();
+        host->listenPort();
+*/
 
 
         isInit = true;

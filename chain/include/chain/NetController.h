@@ -13,12 +13,12 @@
 
 #include <queue>
 
-#include "bundle/All.h"
-#include <net/All.h>
-
-using namespace net;
+#include <bundle/All.h>
+//#include <net/Host.h>
 
 namespace chain {
+
+class Host;
 
 class NetController {
 public:
