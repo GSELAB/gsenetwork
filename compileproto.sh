@@ -33,6 +33,7 @@ protoc --proto_path=proto --cpp_out=proto proto/PNet.proto proto/PChain.proto
 
 # ./bootstrap.sh
 # ./b2
+# ./b2 install
 
 
 
@@ -45,4 +46,11 @@ protoc --proto_path=proto --cpp_out=proto proto/PNet.proto proto/PChain.proto
 # $ make
 # $ ./tests
 # $ sudo make install  # optional
+
+
+
+# 5. install cryptopp (??????????? not working)
+# $ export CXXFLAGS="-DNDEBUG -g2 -O2 -stdlib=libc++"
+# $ CXX=clang++ make -j 4
+# $ make install
 
