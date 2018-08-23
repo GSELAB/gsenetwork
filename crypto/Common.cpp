@@ -208,9 +208,11 @@ bytesSec decryptAES128CTR(bytesConstRef _k, h128 const& _iv, bytesConstRef _ciph
 		return bytesSec();
 	}
 }
+*/
 
 Public recover(Signature const& _sig, h256 const& _message)
 {
+    /* remark by Jorge
 	int v = _sig[64];
 	if (v > 3)
 		return {};
@@ -235,12 +237,15 @@ Public recover(Signature const& _sig, h256 const& _message)
 	assert(serializedPubkey[0] == 0x04);
 	// Create the Public skipping the header.
 	return Public{&serializedPubkey[1], Public::ConstructFromPointer};
+	*/
+	return Public{};
 }
 
 static const u256 c_secp256k1n("115792089237316195423570985008687907852837564279074904382605163141518161494337");
 
 Signature sign(Secret const& _k, h256 const& _hash)
 {
+    /* remark by Jorge
 	auto* ctx = getCtx();
 	secp256k1_ecdsa_recoverable_signature rawSig;
 	if (!secp256k1_ecdsa_sign_recoverable(ctx, &rawSig, _hash.data(), _k.data(), nullptr, nullptr))
@@ -259,16 +264,24 @@ Signature sign(Secret const& _k, h256 const& _hash)
 	}
 	assert(ss.s <= c_secp256k1n / 2);
 	return s;
+	*/
+
+	Signature s;
+	return s;
+
 }
 
 bool verify(Public const& _p, Signature const& _s, h256 const& _hash)
 {
+    /* remark by Jorge
 	// TODO: Verify w/o recovery (if faster).
 	if (!_p)
 		return false;
 	return _p == recover(_s, _hash);
+	*/
+	return false;
 }
-
+/*
 bytesSec pbkdf2(string const& _pass, bytes const& _salt, unsigned _iterations, unsigned _dkLen)
 {
 	bytesSec ret(_dkLen);

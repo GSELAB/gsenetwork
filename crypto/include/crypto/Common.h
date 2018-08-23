@@ -120,7 +120,7 @@ inline bytes encryptSymNoAuth(SecureFixedHash<32> const& _k, h128 const& _iv, by
 /// Decrypts payload with specified IV/ctr using AES128-CTR.
 inline bytesSec decryptSymNoAuth(SecureFixedHash<16> const& _k, h128 const& _iv, bytesConstRef _cipher) { return decryptAES128CTR(_k.ref(), _iv, _cipher); }
 inline bytesSec decryptSymNoAuth(SecureFixedHash<32> const& _k, h128 const& _iv, bytesConstRef _cipher) { return decryptAES128CTR(_k.ref(), _iv, _cipher); }
-
+*/
 /// Recovers Public key from signed message hash.
 Public recover(Signature const& _sig, h256 const& _hash);
 	
@@ -130,6 +130,7 @@ Signature sign(Secret const& _k, h256 const& _hash);
 /// Verify signature.
 bool verify(Public const& _k, Signature const& _s, h256 const& _hash);
 
+/*
 /// Derive key via PBKDF2.
 bytesSec pbkdf2(std::string const& _pass, bytes const& _salt, unsigned _iterations, unsigned _dkLen = 32);
 
@@ -190,7 +191,7 @@ h256 kdf(Secret const& _priv, h256 const& _hash);
  * where the key is also stored in plaintext.
  */
 
-/*
+
 class Nonce
 {
 public:
@@ -206,7 +207,7 @@ private:
 	std::mutex x_value;
 	Secret m_value;
 };
-
+/*
 namespace ecdh
 {
 
