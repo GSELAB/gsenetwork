@@ -11,5 +11,6 @@ set (proto_source
       PNet.pb.cc
       PChain.pb.cc)
 
-add_library (proto STATIC ${proto_source})
+#add_library (proto STATIC ${proto_source})
 
+add_library (proto ${proto_source})

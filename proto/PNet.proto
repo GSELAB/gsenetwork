@@ -30,3 +30,8 @@ message Node {
     NodeIPEndpoint endpoint = 2;
     PeerType type = 3;
 }
+
+// Message
+message UDPDatagram {
+
+}
