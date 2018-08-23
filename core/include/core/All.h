@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "core/Types.h"
-#include "core/Account.h"
-#include "core/Transaction.h"
-#include "core/Block.h"
+#include "core/FixedHash.h"
+#include "core/Common.h"
+#include "core/Exceptions.h"
+#include "core/Log.h"

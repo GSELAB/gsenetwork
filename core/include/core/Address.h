@@ -19,6 +19,7 @@
 /// special Address constants.
 
 #pragma once
+//#include <unordered_set>
 
 #include <core/FixedHash.h>
 
@@ -33,7 +34,7 @@ using Address = h160;
 using Addresses = h160s;
 
 /// A hash set of Ethereum addresses.
-using AddressHash = std::unordered_set<h160>;
+//using AddressHash = std::unordered_set<h160>;
 
 /// The zero address.
 extern Address const ZeroAddress;

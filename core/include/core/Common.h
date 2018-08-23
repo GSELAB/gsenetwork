@@ -38,10 +38,10 @@
 #endif
 
 #include <map>
-#include <unordered_map>
+//#include <unordered_map>
 #include <vector>
 #include <set>
-#include <unordered_set>
+//#include <unordered_set>
 #include <functional>
 #include <string>
 #include <chrono>
@@ -51,7 +51,7 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #pragma warning(pop)
 #pragma GCC diagnostic pop
-#include "core/vector_ref.h"
+#include <core/vector_ref.h>
 
 // CryptoPP defines byte in the global namespace, so must we.
 using byte = uint8_t;
@@ -136,8 +136,8 @@ using u256Map = std::map<u256, u256>;
 using HexMap = std::map<bytes, bytes>;
 
 // Hash types.
-using StringHashMap = std::unordered_map<std::string, std::string>;
-using u256HashMap = std::unordered_map<u256, u256>;
+//using StringHashMap = std::unordered_map<std::string, std::string>;
+//using u256HashMap = std::unordered_map<u256, u256>;
 
 // String types.
 using strings = std::vector<std::string>;

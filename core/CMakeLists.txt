@@ -7,6 +7,8 @@ set (core_source
      Address.cpp
      Worker.cpp)
 
-add_library (core STATIC ${core_source})
+#add_library (core STATIC ${core_source})
+
+add_library (core ${core_source})
 
 # target_link_libraries (net utils bundle)

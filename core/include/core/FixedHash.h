@@ -27,7 +27,8 @@
 #include <cstdint>
 #include <algorithm>
 #include <random>
-#include <boost/functional/hash.hpp>
+//#include <unordered_set>
+//#include <boost/functional/hash.hpp>
 #include <core/CommonData.h>
 
 namespace core {
@@ -356,8 +357,8 @@ using h256s = std::vector<h256>;
 using h160s = std::vector<h160>;
 using h256Set = std::set<h256>;
 using h160Set = std::set<h160>;
-using h256Hash = std::unordered_set<h256>;
-using h160Hash = std::unordered_set<h160>;
+//using h256Hash = std::unordered_set<h256>;
+//using h160Hash = std::unordered_set<h160>;
 
 /// Convert the given value into h160 (160-bit unsigned integer) using the right 20 bytes.
 inline h160 right160(h256 const& _t)

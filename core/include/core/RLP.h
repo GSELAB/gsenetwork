@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <iosfwd>
 #include <vector>
+//#include <unordered_set>
 
 namespace core {
 
@@ -208,6 +209,7 @@ public:
 		return ret;
 	}
 
+    /*
 	template <class T>
 	std::unordered_set<T> toUnorderedSet(int _flags = LaissezFaire) const
 	{
@@ -219,6 +221,8 @@ public:
 			BOOST_THROW_EXCEPTION(BadCast());
 		return ret;
 	}
+	*/
+
 
 	template <class T, class U>
 	std::pair<T, U> toPair(int _flags = Strict) const
@@ -357,7 +361,7 @@ template <unsigned N> struct Converter<FixedHash<N>> { static FixedHash<N> conve
 template <class T, class U> struct Converter<std::pair<T, U>> { static std::pair<T, U> convert(RLP const& _r, int _flags) { return _r.toPair<T, U>(_flags); } };
 template <class T> struct Converter<std::vector<T>> { static std::vector<T> convert(RLP const& _r, int _flags) { return _r.toVector<T>(_flags); } };
 template <class T> struct Converter<std::set<T>> { static std::set<T> convert(RLP const& _r, int _flags) { return _r.toSet<T>(_flags); } };
-template <class T> struct Converter<std::unordered_set<T>> { static std::unordered_set<T> convert(RLP const& _r, int _flags) { return _r.toUnorderedSet<T>(_flags); } };
+//template <class T> struct Converter<std::unordered_set<T>> { static std::unordered_set<T> convert(RLP const& _r, int _flags) { return _r.toUnorderedSet<T>(_flags); } };
 template <class T, size_t N> struct Converter<std::array<T, N>> { static std::array<T, N> convert(RLP const& _r, int _flags) { return _r.toArray<T, N>(_flags); } };
 
 template <class T> inline T RLP::convert(int _flags) const { return Converter<T>::convert(*this, _flags); }
@@ -395,7 +399,7 @@ public:
 	template <class _T> RLPStream& appendVector(std::vector<_T> const& _s) { appendList(_s.size()); for (auto const& i: _s) append(i); return *this; }
 	template <class _T, size_t S> RLPStream& append(std::array<_T, S> const& _s) { appendList(_s.size()); for (auto const& i: _s) append(i); return *this; }
 	template <class _T> RLPStream& append(std::set<_T> const& _s) { appendList(_s.size()); for (auto const& i: _s) append(i); return *this; }
-	template <class _T> RLPStream& append(std::unordered_set<_T> const& _s) { appendList(_s.size()); for (auto const& i: _s) append(i); return *this; }
+	//template <class _T> RLPStream& append(std::unordered_set<_T> const& _s) { appendList(_s.size()); for (auto const& i: _s) append(i); return *this; }
 	template <class T, class U> RLPStream& append(std::pair<T, U> const& _s) { appendList(2); append(_s.first); append(_s.second); return *this; }
 
 	/// Appends a list.

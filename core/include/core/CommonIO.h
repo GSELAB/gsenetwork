@@ -37,6 +37,8 @@
 #include <core/CommonData.h>
 #include <boost/filesystem.hpp>
 
+//#include <boost/unordered_set.hpp>
+
 namespace core
 {
 
@@ -50,7 +52,7 @@ inline std::ostream& operator<<(std::ostream& _out, bytes const& _e) { _out << t
 template <class T> inline std::ostream& operator<<(std::ostream& _out, std::vector<T> const& _e);
 template <class T, std::size_t Z> inline std::ostream& operator<<(std::ostream& _out, std::array<T, Z> const& _e);
 template <class T, class U> inline std::ostream& operator<<(std::ostream& _out, std::set<T, U> const& _e);
-template <class T, class U> inline std::ostream& operator<<(std::ostream& _out, std::unordered_set<T, U> const& _e);
+//template <class T, class U> inline std::ostream& operator<<(std::ostream& _out, std::unordered_set<T, U> const& _e);
 
 #if defined(_WIN32)
 template <class T> inline std::string toString(std::chrono::time_point<T> const& _e, std::string const& _format = "%Y-%m-%d %H:%M:%S")
@@ -121,6 +123,7 @@ std::ostream& streamout(std::ostream& _out, std::set<T> const& _v)
 }
 template <class T> inline std::ostream& operator<<(std::ostream& _out, std::set<T> const& _e) { streamout(_out, _e); return _out; }
 
+/*
 template <class T>
 std::ostream& streamout(std::ostream& _out, std::unordered_set<T> const& _v)
 {
@@ -132,6 +135,7 @@ std::ostream& streamout(std::ostream& _out, std::unordered_set<T> const& _v)
     return _out << " }";
 }
 template <class T> inline std::ostream& operator<<(std::ostream& _out, std::unordered_set<T> const& _e) { streamout(_out, _e); return _out; }
+*/
 
 // Functions that use streaming stuff.
 

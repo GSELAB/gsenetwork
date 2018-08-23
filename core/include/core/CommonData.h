@@ -25,10 +25,12 @@
 
 #include <vector>
 #include <algorithm>
-#include <unordered_set>
+//#include <unordered_set>
 #include <type_traits>
 #include <cstring>
 #include <string>
+//#include <unordered_map>
+
 #include <core/Common.h>
 
 namespace core
@@ -269,12 +271,14 @@ template <class T, class U> std::set<T>& operator+=(std::set<T>& _a, U const& _b
 }
 
 /// Insert the contents of a container into an unordered_set
+/*
 template <class T, class U> std::unordered_set<T>& operator+=(std::unordered_set<T>& _a, U const& _b)
 {
 	for (auto const& i: _b)
 		_a.insert(i);
 	return _a;
 }
+*/
 
 /// Concatenate the contents of a container onto a vector
 template <class T, class U> std::vector<T>& operator+=(std::vector<T>& _a, U const& _b)
@@ -291,10 +295,12 @@ template <class T, class U> std::set<T> operator+(std::set<T> _a, U const& _b)
 }
 
 /// Insert the contents of a container into an unordered_set
+/*
 template <class T, class U> std::unordered_set<T> operator+(std::unordered_set<T> _a, U const& _b)
 {
 	return _a += _b;
 }
+*/
 
 /// Concatenate the contents of a container onto a vector
 template <class T, class U> std::vector<T> operator+(std::vector<T> _a, U const& _b)
@@ -323,6 +329,7 @@ std::vector<T> keysOf(std::map<T, U> const& _m)
 	return ret;
 }
 
+/*
 template<class T, class U>
 std::vector<T> keysOf(std::unordered_map<T, U> const& _m)
 {
@@ -331,6 +338,7 @@ std::vector<T> keysOf(std::unordered_map<T, U> const& _m)
 		ret.push_back(i.first);
 	return ret;
 }
+*/
 
 template<class T, class U>
 std::vector<U> valuesOf(std::map<T, U> const& _m)
@@ -342,6 +350,7 @@ std::vector<U> valuesOf(std::map<T, U> const& _m)
 	return ret;
 }
 
+/*
 template<class T, class U>
 std::vector<U> valuesOf(std::unordered_map<T, U> const& _m)
 {
@@ -351,6 +360,7 @@ std::vector<U> valuesOf(std::unordered_map<T, U> const& _m)
 		ret.push_back(i.second);
 	return ret;
 }
+*/
 
 template <class T, class V>
 bool contains(T const& _t, V const& _v)
@@ -358,9 +368,12 @@ bool contains(T const& _t, V const& _v)
 	return std::end(_t) != std::find(std::begin(_t), std::end(_t), _v);
 }
 
+/*
 template <class V>
 bool contains(std::unordered_set<V> const& _set, V const& _v)
 {
     return _set.find(_v) != _set.end();
 }
+*/
+
 }

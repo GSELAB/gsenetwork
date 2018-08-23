@@ -27,7 +27,10 @@
 #pragma warning(push)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#include <boost/thread.hpp>
+//#include <boost/thread.hpp>
+
+#include <boost/thread/shared_mutex.hpp>
+//#include <boost/thread/mutex.hpp>
 #pragma warning(pop)
 #pragma GCC diagnostic pop
 
