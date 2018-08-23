@@ -7,6 +7,8 @@ set (database_source
 	ProducerStore.cpp
 	SubChainStore.cpp)
 
-add_library (database STATIC ${database_source})
+#add_library (database STATIC ${database_source})
+
+add_library (database ${database_source})
 
 target_link_libraries (database leveldb)
