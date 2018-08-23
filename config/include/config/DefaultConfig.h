@@ -8,3 +8,11 @@
  * Foundation, either version 3 of the License, or any later version.
  *
  */
+
+#pragma once
+
+namespace config {
+
+}
+
+
