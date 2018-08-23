@@ -29,12 +29,12 @@
 #include <memory>
 #include <utility>
 
-//#include <libdevcore/Common.h>
-//#include <libdevcore/RLP.h>
+#include <core/Common.h>
+#include <core/RLP.h>
 #include <core/Guards.h>
-#include "RLPXFrameCoder.h"
-#include "RLPXSocket.h"
-#include "Common.h"
+#include <net/RLPXFrameCoder.h>
+#include <net/RLPXSocket.h>
+#include <net/Common.h>
 
 namespace net {
 
@@ -55,7 +55,7 @@ public:
 
 	virtual NodeID id() const = 0;
 
-	virtual void sealAndSend(RLPStream& _s) = 0;
+	virtual void sealAndSend(core::RLPStream& _s) = 0;
 
 	virtual int rating() const = 0;
 	virtual void addRating(int _r) = 0;
@@ -95,7 +95,7 @@ public:
 
 	NodeID id() const override;
 
-	void sealAndSend(RLPStream& _s) override;
+	void sealAndSend(core::RLPStream& _s) override;
 
 	int rating() const override;
 	void addRating(int _r) override;
@@ -116,7 +116,7 @@ public:
 	ReputationManager& repMan() override;
 
 private:
-	static RLPStream& prep(RLPStream& _s, PacketType _t, unsigned _args = 0);
+	static core::RLPStream& prep(core::RLPStream& _s, PacketType _t, unsigned _args = 0);
 
 	void send(bytes&& _msg);
 
@@ -133,10 +133,10 @@ private:
 	void write();
 
 	/// Deliver RLPX packet to Session or Capability for interpretation.
-	bool readPacket(uint16_t _capId, PacketType _t, RLP const& _r);
+	bool readPacket(uint16_t _capId, PacketType _t, core::RLP const& _r);
 
 	/// Interpret an incoming Session packet.
-	bool interpret(PacketType _t, RLP const& _r);
+	bool interpret(PacketType _t, core::RLP const& _r);
 
 	/// @returns true iff the _msg forms a valid message for sending or receiving on the network.
 	static bool checkPacket(bytesConstRef _msg);

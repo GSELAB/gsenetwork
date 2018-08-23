@@ -21,19 +21,24 @@
 
 #include <net/Capability.h>
 
-//#include <libdevcore/Log.h>
+#include <core/Log.h>
 #include <net/Session.h>
 #include <net/Host.h>
 using namespace std;
-//using namespace dev;
-
-namespace net {
+using namespace core;
+using namespace net;
 
 Capability::Capability(std::shared_ptr<SessionFace> _s, HostCapabilityFace* _h, unsigned _idOffset):
     m_session(_s), m_hostCap(_h), m_idOffset(_idOffset)
 {
     //cnetdetails << "New session for capability " << m_hostCap->name()
-     //           << "; idOffset: " << m_idOffset;
+    //            << "; idOffset: " << m_idOffset;
+}
+
+void Capability::disconnect()
+{
+    if (auto s = session())
+        s->disconnect(UserReason);
 }
 
 void Capability::disable(std::string const& _problem)
@@ -43,12 +48,12 @@ void Capability::disable(std::string const& _problem)
     m_enabled = false;
 }
 
-RLPStream& Capability::prep(RLPStream& _s, unsigned _id, unsigned _args)
+core::RLPStream& Capability::prep(core::RLPStream& _s, unsigned _id, unsigned _args)
 {
     return _s.appendRaw(bytes(1, _id + m_idOffset)).appendList(_args);
 }
 
-void Capability::sealAndSend(RLPStream& _s)
+void Capability::sealAndSend(core::RLPStream& _s)
 {
     shared_ptr<SessionFace> session = m_session.lock();
     if (session)
@@ -61,6 +66,3 @@ void Capability::addRating(int _r)
     if (session)
         session->addRating(_r);
 }
-
-
-} // end of namespace

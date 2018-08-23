@@ -20,32 +20,33 @@
  */
 
 #include <net/RLPXFrameCoder.h>
-//#include <cryptopp/aes.h>
-//#include <cryptopp/keccak.h>
-//#include <cryptopp/modes.h>
-//#include <libdevcore/Assertions.h>
-//#include <libdevcore/SHA3.h>
+#include <cryptopp/aes.h>
+#include <cryptopp/keccak.h>
+#include <cryptopp/modes.h>
+#include <core/Assertions.h>
+#include <crypto/SHA3.h>
 #include <net/RLPxHandshake.h>
 #include <net/RLPXPacket.h>
 
-static_assert(CRYPTOPP_VERSION == 565, "Wrong Crypto++ version");
+//static_assert(CRYPTOPP_VERSION == 565, "Wrong Crypto++ version");
 
 using namespace std;
-using namespace dev;
-
-namespace net {
+using namespace core;
+using namespace net;
 
 RLPXFrameInfo::RLPXFrameInfo(bytesConstRef _header):
 	length((_header[0] * 256 + _header[1]) * 256 + _header[2]),
 	padding((16 - (length % 16)) % 16),
 	data(_header.cropped(3).toBytes()),
-	header(RLP(data, RLP::ThrowOnFail | RLP::FailIfTooSmall)),
+	header(core::RLP(data, core::RLP::ThrowOnFail | core::RLP::FailIfTooSmall)),
 	protocolId(header[0].toInt<uint16_t>()),
 	multiFrame(header.itemCount() > 1),
 	sequenceId(multiFrame ? header[1].toInt<uint16_t>() : 0),
 	totalLength(header.itemCount() == 3 ? header[2].toInt<uint32_t>() : 0)
 {}
 
+namespace net
+{
 class RLPXFrameCoderImpl
 {
 public:
@@ -67,6 +68,7 @@ public:
 private:
 	Mutex x_macEnc;  ///< Mutex.
 };
+}
 
 RLPXFrameCoder::~RLPXFrameCoder()
 {}
@@ -93,8 +95,11 @@ void RLPXFrameCoder::setup(bool _originated, h512 const& _remoteEphemeral, h256 
 
 	// Try agree ECDHE. This can fail due to invalid remote public key. In this
 	// case throw an exception to be caught RLPXHandshake::transition().
+
+	/* remark by Jorge
 	if (!crypto::ecdh::agree(_ecdheLocal.secret(), _remoteEphemeral, ephemeralShared))
 		BOOST_THROW_EXCEPTION(ECDHEError{});
+    */
 
 	ephemeralShared.ref().copyTo(keyMaterial.cropped(0, h256::size));
 	h512 nonceMaterial;
@@ -148,7 +153,7 @@ void RLPXFrameCoder::setup(bool _originated, h512 const& _remoteEphemeral, h256 
 
 void RLPXFrameCoder::writeFrame(uint16_t _protocolType, bytesConstRef _payload, bytes& o_bytes)
 {
-	RLPStream header;
+	core::RLPStream header;
 	uint32_t len = (uint32_t)_payload.size();
 	header.appendRaw(bytes({byte((len >> 16) & 0xff), byte((len >> 8) & 0xff), byte(len & 0xff)}));
 	header.appendList(1) << _protocolType;
@@ -157,7 +162,7 @@ void RLPXFrameCoder::writeFrame(uint16_t _protocolType, bytesConstRef _payload, 
 
 void RLPXFrameCoder::writeFrame(uint16_t _protocolType, uint16_t _seqId, bytesConstRef _payload, bytes& o_bytes)
 {
-	RLPStream header;
+	core::RLPStream header;
 	uint32_t len = (uint32_t)_payload.size();
 	header.appendRaw(bytes({byte((len >> 16) & 0xff), byte((len >> 8) & 0xff), byte(len & 0xff)}));
 	header.appendList(2) << _protocolType << _seqId;
@@ -166,14 +171,14 @@ void RLPXFrameCoder::writeFrame(uint16_t _protocolType, uint16_t _seqId, bytesCo
 
 void RLPXFrameCoder::writeFrame(uint16_t _protocolType, uint16_t _seqId, uint32_t _totalSize, bytesConstRef _payload, bytes& o_bytes)
 {
-	RLPStream header;
+	core::RLPStream header;
 	uint32_t len = (uint32_t)_payload.size();
 	header.appendRaw(bytes({byte((len >> 16) & 0xff), byte((len >> 8) & 0xff), byte(len & 0xff)}));
 	header.appendList(3) << _protocolType << _seqId << _totalSize;
 	writeFrame(header, _payload, o_bytes);
 }
 
-void RLPXFrameCoder::writeFrame(RLPStream const& _header, bytesConstRef _payload, bytes& o_bytes)
+void RLPXFrameCoder::writeFrame(core::RLPStream const& _header, bytesConstRef _payload, bytes& o_bytes)
 {
 	// TODO: SECURITY check header values && header <= 16 bytes
 	bytes headerWithMac(h256::size);
@@ -198,7 +203,7 @@ void RLPXFrameCoder::writeFrame(RLPStream const& _header, bytesConstRef _payload
 
 void RLPXFrameCoder::writeSingleFramePacket(bytesConstRef _packet, bytes& o_bytes)
 {
-	RLPStream header;
+	core::RLPStream header;
 	uint32_t len = (uint32_t)_packet.size();
 	header.appendRaw(bytes({byte((len >> 16) & 0xff), byte((len >> 8) & 0xff), byte(len & 0xff)}));
 	header.appendRaw(bytes({0xc2,0x80,0x80}));
@@ -288,8 +293,3 @@ void RLPXFrameCoderImpl::updateMAC(CryptoPP::Keccak_256& _mac, bytesConstRef _se
 	// update mac for final digest
 	_mac.Update(encDigest.data(), h128::size);
 }
-
-
-
-
-} // endof namespace

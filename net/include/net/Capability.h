@@ -41,17 +41,22 @@ public:
     static u256 version() { return 0; }
     static unsigned messageCount() { return 0; }
 */
+
+    bool enabled() const { return m_enabled; }
+
+    void disconnect();
+
 protected:
     std::shared_ptr<SessionFace> session() const { return m_session.lock(); }
     HostCapabilityFace* hostCapability() const { return m_hostCap; }
 
-    virtual bool interpret(unsigned _id, RLP const&) = 0;
+    virtual bool interpret(unsigned _id, core::RLP const&) = 0;
     virtual void onDisconnect() {}
 
     void disable(std::string const& _problem);
 
-    RLPStream& prep(RLPStream& _s, unsigned _id, unsigned _args = 0);
-    void sealAndSend(RLPStream& _s);
+    core::RLPStream& prep(core::RLPStream& _s, unsigned _id, unsigned _args = 0);
+    void sealAndSend(core::RLPStream& _s);
     void addRating(int _r);
 
 private:

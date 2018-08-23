@@ -23,10 +23,12 @@
 
 #include <memory>
 #include <core/Guards.h>
+#include <core/RLP.h>
 //#include <libdevcrypto/CryptoPP.h>
 #include <net/Common.h>
 
 namespace net {
+
 struct RLPXFrameDecryptFailed: virtual core::Exception {};
 
 /**
@@ -43,7 +45,7 @@ struct RLPXFrameInfo
 	uint8_t const padding;			///< Length of padding which follows @length.
 
 	bytes const data;				///< Bytes of Header.
-	RLP const header;				///< Header RLP.
+	core::RLP const header;				///< Header RLP.
 
 	uint16_t const protocolId;		///< Protocol ID as negotiated by handshake.
 	bool const multiFrame;			///< If this frame is part of a sequence
@@ -104,7 +106,7 @@ public:
 	h128 ingressDigest();
 
 protected:
-	void writeFrame(RLPStream const& _header, bytesConstRef _payload, bytes& o_bytes);
+	void writeFrame(core::RLPStream const& _header, bytesConstRef _payload, bytes& o_bytes);
 
 	/// Update state of egress MAC with frame header.
 	void updateEgressMACWithHeader(bytesConstRef _headerCipher);

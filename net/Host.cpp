@@ -41,9 +41,7 @@
 
 using namespace std;
 using namespace core;
-
-namespace net {
-
+using namespace net;
 
 /// Interval at which Host::run will call keepAlivePeers to ping peers.
 std::chrono::seconds const c_keepAliveInterval = std::chrono::seconds(30);
@@ -238,7 +236,7 @@ bool Host::isRequiredPeer(NodeID const& _id) const
 }
 
 // called after successful handshake
-void Host::startPeerSession(Public const& _id, RLP const& _rlp, unique_ptr<RLPXFrameCoder>&& _io, std::shared_ptr<RLPXSocket> const& _s)
+void Host::startPeerSession(Public const& _id, core::RLP const& _rlp, unique_ptr<RLPXFrameCoder>&& _io, std::shared_ptr<RLPXSocket> const& _s)
 {
     // session maybe ingress or egress so m_peers and node table entries may not exist
     shared_ptr<Peer> p;
@@ -292,7 +290,7 @@ void Host::startPeerSession(Public const& _id, RLP const& _rlp, unique_ptr<RLPXF
         PeerSessionInfo({_id, clientVersion, p->endpoint.address().to_string(), listenPort,
             chrono::steady_clock::duration(), _rlp[2].toSet<CapDesc>(), 0, map<string, string>(),
             protocolVersion}));
-    if (protocolVersion < dev::p2p::c_protocolVersion - 1)
+    if (protocolVersion < net::c_protocolVersion - 1)
     {
         ps->disconnect(IncompatibleProtocol);
         return;
@@ -849,7 +847,7 @@ bytes Host::saveNetwork() const
     }
     peers.sort();
 
-    RLPStream network;
+    core::RLPStream network;
     int count = 0;
     for (auto const& p: peers)
     {
@@ -884,8 +882,8 @@ bytes Host::saveNetwork() const
     }
     // else: TODO: use previous configuration if available
 
-    RLPStream ret(3);
-    ret << dev::p2p::c_protocolVersion << m_alias.secret().ref();
+    core::RLPStream ret(3);
+    ret << net::c_protocolVersion << m_alias.secret().ref();
     ret.appendList(count);
     if (!!count)
         ret.appendRaw(network.out(), count);
@@ -905,9 +903,9 @@ void Host::restoreNetwork(bytesConstRef _b)
         return;
 
     RecursiveGuard l(x_sessions);
-    RLP r(_b);
+    core::RLP r(_b);
     unsigned fileVersion = r[0].toInt<unsigned>();
-    if (r.itemCount() > 0 && r[0].isInt() && fileVersion >= dev::p2p::c_protocolVersion - 1)
+    if (r.itemCount() > 0 && r[0].isInt() && fileVersion >= net::c_protocolVersion - 1)
     {
         // r[0] = version
         // r[1] = key
@@ -980,7 +978,7 @@ bool Host::peerSlotsAvailable(Host::PeerSlotType _type /*= Ingress*/)
 
 KeyPair Host::networkAlias(bytesConstRef _b)
 {
-    RLP r(_b);
+    core::RLP r(_b);
     if (r.itemCount() == 3 && r[0].isInt() && r[0].toInt<unsigned>() >= 3)
         return KeyPair(Secret(r[1].toBytes()));
     else
@@ -1020,4 +1018,3 @@ std::vector<std::pair<std::shared_ptr<SessionFace>, std::shared_ptr<Peer>>> Host
                 ret.push_back(make_pair(s, s->peer()));
     return ret;
 }
-} // end of namespace

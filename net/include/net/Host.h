@@ -41,8 +41,23 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <unordered_map>
+//#include <boost/unordered_map.hpp>
+
 namespace ba = boost::asio;
 namespace bi = ba::ip;
+
+namespace std
+{
+template<> struct hash<pair<net::NodeID, string>>
+{
+    size_t operator()(pair<net::NodeID, string> const& _value) const
+    {
+        size_t ret = hash<net::NodeID>()(_value.first);
+        return ret ^ (hash<string>()(_value.second) + 0x9e3779b9 + (ret << 6) + (ret >> 2));
+    }
+};
+}
 
 using namespace core;
 
@@ -213,7 +228,7 @@ public:
     bool haveNetwork() const { Guard l(x_runTimer); Guard ll(x_nodeTable); return m_run && !!m_nodeTable; }
 
     /// Validates and starts peer session, taking ownership of _io. Disconnects and returns false upon error.
-    void startPeerSession(Public const& _id, RLP const& _hello, std::unique_ptr<RLPXFrameCoder>&& _io, std::shared_ptr<RLPXSocket> const& _s);
+    void startPeerSession(Public const& _id, core::RLP const& _hello, std::unique_ptr<RLPXFrameCoder>&& _io, std::shared_ptr<RLPXSocket> const& _s);
 
     /// Get session by id
     std::shared_ptr<SessionFace> peerSession(NodeID const& _id) const

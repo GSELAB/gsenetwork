@@ -1,17 +1,24 @@
 set (net_source
      Common.cpp
-     Capability.cpp
-     Host.cpp
-     HostCapability.cpp
      Network.cpp
-     NodeTable.cpp
+     UDP.cpp
+     UPnp.cpp
      Peer.cpp
      RLPXFrameCoder.cpp
      RLPxHandshake.cpp
+     NodeTable.cpp
+     Capability.cpp
      Session.cpp
-     UDP.cpp
-     UPnp.cpp)
+     Host.cpp)
 
-add_library (net STATIC ${net_source})
+add_library (net ${net_source})
 
-target_link_libraries (net config)
+#add_library (net STATIC ${net_source})
+
+target_link_libraries (net core crypto config bundle)
+
+#file(GLOB net_sources "*.cpp")
+
+#add_library(net ${net_sources})
+#target_link_libraries(net core crypto config bundle)
+#target_include_directories(net SYSTEM PRIVATE)

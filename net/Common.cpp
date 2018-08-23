@@ -21,26 +21,28 @@
 
 #include <net/Common.h>
 #include <net/Network.h>
+
+#include <core/CommonIO.h>
+
 using namespace std;
+using namespace core;
+using namespace net;
 
+const unsigned net::c_protocolVersion = 4;
+const unsigned net::c_defaultIPPort = 30303;
+static_assert(net::c_protocolVersion == 4, "Replace v3 compatbility with v4 compatibility before updating network version.");
 
-namespace net {
+const net::NodeIPEndpoint net::UnspecifiedNodeIPEndpoint = NodeIPEndpoint(bi::address(), 0, 0);
+const net::Node net::UnspecifiedNode = net::Node(NodeID(), UnspecifiedNodeIPEndpoint);
 
-const unsigned c_protocolVersion = 4;
-const unsigned c_defaultIPPort = 30303;
-static_assert(c_protocolVersion == 4, "Replace v3 compatbility with v4 compatibility before updating network version.");
+bool net::NodeIPEndpoint::test_allowLocal = false;
 
-const NodeIPEndpoint UnspecifiedNodeIPEndpoint = NodeIPEndpoint(bi::address(), 0, 0);
-const Node UnspecifiedNode = Node(NodeID(), UnspecifiedNodeIPEndpoint);
-
-bool NodeIPEndpoint::test_allowLocal = false;
-
-bool isPublicAddress(std::string const& _addressToCheck)
+bool net::isPublicAddress(std::string const& _addressToCheck)
 {
     return _addressToCheck.empty() ? false : isPublicAddress(bi::address::from_string(_addressToCheck));
 }
 
-bool isPublicAddress(bi::address const& _addressToCheck)
+bool net::isPublicAddress(bi::address const& _addressToCheck)
 {
     return !(isPrivateAddress(_addressToCheck) || isLocalHostAddress(_addressToCheck));
 }
@@ -48,7 +50,7 @@ bool isPublicAddress(bi::address const& _addressToCheck)
 // Helper function to determine if an address falls within one of the reserved ranges
 // For V4:
 // Class A "10.*", Class B "172.[16->31].*", Class C "192.168.*"
-bool isPrivateAddress(bi::address const& _addressToCheck)
+bool net::isPrivateAddress(bi::address const& _addressToCheck)
 {
     if (_addressToCheck.is_v4())
     {
@@ -74,13 +76,13 @@ bool isPrivateAddress(bi::address const& _addressToCheck)
     return false;
 }
 
-bool isPrivateAddress(std::string const& _addressToCheck)
+bool net::isPrivateAddress(std::string const& _addressToCheck)
 {
     return _addressToCheck.empty() ? false : isPrivateAddress(bi::address::from_string(_addressToCheck));
 }
 
 // Helper function to determine if an address is localhost
-bool isLocalHostAddress(bi::address const& _addressToCheck)
+bool net::isLocalHostAddress(bi::address const& _addressToCheck)
 {
     // @todo: ivp6 link-local adresses (macos), ex: fe80::1%lo0
     static const set<bi::address> c_rejectAddresses = {
@@ -93,12 +95,12 @@ bool isLocalHostAddress(bi::address const& _addressToCheck)
     return find(c_rejectAddresses.begin(), c_rejectAddresses.end(), _addressToCheck) != c_rejectAddresses.end();
 }
 
-bool isLocalHostAddress(std::string const& _addressToCheck)
+bool net::isLocalHostAddress(std::string const& _addressToCheck)
 {
     return _addressToCheck.empty() ? false : isLocalHostAddress(bi::address::from_string(_addressToCheck));
 }
 
-std::string reasonOf(DisconnectReason _r)
+std::string net::reasonOf(DisconnectReason _r)
 {
     switch (_r)
     {
@@ -119,5 +121,119 @@ std::string reasonOf(DisconnectReason _r)
     }
 }
 
+void NodeIPEndpoint::streamRLP(core::RLPStream& _s, RLPAppend _append) const
+{
+    if (_append == StreamList)
+        _s.appendList(3);
+    if (m_address.is_v4())
+        _s << bytesConstRef(&m_address.to_v4().to_bytes()[0], 4);
+    else if (m_address.is_v6())
+        _s << bytesConstRef(&m_address.to_v6().to_bytes()[0], 16);
+    else
+        _s << bytes();
+    _s << m_udpPort << m_tcpPort;
+}
 
-} /* Endof namespace */
+void NodeIPEndpoint::interpretRLP(core::RLP const& _r)
+{
+    if (_r[0].size() == 4)
+        m_address = bi::address_v4(*(bi::address_v4::bytes_type*)_r[0].toBytes().data());
+    else if (_r[0].size() == 16)
+        m_address = bi::address_v6(*(bi::address_v6::bytes_type*)_r[0].toBytes().data());
+    else
+        m_address = bi::address();
+    m_udpPort = _r[1].toInt<uint16_t>();
+    m_tcpPort = _r[2].toInt<uint16_t>();
+}
+
+void DeadlineOps::reap()
+{
+    if (m_stopped)
+        return;
+
+    Guard l(x_timers);
+    std::vector<DeadlineOp>::iterator t = m_timers.begin();
+    while (t != m_timers.end())
+        if (t->expired())
+        {
+            t->wait();
+            t = m_timers.erase(t);
+        }
+        else
+            t++;
+
+    m_timers.emplace_back(m_io, m_reapIntervalMs, [this](boost::system::error_code const& ec)
+    {
+        if (!ec && !m_stopped)
+            reap();
+    });
+}
+
+Node::Node(Node const& _original):
+    id(_original.id),
+    endpoint(_original.endpoint),
+    peerType(_original.peerType.load())
+{}
+
+Node::Node(NodeSpec const& _s, PeerType _p):
+    id(_s.id()),
+    endpoint(_s.nodeIPEndpoint()),
+    peerType(_p)
+{}
+
+NodeSpec::NodeSpec(string const& _user)
+{
+    m_address = _user;
+    if (m_address.substr(0, 8) == "enode://" && m_address.find('@') == 136)
+    {
+        m_id = net::NodeID(m_address.substr(8, 128));
+        m_address = m_address.substr(137);
+    }
+    size_t colon = m_address.find_first_of(":");
+    if (colon != string::npos)
+    {
+        string ports = m_address.substr(colon + 1);
+        m_address = m_address.substr(0, colon);
+        size_t p2 = ports.find_first_of(".");
+        if (p2 != string::npos)
+        {
+            m_udpPort = stoi(ports.substr(p2 + 1));
+            m_tcpPort = stoi(ports.substr(0, p2));
+        }
+        else
+            m_tcpPort = m_udpPort = stoi(ports);
+    }
+}
+
+NodeIPEndpoint NodeSpec::nodeIPEndpoint() const
+{
+    return NodeIPEndpoint(net::Network::resolveHost(m_address).address(), m_udpPort, m_tcpPort);
+}
+
+std::string NodeSpec::enode() const
+{
+    string ret = m_address;
+
+    if (m_tcpPort)
+        if (m_udpPort && m_tcpPort != m_udpPort)
+            ret += ":" + toString(m_tcpPort) + "." + toString(m_udpPort);
+        else
+            ret += ":" + toString(m_tcpPort);
+    else if (m_udpPort)
+        ret += ":" + toString(m_udpPort);
+
+    if (m_id)
+        return "enode://" + m_id.hex() + "@" + ret;
+    return ret;
+}
+
+
+namespace net
+{
+std::ostream& operator<<(std::ostream& _out, NodeIPEndpoint const& _ep)
+{
+    _out << _ep.address() << " UDP " << _ep.udpPort() << " TCP " << _ep.tcpPort();
+    return _out;
+}
+
+}

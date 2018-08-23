@@ -29,20 +29,20 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-//#include <libdevcore/Common.h>
-//#include <libdevcore/Assertions.h>
-//#include <libdevcore/CommonIO.h>
-//#include <libdevcore/Exceptions.h>
+#include <core/Common.h>
+#include <core/Assertions.h>
+#include <core/CommonIO.h>
+#include <core/Exceptions.h>
 #include <net/Common.h>
 #include <net/UPnP.h>
 #include <net/Network.h>
 
 using namespace std;
 using namespace core;
+using namespace net;
 
-namespace net {
-
-static_assert(BOOST_VERSION >= 106400, "Wrong boost headers version");
+//static_assert(BOOST_VERSION >= 106400, "Wrong boost headers version");
+static_assert(BOOST_VERSION >= 106300, "Wrong boost headers version");
 
 std::set<bi::address> Network::getInterfaceAddresses()
 {
@@ -56,7 +56,7 @@ std::set<bi::address> Network::getInterfaceAddresses()
     char ac[80];
     if (gethostname(ac, sizeof(ac)) == SOCKET_ERROR)
     {
-        cnetlog << "Error " << WSAGetLastError() << " when getting local host name.";
+        //cnetlog << "Error " << WSAGetLastError() << " when getting local host name.";
         WSACleanup();
         BOOST_THROW_EXCEPTION(NoNetworking());
     }
@@ -64,7 +64,7 @@ std::set<bi::address> Network::getInterfaceAddresses()
     struct hostent* phe = gethostbyname(ac);
     if (phe == 0)
     {
-        cnetlog << "Bad host lookup.";
+        // cnetlog << "Bad host lookup.";
         WSACleanup();
         BOOST_THROW_EXCEPTION(NoNetworking());
     }
@@ -134,7 +134,7 @@ int Network::tcp4Listen(bi::tcp::acceptor& _acceptor, NetworkConfig const& _conf
     }
     catch (...)
     {
-        cwarn << "Couldn't start accepting connections on host. Failed to accept socket on " << listenIP << ":" << _config.listenPort << ".\n" << boost::current_exception_diagnostic_information();
+        //cwarn << "Couldn't start accepting connections on host. Failed to accept socket on " << listenIP << ":" << _config.listenPort << ".\n" << boost::current_exception_diagnostic_information();
         return -1;
     }
     bool requirePort = (bool)_config.listenPort;
@@ -161,7 +161,7 @@ int Network::tcp4Listen(bi::tcp::acceptor& _acceptor, NetworkConfig const& _conf
             if (i || requirePort)
             {
                 // both attempts failed
-                cwarn << "Couldn't start accepting connections on host. Failed to accept socket on " << listenIP << ":" << _config.listenPort << ".\n" << boost::current_exception_diagnostic_information();
+                //cwarn << "Couldn't start accepting connections on host. Failed to accept socket on " << listenIP << ":" << _config.listenPort << ".\n" << boost::current_exception_diagnostic_information();
                 _acceptor.close();
                 return -1;
             }
@@ -202,13 +202,14 @@ bi::tcp::endpoint Network::traverseNAT(std::set<bi::address> const& _ifAddresses
         bi::address eIPAddr(bi::address::from_string(eIP));
         if (extPort && eIP != string("0.0.0.0") && !isPrivateAddress(eIPAddr))
         {
-            cnetnote << "Punched through NAT and mapped local port " << _listenPort << " onto external port " << extPort << ".";
-            cnetnote << "External addr: " << eIP;
+            //cnetnote << "Punched through NAT and mapped local port " << _listenPort << " onto external port " << extPort << ".";
+            //cnetnote << "External addr: " << eIP;
             o_upnpInterfaceAddr = pAddr;
             upnpEP = bi::tcp::endpoint(eIPAddr, (unsigned short)extPort);
         }
-        else
-            cnetlog << "Couldn't punch through NAT (or no NAT in place).";
+        else {
+            //cnetlog << "Couldn't punch through NAT (or no NAT in place).";
+        }
     }
 
     return upnpEP;
@@ -220,7 +221,7 @@ bi::tcp::endpoint Network::resolveHost(string const& _addr)
 
     vector<string> split;
     boost::split(split, _addr, boost::is_any_of(":"));
-    unsigned port = dev::p2p::c_defaultIPPort;
+    unsigned port = net::c_defaultIPPort;
 
     try
     {
@@ -242,7 +243,7 @@ bi::tcp::endpoint Network::resolveHost(string const& _addr)
         auto it = r.resolve({bi::tcp::v4(), split[0], toString(port)}, ec);
         if (ec)
         {
-            cnetlog << "Error resolving host address... " << _addr << " : " << ec.message();
+            //cnetlog << "Error resolving host address... " << _addr << " : " << ec.message();
             return bi::tcp::endpoint();
         }
         else
@@ -250,4 +251,3 @@ bi::tcp::endpoint Network::resolveHost(string const& _addr)
     }
     return ep;
 }
-} // endof namespace

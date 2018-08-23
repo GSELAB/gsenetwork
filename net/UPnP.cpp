@@ -17,7 +17,7 @@
 /// @file
 /// UPnP port forwarding support.
 
-#include "UPnP.h"
+#include <net/UPnP.h>
 
 #include <string.h>
 #if ETH_MINIUPNPC
@@ -25,13 +25,13 @@
 #include <miniupnpc/miniupnpc.h>
 #include <miniupnpc/upnpcommands.h>
 #endif
-#include <libdevcore/Exceptions.h>
-#include <libdevcore/CommonIO.h>
-#include <libdevcore/Log.h>
+#include <core/Exceptions.h>
+#include <core/CommonIO.h>
+#include <core/Log.h>
 using namespace std;
-using namespace dev;
+using namespace core;
+using namespace net;
 
-namespace net {
 UPnP::UPnP()
 {
 #if ETH_MINIUPNPC
@@ -64,7 +64,7 @@ UPnP::UPnP()
 		if (!dev)
 			dev = devlist; /* defaulting to first device */
 
-		cnote << "UPnP device:" << dev->descURL << "[st:" << dev->st << "]";
+		// cnote << "UPnP device:" << dev->descURL << "[st:" << dev->st << "]";
 #if MINIUPNPC_API_VERSION >= 16
 		int responsecode = 200;
 		descXML = (char*)miniwget(dev->descURL, &descXMLsize, 0, &responsecode);
@@ -89,7 +89,7 @@ UPnP::UPnP()
 	else
 #endif
 	{
-		cnote << "UPnP device not found.";
+		// cnote << "UPnP device not found.";
 		BOOST_THROW_EXCEPTION(NoUPnPDevice());
 	}
 }
@@ -118,7 +118,7 @@ int UPnP::addRedirect(char const* _addr, int _port)
 #if ETH_MINIUPNPC
 	if (m_urls->controlURL[0] == '\0')
 	{
-		cwarn << "UPnP::addRedirect() called without proper initialisation?";
+		// cwarn << "UPnP::addRedirect() called without proper initialisation?";
 		return -1;
 	}
 
@@ -164,7 +164,7 @@ int UPnP::addRedirect(char const* _addr, int _port)
 			return atoi(extPort);
 		}
 	}
-	cerr << "ERROR: Mapped port not found." << endl;
+	// cerr << "ERROR: Mapped port not found." << endl;
 #endif
 	return 0;
 }
@@ -185,5 +185,3 @@ void UPnP::removeRedirect(int _port)
 	m_reg.erase(_port);
 #endif
 }
-
-} // endof namespace

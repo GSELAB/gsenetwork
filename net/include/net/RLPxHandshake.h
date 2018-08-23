@@ -22,7 +22,7 @@
 #pragma once
 
 #include <memory>
-//#include <libdevcrypto/Common.h>
+#include <crypto/Common.h>
 
 #include <net/RLPXSocket.h>
 #include <net/RLPXFrameCoder.h>
@@ -31,6 +31,7 @@ namespace ba = boost::asio;
 namespace bi = boost::asio::ip;
 
 namespace net {
+
 static const unsigned c_rlpxVersion = 4;
 
 /**
@@ -140,6 +141,7 @@ protected:
     boost::asio::deadline_timer m_idleTimer;	///< Timer which enforces c_timeout.
 
     Logger m_logger{createLogger(VerbosityTrace, "net")};
+
 };
 
 }

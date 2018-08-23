@@ -27,61 +27,61 @@
 #include <net/Peer.h>
 #include <net/Common.h>
 #include <net/Session.h>
+#include <net/Host.h>
 
 namespace net {
 
 class HostCapabilityFace
 {
-	friend class Host;
-	template <class T> friend class HostCapability;
-	friend class Capability;
-	friend class Session;
-
 public:
-	HostCapabilityFace() {}
-	virtual ~HostCapabilityFace() {}
+    virtual ~HostCapabilityFace() = default;
 
-	Host* host() const { return m_host; }
+    virtual std::string name() const = 0;
+    virtual u256 version() const = 0;
+    virtual unsigned messageCount() const = 0;
 
-	std::vector<std::pair<std::shared_ptr<SessionFace>, std::shared_ptr<Peer>>> peerSessions() const;
-	std::vector<std::pair<std::shared_ptr<SessionFace>, std::shared_ptr<Peer>>> peerSessions(u256 const& _version) const;
+    virtual std::shared_ptr<Capability> newPeerCapability(
+        std::shared_ptr<SessionFace> const& _s, unsigned _idOffset, CapDesc const& _cap) = 0;
 
-protected:
-	virtual std::string name() const = 0;
-	virtual u256 version() const = 0;
-	CapDesc capDesc() const { return std::make_pair(name(), version()); }
-	virtual unsigned messageCount() const = 0;
-	virtual std::shared_ptr<Capability> newPeerCapability(std::shared_ptr<SessionFace> const& _s, unsigned _idOffset, CapDesc const& _cap) = 0;
-
-	virtual void onStarting() {}
-	virtual void onStopping() {}
-
-private:
-	Host* m_host = nullptr;
+    virtual void onStarting() = 0;
+    virtual void onStopping() = 0;
 };
 
 template<class PeerCap>
 class HostCapability: public HostCapabilityFace
 {
 public:
-	HostCapability() {}
-	virtual ~HostCapability() {}
+    explicit HostCapability(net::Host const& _host) : m_host(_host) {}
 
-	static std::string staticName() { return PeerCap::name(); }
-	static u256 staticVersion() { return PeerCap::version(); }
-	static unsigned staticMessageCount() { return PeerCap::messageCount(); }
+    std::string name() const override { return PeerCap::name(); }
+    u256 version() const override { return PeerCap::version(); }
+    unsigned messageCount() const override { return PeerCap::messageCount(); }
+
+    std::shared_ptr<Capability> newPeerCapability(
+        std::shared_ptr<SessionFace> const& _s, unsigned _idOffset, CapDesc const& _cap) override
+    {
+        auto p = std::make_shared<PeerCap>(_s, this, _idOffset, _cap);
+        _s->registerCapability(_cap, p);
+        return p;
+    }
+
+    void onStarting() override {}
+    void onStopping() override {}
 
 protected:
-	virtual std::string name() const { return PeerCap::name(); }
-	virtual u256 version() const { return PeerCap::version(); }
-	virtual unsigned messageCount() const { return PeerCap::messageCount(); }
+    CapDesc capDesc() const { return std::make_pair(name(), version()); }
 
-	virtual std::shared_ptr<Capability> newPeerCapability(std::shared_ptr<SessionFace> const& _s, unsigned _idOffset, CapDesc const& _cap)
-	{
-		auto p = std::make_shared<PeerCap>(_s, this, _idOffset, _cap);
-		_s->registerCapability(_cap, p);
-		return p;
-	}
+    std::vector<std::pair<std::shared_ptr<SessionFace>, std::shared_ptr<Peer>>> peerSessions() const
+    {
+        return m_host.peerSessions(name(), version());
+    }
+    std::shared_ptr<SessionFace> peerSession(NodeID const& _id) const
+    {
+        return m_host.peerSession(_id);
+    }
+
+private:
+    Host const& m_host;
 };
 
 } // endof namespace

@@ -22,11 +22,16 @@
 #pragma once
 
 #include <algorithm>
+#include <list>
+#include <unordered_map>
 
 #include <boost/integer/static_log2.hpp>
 
 #include <net/UDP.h>
+
 #include <net/Common.h>
+
+using namespace core;
 
 namespace net {
 
@@ -279,10 +284,13 @@ private:
 
 inline std::ostream& operator<<(std::ostream& _out, NodeTable const& _nodeTable)
 {
-    _out << _nodeTable.center().address() << "\t" << "0\t" << _nodeTable.center().endpoint.address << ":" << _nodeTable.center().endpoint.udpPort << std::endl;
+    _out << _nodeTable.center().address() << "\t"
+         << "0\t" << _nodeTable.center().endpoint.address() << ":"
+         << _nodeTable.center().endpoint.udpPort() << std::endl;
     auto s = _nodeTable.snapshot();
     for (auto n: s)
-        _out << n.address() << "\t" << n.distance << "\t" << n.endpoint.address << ":" << n.endpoint.udpPort << std::endl;
+        _out << n.address() << "\t" << n.distance << "\t" << n.endpoint.address() << ":"
+             << n.endpoint.udpPort() << std::endl;
     return _out;
 }
 
@@ -329,7 +337,7 @@ struct PingNode: DiscoveryDatagram
     NodeIPEndpoint source;
     NodeIPEndpoint destination;
 
-    void streamRLP(RLPStream& _s) const
+    void streamRLP(core::RLPStream& _s) const
     {
         _s.appendList(4);
         _s << net::c_protocolVersion;
@@ -339,7 +347,7 @@ struct PingNode: DiscoveryDatagram
     }
     void interpretRLP(bytesConstRef _bytes)
     {
-        RLP r(_bytes, RLP::AllowNonCanon|RLP::ThrowOnFail);
+        core::RLP r(_bytes, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
         version = r[0].toInt<unsigned>();
         source.interpretRLP(r[1]);
         destination.interpretRLP(r[2]);
@@ -360,7 +368,7 @@ struct Pong: DiscoveryDatagram
 
     NodeIPEndpoint destination;
 
-    void streamRLP(RLPStream& _s) const
+    void streamRLP(core::RLPStream& _s) const
     {
         _s.appendList(3);
         destination.streamRLP(_s);
@@ -369,7 +377,7 @@ struct Pong: DiscoveryDatagram
     }
     void interpretRLP(bytesConstRef _bytes)
     {
-        RLP r(_bytes, RLP::AllowNonCanon|RLP::ThrowOnFail);
+        core::RLP r(_bytes, core::RLP::AllowNonCanon|core::RLP::ThrowOnFail);
         destination.interpretRLP(r[0]);
         echo = (h256)r[1];
         ts = r[2].toInt<uint32_t>();
@@ -398,13 +406,13 @@ struct FindNode: DiscoveryDatagram
 
     h512 target;
 
-    void streamRLP(RLPStream& _s) const
+    void streamRLP(core::RLPStream& _s) const
     {
         _s.appendList(2); _s << target << ts;
     }
     void interpretRLP(bytesConstRef _bytes)
     {
-        RLP r(_bytes, RLP::AllowNonCanon|RLP::ThrowOnFail);
+        core::RLP r(_bytes, core::RLP::AllowNonCanon|core::RLP::ThrowOnFail);
         target = r[0].toHash<h512>();
         ts = r[1].toInt<uint32_t>();
     }
@@ -427,10 +435,10 @@ struct Neighbours: DiscoveryDatagram
     struct Neighbour
     {
         Neighbour(Node const& _node): endpoint(_node.endpoint), node(_node.id) {}
-        Neighbour(RLP const& _r): endpoint(_r) { node = h512(_r[3].toBytes()); }
+        Neighbour(core::RLP const& _r): endpoint(_r) { node = h512(_r[3].toBytes()); }
         NodeIPEndpoint endpoint;
         NodeID node;
-        void streamRLP(RLPStream& _s) const { _s.appendList(4); endpoint.streamRLP(_s, NodeIPEndpoint::StreamInline); _s << node; }
+        void streamRLP(core::RLPStream& _s) const { _s.appendList(4); endpoint.streamRLP(_s, NodeIPEndpoint::StreamInline); _s << node; }
     };
 
     static const uint8_t type = 4;
@@ -438,7 +446,7 @@ struct Neighbours: DiscoveryDatagram
 
     std::vector<Neighbour> neighbours;
 
-    void streamRLP(RLPStream& _s) const
+    void streamRLP(core::RLPStream& _s) const
     {
         _s.appendList(2);
         _s.appendList(neighbours.size());
@@ -448,7 +456,7 @@ struct Neighbours: DiscoveryDatagram
     }
     void interpretRLP(bytesConstRef _bytes)
     {
-        RLP r(_bytes, RLP::AllowNonCanon|RLP::ThrowOnFail);
+        core::RLP r(_bytes, core::RLP::AllowNonCanon|core::RLP::ThrowOnFail);
         for (auto const& n: r[0])
             neighbours.emplace_back(n);
         ts = r[1].toInt<uint32_t>();

@@ -28,10 +28,10 @@
 #include <array>
 
 #include <core/Guards.h>
-//#include <libdevcrypto/Common.h>
-//#include <libdevcore/SHA3.h>
+#include <crypto/Common.h>
+#include <crypto/SHA3.h>
 #include <core/Log.h>
-//#include <libdevcore/RLP.h>
+#include <core/RLP.h>
 #include <net/Common.h>
 namespace ba = boost::asio;
 namespace bi = ba::ip;
@@ -69,7 +69,7 @@ struct RLPXDatagramFace: public UDPDatagram
     virtual h256 sign(Secret const& _from);
     virtual uint8_t packetType() const = 0;
 
-    virtual void streamRLP(RLPStream&) const = 0;
+    virtual void streamRLP(core::RLPStream&) const = 0;
     virtual void interpretRLP(bytesConstRef _bytes) = 0;
 };
 
@@ -199,9 +199,8 @@ void UDPSocket<Handler, MaxDatagramSize>::doRead()
         if (m_closed)
             return disconnectWithError(_ec);
 
-        if (_ec != boost::system::errc::success) {
-            //cnetlog << "Receiving UDP message failed. " << _ec.value() << " : " << _ec.message();
-        }
+        if (_ec != boost::system::errc::success)
+            cnetlog << "Receiving UDP message failed. " << _ec.value() << " : " << _ec.message();
 
         if (_len)
             m_host.onReceived(this, m_recvEndpoint, bytesConstRef(m_recvData.data(), _len));
@@ -223,9 +222,8 @@ void UDPSocket<Handler, MaxDatagramSize>::doWrite()
         if (m_closed)
             return disconnectWithError(_ec);
 
-        if (_ec != boost::system::errc::success) {
-            // cnetlog << "Failed delivering UDP message. " << _ec.value() << " : " << _ec.message();
-        }
+        if (_ec != boost::system::errc::success)
+            cnetlog << "Failed delivering UDP message. " << _ec.value() << " : " << _ec.message();
 
         Guard l(x_sendQ);
         m_sendQ.pop_front();

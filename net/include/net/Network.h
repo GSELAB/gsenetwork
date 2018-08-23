@@ -26,7 +26,7 @@
 #include <vector>
 #include <deque>
 #include <array>
-//#include <libdevcore/RLP.h>
+#include <core/RLP.h>
 #include <core/Guards.h>
 #include <net/Common.h>
 namespace ba = boost::asio;

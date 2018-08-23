@@ -22,7 +22,8 @@
 
 #include <net/Peer.h>
 using namespace std;
-//using namespace dev;
+using namespace core;
+
 
 namespace net {
 
@@ -88,5 +89,6 @@ bool Peer::operator<(Peer const& _p) const
 					else
 						return m_score < _p.m_score;
 }
+
 
 } // end of namespace

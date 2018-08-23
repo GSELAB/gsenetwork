@@ -60,8 +60,8 @@ NodeTable::NodeTable(ba::io_service& _io, KeyPair const& _alias, NodeIPEndpoint 
     }
     catch (std::exception const& _e)
     {
-        cwarn << "Exception connecting NodeTable socket: " << _e.what();
-        cwarn << "Discovery disabled.";
+        //cwarn << "Exception connecting NodeTable socket: " << _e.what();
+        //cwarn << "Discovery disabled.";
     }
 }
 
@@ -96,11 +96,15 @@ shared_ptr<NodeEntry> NodeTable::addNode(Node const& _node, NodeRelation _relati
     if (!_node.id)
     {
         DEV_GUARDED(x_nodes)
-        LOG(m_logger) << "Sending public key discovery Ping to "
-                      << (bi::udp::endpoint)_node.endpoint
-                      << " (Advertising: " << (bi::udp::endpoint)m_node.endpoint << ")";
+        {
+            //LOG(m_logger) << "Sending public key discovery Ping to "
+            //              << (bi::udp::endpoint)_node.endpoint
+            //              << " (Advertising: " << (bi::udp::endpoint)m_node.endpoint << ")";
+        }
         DEV_GUARDED(x_pubkDiscoverPings)
-            m_pubkDiscoverPings[_node.endpoint.address] = std::chrono::steady_clock::now();
+        {
+            m_pubkDiscoverPings[_node.endpoint.address()] = std::chrono::steady_clock::now();
+        }
         ping(_node.endpoint);
         return shared_ptr<NodeEntry>();
     }
@@ -111,10 +115,12 @@ shared_ptr<NodeEntry> NodeTable::addNode(Node const& _node, NodeRelation _relati
 
     auto ret = make_shared<NodeEntry>(m_node.id, _node.id, _node.endpoint);
     DEV_GUARDED(x_nodes)
+    {
         m_nodes[_node.id] = ret;
-        LOG(m_logger) << "addNode pending for " << _node.endpoint;
-        ping(_node.endpoint);
-        return ret;
+    }
+    //LOG(m_logger) << "addNode pending for " << _node.endpoint;
+    ping(_node.endpoint);
+    return ret;
 }
 
 list<NodeID> NodeTable::nodes() const
@@ -163,7 +169,7 @@ void NodeTable::doDiscover(NodeID _node, unsigned _round, shared_ptr<set<shared_
 
     if (_round == s_maxSteps)
     {
-        LOG(m_logger) << "Terminating discover after " << _round << " rounds.";
+        //LOG(m_logger) << "Terminating discover after " << _round << " rounds.";
         doDiscovery();
         return;
     }
@@ -187,7 +193,7 @@ void NodeTable::doDiscover(NodeID _node, unsigned _round, shared_ptr<set<shared_
 
     if (tried.empty())
     {
-        LOG(m_logger) << "Terminating discover after " << _round << " rounds.";
+        //LOG(m_logger) << "Terminating discover after " << _round << " rounds.";
         doDiscovery();
         return;
     }
@@ -202,9 +208,9 @@ void NodeTable::doDiscover(NodeID _node, unsigned _round, shared_ptr<set<shared_
     {
         if (_ec)
             // we can't use m_logger here, because captured this might be already destroyed
-            clog(VerbosityDebug, "discov")
-                << "Discovery timer was probably cancelled: " << _ec.value() << " "
-                << _ec.message();
+            //clog(VerbosityDebug, "discov")
+            //    << "Discovery timer was probably cancelled: " << _ec.value() << " "
+            //    << _ec.message();
 
         if (_ec.value() == boost::asio::error::operation_aborted || m_timers.isStopped())
             return;
@@ -315,10 +321,11 @@ void NodeTable::noteActiveNode(Public const& _pubk, bi::udp::endpoint const& _en
     shared_ptr<NodeEntry> newNode = nodeEntry(_pubk);
     if (newNode && !newNode->pending)
     {
-        LOG(m_logger) << "Noting active node: " << _pubk << " " << _endpoint.address().to_string()
-                      << ":" << _endpoint.port();
-        newNode->endpoint.address = _endpoint.address();
-        newNode->endpoint.udpPort = _endpoint.port();
+        //LOG(m_logger) << "Noting active node: " << _pubk << " " << _endpoint.address().to_string()
+        //              << ":" << _endpoint.port();
+        newNode->endpoint.setAddress(_endpoint.address());
+        newNode->endpoint.setUdpPort(_endpoint.port());
+
 
         shared_ptr<NodeEntry> nodeToEvict;
         {
@@ -377,7 +384,7 @@ void NodeTable::dropNode(shared_ptr<NodeEntry> _n)
     }
 
     // notify host
-    LOG(m_logger) << "p2p.nodes.drop " << _n->id;
+    //LOG(m_logger) << "p2p.nodes.drop " << _n->id;
     if (m_nodeEventHandler)
         m_nodeEventHandler->appendEvent(_n->id, NodeEntryDropped);
 }
@@ -395,8 +402,8 @@ void NodeTable::onReceived(UDPSocketFace*, bi::udp::endpoint const& _from, bytes
             return;
         if (packet->isExpired())
         {
-            LOG(m_logger) << "Invalid packet (timestamp in the past) from "
-                          << _from.address().to_string() << ":" << _from.port();
+            //LOG(m_logger) << "Invalid packet (timestamp in the past) from "
+            //              << _from.address().to_string() << ":" << _from.port();
             return;
         }
 
@@ -452,12 +459,13 @@ void NodeTable::onReceived(UDPSocketFace*, bi::udp::endpoint const& _from, bytes
                 // update our endpoint address and UDP port
                 DEV_GUARDED(x_nodes)
                 {
-                    if ((!m_node.endpoint || !m_node.endpoint.isAllowed()) && isPublicAddress(in.destination.address))
-                        m_node.endpoint.address = in.destination.address;
-                    m_node.endpoint.udpPort = in.destination.udpPort;
+                    if ((!m_node.endpoint || !m_node.endpoint.isAllowed()) &&
+                        isPublicAddress(in.destination.address()))
+                        m_node.endpoint.setAddress(in.destination.address());
+                    m_node.endpoint.setUdpPort(in.destination.udpPort());
                 }
 
-                LOG(m_logger) << "PONG from " << in.sourceid << " " << _from;
+                //LOG(m_logger) << "PONG from " << in.sourceid << " " << _from;
                 break;
             }
 
@@ -477,8 +485,8 @@ void NodeTable::onReceived(UDPSocketFace*, bi::udp::endpoint const& _from, bytes
                     });
                 if (!expected)
                 {
-                    cnetdetails << "Dropping unsolicited neighbours packet from "
-                                << _from.address();
+                    //cnetdetails << "Dropping unsolicited neighbours packet from "
+                    //            << _from.address();
                     break;
                 }
 
@@ -496,8 +504,10 @@ void NodeTable::onReceived(UDPSocketFace*, bi::udp::endpoint const& _from, bytes
                 {
                     Neighbours out(_from, nearest, offset, nlimit);
                     out.sign(m_secret);
-                    if (out.data.size() > 1280)
-                        cnetlog << "Sending truncated datagram, size: " << out.data.size();
+                    if (out.data.size() > 1280) {
+                        //cnetlog << "Sending truncated datagram, size: " << out.data.size();
+                    }
+
                     m_socketPointer->send(out);
                 }
                 break;
@@ -506,8 +516,8 @@ void NodeTable::onReceived(UDPSocketFace*, bi::udp::endpoint const& _from, bytes
             case PingNode::type:
             {
                 auto in = dynamic_cast<PingNode const&>(*packet);
-                in.source.address = _from.address();
-                in.source.udpPort = _from.port();
+                in.source.setAddress(_from.address());
+                in.source.setUdpPort(_from.port());
                 addNode(Node(in.sourceid, in.source));
 
                 Pong p(in.source);
@@ -522,13 +532,13 @@ void NodeTable::onReceived(UDPSocketFace*, bi::udp::endpoint const& _from, bytes
     }
     catch (std::exception const& _e)
     {
-        LOG(m_logger) << "Exception processing message from " << _from.address().to_string() << ":"
-                      << _from.port() << ": " << _e.what();
+        //LOG(m_logger) << "Exception processing message from " << _from.address().to_string() << ":"
+        //              << _from.port() << ": " << _e.what();
     }
     catch (...)
     {
-        LOG(m_logger) << "Exception processing message from " << _from.address().to_string() << ":"
-                      << _from.port();
+        //LOG(m_logger) << "Exception processing message from " << _from.address().to_string() << ":"
+        //              << _from.port();
     }
 }
 
@@ -536,11 +546,13 @@ void NodeTable::doCheckEvictions()
 {
     m_timers.schedule(c_evictionCheckInterval.count(), [this](boost::system::error_code const& _ec)
     {
-        if (_ec)
+        if (_ec) {
             // we can't use m_logger here, because captured this might be already destroyed
-            clog(VerbosityDebug, "discov")
-                << "Check Evictions timer was probably cancelled: " << _ec.value() << " "
-                << _ec.message();
+            //clog(VerbosityDebug, "discov")
+            //    << "Check Evictions timer was probably cancelled: " << _ec.value() << " "
+            //    << _ec.message();
+        }
+
 
         if (_ec.value() == boost::asio::error::operation_aborted || m_timers.isStopped())
             return;
@@ -570,16 +582,18 @@ void NodeTable::doDiscovery()
 {
     m_timers.schedule(c_bucketRefresh.count(), [this](boost::system::error_code const& _ec)
     {
-        if (_ec)
+        if (_ec) {
             // we can't use m_logger here, because captured this might be already destroyed
-            clog(VerbosityDebug, "discov")
-                << "Discovery timer was probably cancelled: " << _ec.value() << " "
-                << _ec.message();
+            //clog(VerbosityDebug, "discov")
+            //    << "Discovery timer was probably cancelled: " << _ec.value() << " "
+            //    << _ec.message();
+        }
+
 
         if (_ec.value() == boost::asio::error::operation_aborted || m_timers.isStopped())
             return;
 
-        LOG(m_logger) << "performing random discovery";
+        //LOG(m_logger) << "performing random discovery";
         NodeID randNodeId;
         crypto::Nonce::get().ref().copyTo(randNodeId.ref().cropped(0, h256::size));
         crypto::Nonce::get().ref().copyTo(randNodeId.ref().cropped(h256::size, h256::size));
@@ -593,8 +607,8 @@ unique_ptr<DiscoveryDatagram> DiscoveryDatagram::interpretUDP(bi::udp::endpoint 
     // h256 + Signature + type + RLP (smallest possible packet is empty neighbours packet which is 3 bytes)
     if (_packet.size() < h256::size + Signature::size + 1 + 3)
     {
-        LOG(g_discoveryWarnLogger::get()) << "Invalid packet (too small) from "
-                                          << _from.address().to_string() << ":" << _from.port();
+        //LOG(g_discoveryWarnLogger::get()) << "Invalid packet (too small) from "
+        //                                  << _from.address().to_string() << ":" << _from.port();
         return decoded;
     }
     bytesConstRef hashedBytes(_packet.cropped(h256::size, _packet.size() - h256::size));
@@ -605,15 +619,15 @@ unique_ptr<DiscoveryDatagram> DiscoveryDatagram::interpretUDP(bi::udp::endpoint 
     h256 echo(sha3(hashedBytes));
     if (!_packet.cropped(0, h256::size).contentsEqual(echo.asBytes()))
     {
-        LOG(g_discoveryWarnLogger::get()) << "Invalid packet (bad hash) from "
-                                          << _from.address().to_string() << ":" << _from.port();
+        //LOG(g_discoveryWarnLogger::get()) << "Invalid packet (bad hash) from "
+        //                                  << _from.address().to_string() << ":" << _from.port();
         return decoded;
     }
-    Public sourceid(dev::recover(*(Signature const*)signatureBytes.data(), sha3(signedBytes)));
+    Public sourceid(crypto::recover(*(Signature const*)signatureBytes.data(), sha3(signedBytes)));
     if (!sourceid)
     {
-        LOG(g_discoveryWarnLogger::get()) << "Invalid packet (bad signature) from "
-                                          << _from.address().to_string() << ":" << _from.port();
+        //LOG(g_discoveryWarnLogger::get()) << "Invalid packet (bad signature) from "
+        //                                  << _from.address().to_string() << ":" << _from.port();
         return decoded;
     }
     switch (signedBytes[0])
@@ -631,8 +645,8 @@ unique_ptr<DiscoveryDatagram> DiscoveryDatagram::interpretUDP(bi::udp::endpoint 
         decoded.reset(new Neighbours(_from, sourceid, echo));
         break;
     default:
-        LOG(g_discoveryWarnLogger::get()) << "Invalid packet (unknown packet type) from "
-                                          << _from.address().to_string() << ":" << _from.port();
+        //LOG(g_discoveryWarnLogger::get()) << "Invalid packet (unknown packet type) from "
+        //                                  << _from.address().to_string() << ":" << _from.port();
         return decoded;
     }
     decoded->interpretRLP(bodyBytes);
