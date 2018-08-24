@@ -32,16 +32,16 @@ void NetController::broadcast(std::shared_ptr<bundle::TransactionBundle> tMsg)
 void NetController::init()
 {
     if (!isInit) {
-/*
+
         const char *const localhost = "127.0.0.1";
         net::NetworkConfig conf(localhost, 0, false);
 
-        host = new Host("GSEGeneisNN", conf);
+        net::Host *host = new net::Host("GSE V1.0", conf);
         host->start();
         host->listenPort();
-*/
 
 
+        delete host;
         isInit = true;
     }
 }

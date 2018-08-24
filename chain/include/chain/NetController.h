@@ -18,8 +18,6 @@
 
 namespace chain {
 
-class Host;
-
 class NetController {
 public:
     static NetController* getInstance()
@@ -53,7 +51,7 @@ private:
     ~NetController() {}
 
     bool isInit;
-    Host *host;
+
 
     std::queue<std::shared_ptr<bundle::TransactionBundle>> transactionsQueue;
 
