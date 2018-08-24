@@ -1,15 +1,17 @@
 set (net_source
-     Common.cpp
-     Network.cpp
-     UDP.cpp
-     UPnp.cpp
-     Peer.cpp
-     RLPXFrameCoder.cpp
-     RLPxHandshake.cpp
-     NodeTable.cpp
-     Capability.cpp
-     Session.cpp
-     Host.cpp)
+    BytesSocket.cpp
+    BytesPacket.cpp
+    Common.cpp
+    Network.cpp
+    UDP.cpp
+    UPnp.cpp
+    Peer.cpp
+    RLPXFrameCoder.cpp
+    RLPxHandshake.cpp
+    NodeTable.cpp
+    Capability.cpp
+    Session.cpp
+    Host.cpp)
 
 add_library (net ${net_source})
 
