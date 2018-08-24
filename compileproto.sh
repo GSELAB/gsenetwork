@@ -35,6 +35,8 @@ protoc --proto_path=proto --cpp_out=proto proto/PNet.proto proto/PChain.proto
 # ./b2
 # ./b2 install
 
+### or $ brew install boost
+
 
 
 
