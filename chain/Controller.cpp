@@ -9,21 +9,21 @@
  *
  */
 
-#pragma once
-
-#include <chain/NetController.h>
+#include <chain/Controller.h>
 
 namespace chain {
 
-class Controller {
-public:
-    Controller();
-
-    ~Controller();
-
-    void init();
-
-private:
-    NetController *net;
-};
+Controller::Controller() {
+    net = NetController::getInstance();
 }
+
+Controller::~Controller() {
+    delete net;
+}
+
+void Controller::init()
+{
+    net->init();
+}
+
+} // end of namespace
