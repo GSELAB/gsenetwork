@@ -1,14 +1,3 @@
-/*
- * Copyright (c) 2018 GSENetwork
- *
- * This file is part of GSENetwork.
- *
- * GSENetwork is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or any later version.
- *
- */
-
 #pragma once
 
 #include <unordered_map>
@@ -269,6 +258,7 @@ enum DataType : uint8_t {
     PingNodeType = 1,
     PongType,
     FindNodeType,
+    NeighboursType,
 };
 
 struct DiscoveryDatagram : public BytesDatagramFace {
@@ -284,7 +274,10 @@ struct DiscoveryDatagram : public BytesDatagramFace {
     NodeID sourceid;
     h256 echo;
 
-    chain::ChainID chainID = 0x0;
+    chain::ChainID chainID = chain::GSE_ROOT_NETWORK;
+    chain::ChainID getChainID() const {
+        return chainID;
+    }
 
     // the packet's timestamp must be greater than current time, prevents replay attacks.
     uint32_t ts = 0;
@@ -312,7 +305,8 @@ struct PingNode : DiscoveryDatagram {
     NodeIPEndpoint destination;
 
     void streamRLP(core::RLPStream& io) const {
-        io.sppendList(4);
+        io.sppendList(5);
+        io << chainID;
         io << net::c_protocolVersion;
         source.streamRLP(io);
         destination.streamRLP(io);
@@ -321,10 +315,11 @@ struct PingNode : DiscoveryDatagram {
 
     void interpretRLP(bytesConstRef data) {
         core::RLP rlp(data, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
-        version = rlp[0].toInt<unsigned>();
-        source.interpretRLP(rlp[1]);
-        destination.interpretRLP(rlp[2]);
-        ts = rlp[3].toInt<uint32_t>();
+        chainID = rpl[0].toInt<chain::ChainID>();
+        version = rlp[1].toInt<unsigned>();
+        source.interpretRLP(rlp[2]);
+        destination.interpretRLP(rlp[3]);
+        ts = rlp[4].toInt<uint32_t>();
     }
 };
 
@@ -341,7 +336,8 @@ struct Pong : DiscoveryDatagram {
     NodeIPEndpoint destination;
 
     void streamRLP(core::RLPStream& io) {
-        io.appendList(3);
+        io.appendList(4);
+        io << chainID;
         destination.streamRLP(io);
         io << echo;
         io << ts;
@@ -349,9 +345,10 @@ struct Pong : DiscoveryDatagram {
 
     void interpretRLP(bytesConstRef data) {
         core::RLP rlp(data, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
-        destination.interpretRLP(rlp[0]);
-        echo = (h256)rlp[1];
-        ts = rlp[2].toInt<uint32_t>();
+        chainID = rlp[0].toInt<chain::ChainID>();
+        destination.interpretRLP(rlp[1]);
+        echo = (h256)rlp[2];
+        ts = rlp[3].toInt<uint32_t>();
     }
 };
 
@@ -370,11 +367,78 @@ struct FindNode : DiscoveryDatagram {
     h512 target;
 
     void streamRLP(core::RLPSteam& io) {
-        io.appendList(2);
+        io.appendList(3);
+        io << chainID;
         io << target;
         io << ts;
     }
+
+    void interpretRLP(bytesConstRef data) {
+        core::RLP rlp(data, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
+        chainID = rlp[0].toInt<chain::ChainID>();
+        target = rlp[1].toHash<h512>();
+        ts = rlp[2].toInt<uint32_t>();
+    }
 };
+
+struct Neighbours : DiscoveryDatagram {
+    Neighbours(boost::asio::ip::udp::endpoint const& to, std::vector<std::shared_ptr<NodeEntry>> const& nearest,
+        unsigned offset = 0, unsigned limit = 0) : DiscoveryDatagram(to) {
+        auto limit = limit ? std::min(nearest.size(), (size_t)(offset + limit)) : nearest.size();
+        for (auto i = offset; i < limit; i++) {
+            neighbours.push_back(Item(*nearest[i]));
+        }
+    }
+
+    Neighbours(boost::asio::ip::udp::endpoint const& to) : DiscoveryDatagram(to) {}
+    Neighbours(boost::asio::ip::udp::endpoint const& from, NodeID const& fromID, h256 const& h) :
+        DiscoveryDatagram(from, fromID, h) {}
+
+    struct Item {
+        Item(Node const& node) : endpoint(node.endpoint), nID(node.id) {}
+        Item(core::RLP const& rlp) : endpoint(rlp) {
+            nID = h512(rlp[3].toBytes())
+        }
+
+        NodeIPEndpoint endpoint;
+        NodeID nID;
+        chain::ChainID chainID = chain::GSE_UNKNOWN_NETWORK;
+        void streamRLP(core::RLPStream& io) {
+            io.appendList(5);
+            io << chainID;
+            endpoint.streamRLP(io, NodeIPEndpoint::StreamInline);
+            io << nID;
+        }
+    }
+
+    static const uint8_t type = NeighboursType;
+    uint8_t packetType() const {
+        return type;
+    }
+
+    std::vector<Item> neighbours;
+    void streamRLP(core::RLPStream& io) {
+        io.appendList(3);
+        io << chainID;
+        io.appendList(neighbours.size());
+        for (auto const& item : neighbours) {
+            item.streamRLP(io);
+        }
+
+        io << ts;
+    }
+
+    void interpretRLP(bytesConstRef data) {
+        core::RLP rlp(data, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
+        chainID = rlp[0].toInt<chain::ChainID>();
+        for (auto const& item : rlp[1]) {
+            neighbours.emplace_back(item);
+        }
+
+        ts = rlp[2].toInt<uint32_t>();
+    }
+};
+
 
 
 } // end namespace
