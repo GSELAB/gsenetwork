@@ -1,21 +1,12 @@
-/*
- * Copyright (c) 2018 GSENetwork
- *
- * This file is part of GSENetwork.
- *
- * GSENetwork is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or any later version.
- *
- */
-
 #pragma once
 
 #include <memory>
+#include <deque>
 
 #include <net/Common.h>
 #include <core/RLP.h>
 #include <core/Log.h>
+#include <chain/Types.h>
 
 namespace net {
 
@@ -34,6 +25,7 @@ public:
     bytes data;
 protected:
     boost::asio::ip::udp::endpoint locus;
+    chain::ChainID chainID;  /* ? move to another place? */
 };
 
 // BytesDatagramFace could be signed
@@ -96,7 +88,7 @@ public:
 
     // listen to all ports
     UDPSocket(boost::asio::io_service& io, UDPSocketEvents& host, unsigned port) :
-        m_host(host), m_endpoint(boost::asio::ip::udp::v4, port), m_socket(io)
+        m_host(host), m_endpoint(boost::asio::ip::udp::v4(), port), m_socket(io)
     {
         m_started.store(false);
         m_closed.store(true);
@@ -132,7 +124,7 @@ private:
     std::deque<UDPDatagram> m_sendQ; // queue for egress data
     std::array<byte, maxDatagramSize> m_recvData; // buffer for ingress data
     boost::asio::ip::udp::endpoint m_recvEndpoint; // data from received from
-    boost::asio::ip::udp::endpoint m_socket; // boost asio udp socket
+    boost::asio::ip::udp::socket m_socket; // boost asio udp socket
 
     Mutex x_socketError;
     boost::system::error_code m_socketError; // could be set from host or IO thread

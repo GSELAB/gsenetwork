@@ -3,6 +3,7 @@ set (net_source
     BytesPacket.cpp
     BytesFrameCoder.cpp
     BytesHandshake.cpp
+    UDPx.cpp
     Common.cpp
     Network.cpp
     UDP.cpp

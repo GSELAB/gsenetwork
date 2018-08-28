@@ -1,15 +1,6 @@
-/*
- * Copyright (c) 2018 GSENetwork
- *
- * This file is part of GSENetwork.
- *
- * GSENetwork is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or any later version.
- *
- */
-
 #include <net/UDPx.h>
+#include <crypto/Common.h>
+#include <crypto/SHA3.h>
 
 using namespace net;
 
@@ -47,7 +38,7 @@ bool UDPSocket<Handler, MaxDatagramSize>::send(UDPDatagram const& data)
     }
 
     Guard l(x_sendQ);
-    m_sendQ.push_back(_datagram);
+    m_sendQ.push_back(data);
     if (m_sendQ.size() == 1) {
         doWrite();
     }
@@ -121,7 +112,7 @@ void UDPSocket<Handler, MaxDatagramSize>::disconnectWithError(boost::system::err
         Guard l(x_socketError);
         if (m_socketError != boost::system::error_code())
             return;
-        m_socketError = _ec;
+        m_socketError = ec;
     }
 
     // prevent concurrent disconnect
@@ -134,8 +125,8 @@ void UDPSocket<Handler, MaxDatagramSize>::disconnectWithError(boost::system::err
     m_closed = true;
 
     // close sockets
-    boost::system::error_code ec;
-    m_socket.shutdown(bi::udp::socket::shutdown_both, ec);
+    boost::system::error_code tmpec;
+    m_socket.shutdown(bi::udp::socket::shutdown_both, tmpec);
     m_socket.close();
 
     // socket never started if it never left stopped-state (pre-handshake)
@@ -153,8 +144,8 @@ h256 BytesDatagramFace::sign(Secret const& sec)
     return sighash;
 }
 
-Public BytesDatagrmFace::authenticate(bytesConstRef sig, bytesConstRef rlp)
+Public BytesDatagramFace::authenticate(bytesConstRef sig, bytesConstRef rlp)
 {
     Signature const& signature = *(Signature const*)sig.data();
-    return core::recover(signature, sha3(rlp));
+    return crypto::recover(signature, sha3(rlp));
 }

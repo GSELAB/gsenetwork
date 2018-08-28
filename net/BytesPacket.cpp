@@ -44,12 +44,12 @@ size_t BytesPacket::size() const
     return 0;
 }
 
-void BytesPacket::setChainId(chain::ChainId id)
+void BytesPacket::setChainId(chain::ChainID id)
 {
     m_chainId = id;
 }
 
-chain::ChainId BytesPacket::getChainId() const
+chain::ChainID BytesPacket::getChainId() const
 {
     return m_chainId;
 }

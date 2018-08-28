@@ -13,7 +13,7 @@
 
 using namespace net;
 
-BytesSocket::BytesSocket(boost::asio::io_service& ioService, chain::ChainId id) : m_socket(ioService)
+BytesSocket::BytesSocket(boost::asio::io_service& ioService, chain::ChainID id) : m_socket(ioService)
 {
     m_chainId = id;
 }
@@ -52,12 +52,12 @@ boost::asio::ip::tcp::socket& BytesSocket::ref()
     return m_socket;
 }
 
-void BytesSocket::setChainId(chain::ChainId id)
+void BytesSocket::setChainId(chain::ChainID id)
 {
     m_chainId = id;
 }
 
-chain::ChainId BytesSocket::getChainId() const
+chain::ChainID BytesSocket::getChainId() const
 {
     return m_chainId;
 }

@@ -33,6 +33,7 @@
 #include <core/Log.h>
 #include <core/RLP.h>
 #include <net/Common.h>
+
 namespace ba = boost::asio;
 namespace bi = ba::ip;
 
@@ -45,8 +46,8 @@ namespace net {
 class UDPDatagram
 {
 public:
-    UDPDatagram(bi::udp::endpoint const& _ep): locus(_ep) {}
-    UDPDatagram(bi::udp::endpoint const& _ep, bytes _data): data(_data), locus(_ep) {}
+    UDPDatagram(boost::asio::ip::udp::endpoint const& _ep): locus(_ep) {}
+    UDPDatagram(boost::asio::ip::udp::endpoint const& _ep, bytes _data): data(_data), locus(_ep) {}
     bi::udp::endpoint const& endpoint() const { return locus; }
 
     bytes data;
