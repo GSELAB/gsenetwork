@@ -1,6 +1,8 @@
 set (net_source
     BytesSocket.cpp
     BytesPacket.cpp
+    BytesFrameCoder.cpp
+    BytesHandshake.cpp
     Common.cpp
     Network.cpp
     UDP.cpp
