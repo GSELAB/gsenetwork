@@ -19,6 +19,8 @@
 
 #include <core/All.h>
 
+using namespace core;
+
 namespace crypto {
 
 bool sha3(bytesConstRef _input, bytesRef o_output) noexcept;

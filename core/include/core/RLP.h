@@ -19,7 +19,7 @@
 #include <iomanip>
 #include <iosfwd>
 #include <vector>
-//#include <unordered_set>
+#include <unordered_set>
 
 namespace core {
 
@@ -209,7 +209,7 @@ public:
 		return ret;
 	}
 
-    /*
+
 	template <class T>
 	std::unordered_set<T> toUnorderedSet(int _flags = LaissezFaire) const
 	{
@@ -221,7 +221,6 @@ public:
 			BOOST_THROW_EXCEPTION(BadCast());
 		return ret;
 	}
-	*/
 
 
 	template <class T, class U>
