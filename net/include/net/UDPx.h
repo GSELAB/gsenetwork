@@ -101,7 +101,7 @@ public:
     void connect();
     bool send(UDPDatagram const& data);
     bool isOpen() {
-        !m_closed;
+        return !m_closed;
     }
 
     void disconnect() {

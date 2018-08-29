@@ -1,11 +1,17 @@
 #pragma once
 
+#include <algorithm>
+#include <list>
 #include <unordered_map>
 
+#include <boost/integer/static_log2.hpp>
+
+#include <net/Common.h>
 #include <crypto/SHA3.h>
 #include <chain/Types.h>
-#include <net/Common.h>
 #include <net/UDPx.h>
+
+using namespace core;
 
 namespace net {
 
@@ -16,7 +22,7 @@ struct NodeEntry : public Node {
     bool pending = true;
 };
 
-enum NodeTypeEventType {
+enum NodeTableEventType {
     NodeEntryAdded = 0,
     NodeEntryDropped,
 };
@@ -104,10 +110,11 @@ public:
         Random = 0,
     };
 
-    NodeTable(boost::asio::io_service& io, KeyPair const& alias, NodeIPEndpoint const& endpoint, bool enable = true);
+    NodeTable(ba::io_service& _io, KeyPair const& _alias, NodeIPEndpoint const& _endpoint, bool _enabled = true);
+    //NodeTable(boost::asio::io_service& io, KeyPair const& alias, NodeIPEndpoint const& endpoint, bool enable = true);
     ~NodeTable();
 
-    static int distane(NodeID const& x, NodeID const& y) {
+    static int distance(NodeID const& x, NodeID const& y) {
         unsigned ret = 0;
         u256 d = sha3(x) ^ sha3(y);
         while (d >>= 1) ret++;
@@ -130,7 +137,7 @@ public:
     std::list<NodeID> nodes() const;
 
     unsigned count() const {
-        m_nodes.size();
+        return m_nodes.size();
     }
 
     // Returns snapshot of table.
@@ -305,7 +312,7 @@ struct PingNode : DiscoveryDatagram {
     NodeIPEndpoint destination;
 
     void streamRLP(core::RLPStream& io) const {
-        io.sppendList(5);
+        io.appendList(5);
         io << chainID;
         io << net::c_protocolVersion;
         source.streamRLP(io);
@@ -315,7 +322,7 @@ struct PingNode : DiscoveryDatagram {
 
     void interpretRLP(bytesConstRef data) {
         core::RLP rlp(data, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
-        chainID = rpl[0].toInt<chain::ChainID>();
+        chainID = rlp[0].toInt<chain::ChainID>();
         version = rlp[1].toInt<unsigned>();
         source.interpretRLP(rlp[2]);
         destination.interpretRLP(rlp[3]);
@@ -335,7 +342,7 @@ struct Pong : DiscoveryDatagram {
 
     NodeIPEndpoint destination;
 
-    void streamRLP(core::RLPStream& io) {
+    void streamRLP(core::RLPStream& io) const {
         io.appendList(4);
         io << chainID;
         destination.streamRLP(io);
@@ -366,7 +373,7 @@ struct FindNode : DiscoveryDatagram {
 
     h512 target;
 
-    void streamRLP(core::RLPSteam& io) {
+    void streamRLP(core::RLPStream& io) const {
         io.appendList(3);
         io << chainID;
         io << target;
@@ -384,8 +391,8 @@ struct FindNode : DiscoveryDatagram {
 struct Neighbours : DiscoveryDatagram {
     Neighbours(boost::asio::ip::udp::endpoint const& to, std::vector<std::shared_ptr<NodeEntry>> const& nearest,
         unsigned offset = 0, unsigned limit = 0) : DiscoveryDatagram(to) {
-        auto limit = limit ? std::min(nearest.size(), (size_t)(offset + limit)) : nearest.size();
-        for (auto i = offset; i < limit; i++) {
+        auto lim = limit ? std::min(nearest.size(), (size_t)(offset + limit)) : nearest.size();
+        for (auto i = offset; i < lim; i++) {
             neighbours.push_back(Item(*nearest[i]));
         }
     }
@@ -397,19 +404,19 @@ struct Neighbours : DiscoveryDatagram {
     struct Item {
         Item(Node const& node) : endpoint(node.endpoint), nID(node.id) {}
         Item(core::RLP const& rlp) : endpoint(rlp) {
-            nID = h512(rlp[3].toBytes())
+            nID = h512(rlp[3].toBytes());
         }
 
         NodeIPEndpoint endpoint;
         NodeID nID;
         chain::ChainID chainID = chain::GSE_UNKNOWN_NETWORK;
-        void streamRLP(core::RLPStream& io) {
+        void streamRLP(core::RLPStream& io) const {
             io.appendList(5);
             io << chainID;
             endpoint.streamRLP(io, NodeIPEndpoint::StreamInline);
             io << nID;
         }
-    }
+    };
 
     static const uint8_t type = NeighboursType;
     uint8_t packetType() const {
@@ -417,12 +424,12 @@ struct Neighbours : DiscoveryDatagram {
     }
 
     std::vector<Item> neighbours;
-    void streamRLP(core::RLPStream& io) {
+    void streamRLP(core::RLPStream& io) const {
         io.appendList(3);
         io << chainID;
         io.appendList(neighbours.size());
-        for (auto const& item : neighbours) {
-            item.streamRLP(io);
+        for (auto const& n : neighbours) {
+            n.streamRLP(io);
         }
 
         io << ts;
