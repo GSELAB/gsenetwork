@@ -4,6 +4,8 @@ set (net_source
     BytesFrameCoder.cpp
     BytesHandshake.cpp
     UDPx.cpp
+    NodeTablex.cpp
+
     Common.cpp
     Network.cpp
     UDP.cpp
