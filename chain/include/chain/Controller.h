@@ -24,6 +24,9 @@ public:
     void init();
 
 private:
-    NetController *net;
+    NetController *m_net;
 };
+
+extern Controller* toController();
+extern void delController();
 }

@@ -13,8 +13,11 @@
 
 #include <queue>
 
-#include <bundle/All.h>
+//#include <bundle/All.h>
 //#include <net/Host.h>
+
+#include <core/Block.h>
+#include <core/Transaction.h>
 
 namespace chain {
 
@@ -33,15 +36,15 @@ public:
 
     void broadcast(char *msg);
 
-    void broadcast(std::shared_ptr<bundle::TransactionBundle> tMsg);
+    void broadcast(std::shared_ptr<core::Transaction> tMsg);
 
-    void broadcast(std::shared_ptr<bundle::BlockBundle> bMsg);
+    void broadcast(std::shared_ptr<core::Block> bMsg);
 
     // std::queue<TransactionBundle> getTransactionCache();
 
-    std::shared_ptr<bundle::TransactionBundle> getTransactionFromCache();
+    std::shared_ptr<core::Transaction> getTransactionFromCache();
 
-    std::shared_ptr<bundle::BlockBundle> getBlockFromCache();
+    std::shared_ptr<core::Block> getBlockFromCache();
 
 
 private:
@@ -53,9 +56,9 @@ private:
     bool isInit;
 
 
-    std::queue<std::shared_ptr<bundle::TransactionBundle>> transactionsQueue;
+    std::queue<std::shared_ptr<core::Transaction>> transactionsQueue;
 
-    std::queue<std::shared_ptr<bundle::BlockBundle>> blocksQueue;
+    std::queue<std::shared_ptr<core::Block>> blocksQueue;
 
 };
 

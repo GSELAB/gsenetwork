@@ -11,7 +11,8 @@
 
 #pragma once
 
-#include "bundle/All.h"
+//#include "bundle/All.h"
+#include <chain/Types.h>
 
 namespace chain {
 
@@ -19,19 +20,19 @@ class SubChainController {
 public:
     SubChainController();
 
-    SubChainController(uint64_t chainId);
+    SubChainController(ChainID id);
 
     ~SubChainController();
 
     void init();
 
-    void setSubChainId(uint64_t id);
+    void setSubChainID(ChainID id);
 
-    uint64_t getSubChainId();
+    uint64_t getSubChainID();
 
 
 private:
-    uint64_t subChainId;
+    ChainID m_subChainID;
 
     //vector<int>t
 
