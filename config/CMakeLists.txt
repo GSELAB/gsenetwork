@@ -1,7 +1,6 @@
-set (config_source
-     DefaultConfig.cpp)
+SET(config_source
+    DefaultConfig.cpp)
 
-#add_library (config STATIC ${config_source})
-add_library (config ${config_source})
-
-#target_link_libraries (config utils bundle)
+ADD_LIBRARY(config ${config_source})
+TARGET_LINK_LIBRARIES(config
+    utils ${GSE_BOOST_LIBS})
