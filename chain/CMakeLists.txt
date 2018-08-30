@@ -1,8 +1,9 @@
-set (chain_source
+SET (chain_source
      DbManager.cpp
      NetController.cpp
-     SubChainController.cpp)
+     SubChainController.cpp
+     Controller.cpp)
 
-#add_library (chain STATIC ${chain_source})
-add_library (chain ${chain_source})
-target_link_libraries (chain utils bundle crypto database config net)
+ADD_LIBRARY (chain  ${chain_source})
+TARGET_LINK_LIBRARIES(chain
+    utils crypto database config net ${GSE_BOOST_LIBS} ${CMAKE_THREAD_LIBS_INIT})
