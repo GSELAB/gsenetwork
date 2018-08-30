@@ -12,7 +12,7 @@
 #pragma once
 
 #include "database/Database.h"
-#include "bundle/AccountBundle.h"
+//#include "bundle/AccountBundle.h"
 
 namespace database {
 
@@ -22,9 +22,9 @@ public:
 
     ~AccountStore();
 
-    bundle::AccountBundle &getAccount(char *address);
+//    bundle::AccountBundle &getAccount(char *address);
 
-    void putAccount(bundle::AccountBundle &accountBundle);
+//    void putAccount(bundle::AccountBundle &accountBundle);
 
 private:
     uint8_t isOpened;

@@ -39,7 +39,7 @@ include(CheckCXXSourceCompiles)
 # https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
 # -Werror is necessary because unknown attributes only generate warnings.
 set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-list(APPEND CMAKE_REQUIRED_FLAGS -Werror -Wthread-safety)
+#list(APPEND CMAKE_REQUIRED_FLAGS -Werror -Wthread-safety)
 check_cxx_source_compiles("
 struct __attribute__((lockable)) Lock {
   void Acquire() __attribute__((exclusive_lock_function()));
@@ -214,9 +214,9 @@ if(BUILD_SHARED_LIBS)
 endif(BUILD_SHARED_LIBS)
 
 if(HAVE_CLANG_THREAD_SAFETY)
-  target_compile_options(leveldb
-    PUBLIC
-      -Werror -Wthread-safety)
+#  target_compile_options(leveldb
+#    PUBLIC
+#      -Werror -Wthread-safety)
 endif(HAVE_CLANG_THREAD_SAFETY)
 
 if(HAVE_CRC32C)

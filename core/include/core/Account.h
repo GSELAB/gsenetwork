@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "Timestamp.h"
+//#include "core/Timestamp.h"
 
 namespace core {
 
@@ -24,7 +24,7 @@ private:
 
     uint64_t m_balance;
 
-    Timestamp m_createdTime;
+    //Timestamp m_createdTime;
 };
 
 } /* namespace */

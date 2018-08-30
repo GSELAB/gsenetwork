@@ -13,9 +13,10 @@
 
 #include<vector>
 
-#include "bundle/All.h"
-#include "chain/DbManager.h"
-#include "chain/NetController.h"
+#include <chain/DbManager.h>
+#include <chain/NetController.h>
+#include <producer/Producer.h>
+#include <core/Account.h>
 
 namespace producer {
 
@@ -53,7 +54,7 @@ public:
     void generateBlock();
 
 private:
-    std::vector<std::shared_ptr<bundle::ProducerBundle>> producers;
+    std::vector<std::shared_ptr<Producer>> producers;
 
     chain::DbManager *dbManager;
     chain::NetController *netController;
@@ -61,7 +62,7 @@ private:
 
     ProducerState state;
 
-    std::shared_ptr<bundle::AccountBundle> currentAccout;
+    std::shared_ptr<core::Account> currentAccout;
 
     uint64_t chainId;
 };

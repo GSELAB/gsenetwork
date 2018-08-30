@@ -63,7 +63,6 @@ struct SignatureStruct
 /// A vector of secrets.
 using Secrets = std::vector<Secret>;
 
-
 /*
 /// Convert a secret key into the public key equivalent.
 Public toPublic(Secret const& _secret);

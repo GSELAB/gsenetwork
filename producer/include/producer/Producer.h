@@ -13,7 +13,9 @@
 
 #include<vector>
 
-#include "bundle/All.h"
+#include <core/Address.h>
+
+using namespace core;
 
 namespace producer {
 
@@ -23,10 +25,9 @@ public:
 
     ~Producer();
 
-    void generateBlock();
-
 private:
-    //vector<bundle::Producer>
+    Address address;
+
 
 
 };

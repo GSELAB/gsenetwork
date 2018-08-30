@@ -15,6 +15,9 @@
 #include <vector>
 #include <deque>
 #include <cstdint>
+#include <unordered_map>
+#include <map>
+#include <set>
 
 namespace core {
 
@@ -33,7 +36,7 @@ using                               std::enable_shared_from_this;
 using                               std::tie;
 using                               std::move;
 using                               std::forward;
-using                               std::to_string;
+//using                               std::to_string;
 using                               std::all_of;
 
 } // end of namespace

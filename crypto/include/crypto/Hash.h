@@ -11,7 +11,13 @@
 
 #pragma once
 
+#include <core/FixedHash.h>
+
+using namespace core;
+
 namespace crypto {
+
+h256 sha256(bytesConstRef data) noexcept;
 
 
 } // end of namespace

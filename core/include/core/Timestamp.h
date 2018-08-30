@@ -64,7 +64,7 @@ public:
     }
 
 private:
-    int64_t m_timestamp;
+    const int64_t m_timestamp;
 };
 
 } /* end of namespace */

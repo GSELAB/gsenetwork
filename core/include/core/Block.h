@@ -11,9 +11,10 @@
 
 #pragma once
 
-#include "Transaction.h"
-#include "Timestamp.h"
-#include "Types.h"
+#include "core/Transaction.h"
+//#include "Timestamp.h"
+#include "core/Types.h"
+#include "core/Address.h"
 
 namespace core {
 
@@ -21,8 +22,8 @@ class BlockHeader {
 public:
 
 private:
-    Timestamp   m_timestamp;
-    xxxxxx  producer;
+    //Timestamp   m_timestamp;
+    Address  producer;
 
     uint64_t m_number;
 

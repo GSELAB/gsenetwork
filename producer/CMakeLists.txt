@@ -1,8 +1,7 @@
-set (producer_source
-     ProducerServer.cpp)
+SET(producer_source
+    Producer.cpp
+    ProducerServer.cpp)
 
-# add_library (producer STATIC ${producer_source})
-
-add_library (producer ${producer_source})
-
-target_link_libraries (producer chain utils)
+ADD_LIBRARY(producer ${producer_source})
+TARGET_LINK_LIBRARIES(producer
+    chain utils ${GSE_BOOST_LIBS})

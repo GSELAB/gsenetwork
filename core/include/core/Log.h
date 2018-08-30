@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include <boost/log/sources/global_logger_storage.hpp>
 #include <boost/log/sources/record_ostream.hpp>

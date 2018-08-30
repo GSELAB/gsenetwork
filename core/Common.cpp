@@ -18,7 +18,7 @@
 #include <core/Common.h>
 #include <core/Exceptions.h>
 #include <core/Log.h>
-
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 //#include <aleth/buildinfo.h>
 
 using namespace std;

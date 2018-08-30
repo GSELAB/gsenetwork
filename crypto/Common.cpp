@@ -20,15 +20,16 @@
  * @date 2014
  */
 
-#include <core/Guards.h>  // <boost/thread> conflicts with <thread>
+#include <core/Guards.h>
 #include <crypto/Common.h>
 
-/*
-#include <secp256k1.h>
-#include <secp256k1_ecdh.h>
-#include <secp256k1_recovery.h>
-#include <secp256k1_sha256.h>
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+//#include <secp256k1.h>
+//#include <secp256k1_ecdh.h>
+//#include <secp256k1_recovery.h>
+//#include <secp256k1_sha256.h>
 
+/*
 #include <cryptopp/aes.h>
 #include <cryptopp/pwdbased.h>
 #include <cryptopp/sha.h>
@@ -61,7 +62,6 @@ secp256k1_context const* getCtx()
 }
 */
 
-
 bool SignatureStruct::isValid() const noexcept
 {
 	static const h256 s_max{"0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"};
@@ -70,8 +70,8 @@ bool SignatureStruct::isValid() const noexcept
 	return (v <= 1 && r > s_zero && s > s_zero && r < s_max && s < s_max);
 }
 
-
 /*
+
 Public toPublic(Secret const& _secret)
 {
 	auto* ctx = getCtx();
@@ -91,6 +91,7 @@ Public toPublic(Secret const& _secret)
 	// Create the Public skipping the header.
 	return Public{&serializedPubkey[1], Public::ConstructFromPointer};
 }
+
 
 Address toAddress(Public const& _public)
 {

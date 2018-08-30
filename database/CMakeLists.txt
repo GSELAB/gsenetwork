@@ -4,8 +4,9 @@ add_subdirectory (leveldb)
 
 set (database_source
 	Database.cpp
-	ProducerStore.cpp
-	SubChainStore.cpp)
+#	ProducerStore.cpp
+#	SubChainStore.cpp
+)
 
 #add_library (database STATIC ${database_source})
 

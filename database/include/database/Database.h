@@ -13,7 +13,7 @@
 
 #include <string>
 
-// #include "leveldb/db.h"
+#include "leveldb/db.h"
 
 namespace database {
 
