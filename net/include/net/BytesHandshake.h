@@ -7,6 +7,8 @@
 #include <net/BytesFrameCoder.h>
 #include <net/Common.h>
 
+#include <boost/asio.hpp>
+
 namespace net {
 
 class BytesHandshake : public std::enable_shared_from_this<BytesHandshake> {

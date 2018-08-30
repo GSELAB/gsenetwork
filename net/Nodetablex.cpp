@@ -79,6 +79,12 @@ NodeTable::~NodeTable()
     m_timers.stop();
 }
 
+void NodeTable::processEvents()
+{
+    if (m_nodeEventHandler)
+        m_nodeEventHandler->processEvents();
+}
+
 shared_ptr<NodeEntry> NodeTable::addNode(Node const& node, NodeRelation relation)
 {
     if (relation == Known) {
@@ -463,8 +469,11 @@ void NodeTable::doDiscovery()
 
         LOG(m_logger) << "performing random discovery";
         NodeID randNodeId;
+
+        /* remark by Jorge
         crypto::Nonce::get().ref().copyTo(randNodeId.ref().cropped(0, h256::size));
         crypto::Nonce::get().ref().copyTo(randNodeId.ref().cropped(h256::size, h256::size));
+        */
         doDiscover(randNodeId);
     });
 }

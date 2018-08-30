@@ -24,10 +24,10 @@
 
 #include <net/Common.h>
 #include <net/Network.h>
-#include <net/NodeTable.h>
+#include <net/NodeTablex.h>
 #include <net/Peer.h>
-#include <net/RLPXFrameCoder.h>
-#include <net/RLPXSocket.h>
+#include <net/BytesFrameCoder.h>
+#include <net/BytesSocket.h>
 #include <net/Session.h>
 #include <core/Guards.h>
 #include <core/Worker.h>
@@ -130,7 +130,7 @@ struct NodeInfo
 class Host: public Worker
 {
     friend class HostNodeTableHandler;
-    friend class RLPXHandshake;
+    friend class BytesHandshake;
 
     friend class Session;
 
@@ -228,7 +228,7 @@ public:
     bool haveNetwork() const { Guard l(x_runTimer); Guard ll(x_nodeTable); return m_run && !!m_nodeTable; }
 
     /// Validates and starts peer session, taking ownership of _io. Disconnects and returns false upon error.
-    void startPeerSession(Public const& _id, core::RLP const& _hello, std::unique_ptr<RLPXFrameCoder>&& _io, std::shared_ptr<RLPXSocket> const& _s);
+    void startPeerSession(Public const& _id, core::RLP const& _hello, std::unique_ptr<BytesFrameCoder>&& _io, std::shared_ptr<BytesSocket> const& _s);
 
     /// Get session by id
     std::shared_ptr<SessionFace> peerSession(NodeID const& _id) const
@@ -345,7 +345,7 @@ private:
     mutable std::unordered_map<NodeID, std::weak_ptr<SessionFace>> m_sessions;
     mutable RecursiveMutex x_sessions;
 
-    std::list<std::weak_ptr<RLPXHandshake>> m_connecting;					///< Pending connections.
+    std::list<std::weak_ptr<BytesHandshake>> m_connecting;					///< Pending connections.
     Mutex x_connecting;													///< Mutex for m_connecting.
 
     unsigned m_idealPeerCount = 11;										///< Ideal number of peers to be connected to.

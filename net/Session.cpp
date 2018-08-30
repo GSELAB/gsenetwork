@@ -33,7 +33,7 @@ using namespace std;
 using namespace core;
 using namespace net;
 
-Session::Session(Host* _h, unique_ptr<RLPXFrameCoder>&& _io, std::shared_ptr<RLPXSocket> const& _s,
+Session::Session(Host* _h, unique_ptr<BytesFrameCoder>&& _io, std::shared_ptr<BytesSocket> const& _s,
     std::shared_ptr<Peer> const& _n, PeerSessionInfo _info)
   : m_server(_h),
     m_io(move(_io)),
@@ -355,7 +355,7 @@ void Session::doRead()
             uint8_t hPadding;
             try
             {
-                RLPXFrameInfo header(bytesConstRef(m_data.data(), length));
+                BytesFrameInfo header(bytesConstRef(m_data.data(), length));
                 hProtocolId = header.protocolId;
                 hLength = header.length;
                 hPadding = header.padding;

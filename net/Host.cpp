@@ -32,12 +32,13 @@
 #include <core/CommonIO.h>
 #include <core/Exceptions.h>
 //#include <libdevcore/FileSystem.h>
-#include "net/Session.h"
-#include "net/Common.h"
-#include "net/Capability.h"
-#include "net/UPnP.h"
-#include "net/RLPxHandshake.h"
-#include "net/Host.h"
+#include <net/Session.h>
+#include <net/Common.h>
+#include <net/Capability.h>
+#include <net/UPnP.h>
+#include <net/BytesHandshake.h>
+#include <net/Host.h>
+#include <net/BytesSocket.h>
 
 using namespace std;
 using namespace core;
@@ -236,7 +237,7 @@ bool Host::isRequiredPeer(NodeID const& _id) const
 }
 
 // called after successful handshake
-void Host::startPeerSession(Public const& _id, core::RLP const& _rlp, unique_ptr<RLPXFrameCoder>&& _io, std::shared_ptr<RLPXSocket> const& _s)
+void Host::startPeerSession(Public const& _id, core::RLP const& _rlp, unique_ptr<BytesFrameCoder>&& _io, std::shared_ptr<BytesSocket> const& _s)
 {
     // session maybe ingress or egress so m_peers and node table entries may not exist
     shared_ptr<Peer> p;
@@ -441,7 +442,7 @@ void Host::runAcceptor()
                     << ")";
         m_accepting = true;
 
-        auto socket = make_shared<RLPXSocket>(m_ioService);
+        auto socket = make_shared<BytesSocket>(m_ioService);
         m_tcp4Acceptor.async_accept(socket->ref(), [=](boost::system::error_code ec)
         {
             m_accepting = false;
@@ -464,7 +465,7 @@ void Host::runAcceptor()
             try
             {
                 // incoming connection; we don't yet know nodeid
-                auto handshake = make_shared<RLPXHandshake>(this, socket);
+                auto handshake = make_shared<BytesHandshake>(this, socket);
                 m_connecting.push_back(handshake);
                 handshake->start();
                 success = true;
@@ -612,7 +613,7 @@ void Host::connect(std::shared_ptr<Peer> const& _p)
 
     bi::tcp::endpoint ep(_p->endpoint);
     cnetdetails << "Attempting connection to node " << _p->id << "@" << ep << " from " << id();
-    auto socket = make_shared<RLPXSocket>(m_ioService);
+    auto socket = make_shared<BytesSocket>(m_ioService);
     socket->ref().async_connect(ep, [=](boost::system::error_code const& ec)
     {
         _p->m_lastAttempted = std::chrono::system_clock::now();
@@ -628,7 +629,7 @@ void Host::connect(std::shared_ptr<Peer> const& _p)
         else
         {
             cnetdetails << "Connecting to " << _p->id << "@" << ep;
-            auto handshake = make_shared<RLPXHandshake>(this, socket, _p->id);
+            auto handshake = make_shared<BytesHandshake>(this, socket, _p->id);
             {
                 Guard l(x_connecting);
                 m_connecting.push_back(handshake);
@@ -691,7 +692,7 @@ void Host::run(boost::system::error_code const&)
 
     // cleanup zombies
     DEV_GUARDED(x_connecting)
-        m_connecting.remove_if([](std::weak_ptr<RLPXHandshake> h){ return h.expired(); });
+        m_connecting.remove_if([](std::weak_ptr<BytesHandshake> h){ return h.expired(); });
     DEV_GUARDED(x_timers)
         m_timers.remove_if([](std::shared_ptr<boost::asio::deadline_timer> t)
         {

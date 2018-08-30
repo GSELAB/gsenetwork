@@ -13,6 +13,8 @@
 
 using namespace net;
 
+BytesSocket::BytesSocket(boost::asio::io_service& ioService) : m_socket(ioService) {}
+
 BytesSocket::BytesSocket(boost::asio::io_service& ioService, chain::ChainID id) : m_socket(ioService)
 {
     m_chainId = id;

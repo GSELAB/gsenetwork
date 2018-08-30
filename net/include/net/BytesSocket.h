@@ -9,6 +9,7 @@ namespace net {
 
 class BytesSocket : public std::enable_shared_from_this<BytesSocket> {
 public:
+    BytesSocket(boost::asio::io_service& ioService);
     BytesSocket(boost::asio::io_service& ioService, chain::ChainID id);
     ~BytesSocket();
 

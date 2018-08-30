@@ -32,8 +32,8 @@
 #include <core/Common.h>
 #include <core/RLP.h>
 #include <core/Guards.h>
-#include <net/RLPXFrameCoder.h>
-#include <net/RLPXSocket.h>
+#include <net/BytesFrameCoder.h>
+#include <net/BytesSocket.h>
 #include <net/Common.h>
 
 namespace net {
@@ -83,7 +83,7 @@ public:
 class Session: public SessionFace, public std::enable_shared_from_this<SessionFace>
 {
 public:
-	Session(Host* _server, std::unique_ptr<RLPXFrameCoder>&& _io, std::shared_ptr<RLPXSocket> const& _s, std::shared_ptr<Peer> const& _n, PeerSessionInfo _info);
+	Session(Host* _server, std::unique_ptr<BytesFrameCoder>&& _io, std::shared_ptr<BytesSocket> const& _s, std::shared_ptr<Peer> const& _n, PeerSessionInfo _info);
 	virtual ~Session();
 
 	void start() override;
@@ -143,8 +143,8 @@ private:
 
 	Host* m_server;							///< The host that owns us. Never null.
 
-	std::unique_ptr<RLPXFrameCoder> m_io;	///< Transport over which packets are sent.
-	std::shared_ptr<RLPXSocket> m_socket;		///< Socket of peer's connection.
+	std::unique_ptr<BytesFrameCoder> m_io;	///< Transport over which packets are sent.
+	std::shared_ptr<BytesSocket> m_socket;		///< Socket of peer's connection.
 	Mutex x_framing;						///< Mutex for the write queue.
 	std::deque<bytes> m_writeQueue;			///< The write queue.
 	std::vector<byte> m_data;			    ///< Buffer for ingress packet data.

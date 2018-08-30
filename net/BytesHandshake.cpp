@@ -14,6 +14,10 @@
 #include <net/Session.h>
 #include <net/Peer.h>
 
+#include <boost/asio.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ip/udp.hpp>
+
 using namespace std;
 using namespace core;
 using namespace net;
@@ -59,6 +63,11 @@ void BytesHandshake::readAck()
 void BytesHandshake::readAckEIP8()
 {
     // receive EIP-8 format ack from remote node
+}
+
+void BytesHandshake::start()
+{
+    transition();
 }
 
 void BytesHandshake::cancel()
