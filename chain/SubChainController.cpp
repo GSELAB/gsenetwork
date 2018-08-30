@@ -16,9 +16,9 @@ namespace chain {
 SubChainController::SubChainController()
 {}
 
-SubChainController::SubChainController(uint64_t chainId)
+SubChainController::SubChainController(ChainID id)
 {
-    this->subChainId = chainId;
+    m_subChainID = id;
 }
 
 SubChainController::~SubChainController()
@@ -31,14 +31,14 @@ void SubChainController::init()
 
 }
 
-void SubChainController::setSubChainId(uint64_t id)
+void SubChainController::setSubChainID(ChainID id)
 {
-    this->subChainId = id;
+    m_subChainID = id;
 }
 
-uint64_t SubChainController::getSubChainId()
+uint64_t SubChainController::getSubChainID()
 {
-    return this->subChainId;
+    return m_subChainID;
 }
 
 } // end of namespace chain

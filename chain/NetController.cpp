@@ -24,7 +24,7 @@ void NetController::broadcast(char *msg)
 
 }
 
-void NetController::broadcast(std::shared_ptr<bundle::TransactionBundle> tMsg)
+void NetController::broadcast(std::shared_ptr<core::Transaction> tMsg)
 {
 
 }
@@ -46,14 +46,14 @@ void NetController::init()
     }
 }
 
-void NetController::broadcast(std::shared_ptr<bundle::BlockBundle> bMsg)
+void NetController::broadcast(std::shared_ptr<core::Block> bMsg)
 {
 
 }
 
-std::shared_ptr<bundle::TransactionBundle> NetController::getTransactionFromCache()
+std::shared_ptr<core::Transaction> NetController::getTransactionFromCache()
 {
-    std::shared_ptr<bundle::TransactionBundle> ret = nullptr;
+    std::shared_ptr<core::Transaction> ret = nullptr;
 
     if (!this->transactionsQueue.empty()) {
         ret = this->transactionsQueue.front();
@@ -63,9 +63,9 @@ std::shared_ptr<bundle::TransactionBundle> NetController::getTransactionFromCach
     return ret;
 }
 
-std::shared_ptr<bundle::BlockBundle> NetController::getBlockFromCache()
+std::shared_ptr<core::Block> NetController::getBlockFromCache()
 {
-    std::shared_ptr<bundle::BlockBundle> ret = nullptr;
+    std::shared_ptr<core::Block> ret = nullptr;
 
     if (!transactionsQueue.empty()) {
         ret = blocksQueue.front();

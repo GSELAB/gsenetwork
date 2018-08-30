@@ -11,19 +11,50 @@
 
 #include <chain/Controller.h>
 
+#include <boost/thread.hpp>
+#include <iostream>
+
 namespace chain {
 
 Controller::Controller() {
-    net = NetController::getInstance();
+    m_net = NetController::getInstance();
 }
 
 Controller::~Controller() {
-    delete net;
+    // delete m_net;
+}
+
+namespace {
+void my_func()
+{
+    std::cout << "ok" << std::endl;
+}
 }
 
 void Controller::init()
 {
-    net->init();
+    // m_net->init();
+
+    boost::thread t(my_func);
+    t.join();
 }
 
-} // end of namespace
+static Controller *controller = nullptr;
+Controller* toController()
+{
+
+    if (!controller) {
+        return new Controller();
+    }
+
+    return controller;
+}
+
+void delController() {
+    if (controller) {
+        delete controller;
+        controller = nullptr;
+    }
+}
+
+}
