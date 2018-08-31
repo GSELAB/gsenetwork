@@ -9,8 +9,11 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
+#include <config/DefaultConfig.h>
 
+using namespace config;
+
+std::string DefaultConfig::getDBPath()
+{
+    return m_dbPath;
+}

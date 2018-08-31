@@ -11,8 +11,18 @@
 
 #pragma once
 
+#include <config/Config.h>
+
 namespace config {
 
+class DefaultConfig: public Config {
+public:
+    std::string getDBPath();
+
+private:
+    std::string m_dbPath;
+
+};
 }
 
 

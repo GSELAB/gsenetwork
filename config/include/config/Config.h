@@ -8,3 +8,19 @@
  * Foundation, either version 3 of the License, or any later version.
  *
  */
+
+#pragma once
+
+#include <string>
+
+namespace config {
+
+class Config {
+public:
+    virtual std::string getDBPath() = 0;
+
+
+private:
+
+};
+}
