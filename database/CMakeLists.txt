@@ -1,15 +1,15 @@
+# Copyright (c) 2018 GSENetwork
+# This file is part of GSENetwork.
 
-include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/leveldb/include")
-add_subdirectory (leveldb)
+INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/leveldb/include")
+ADD_SUBDIRECTORY(leveldb)
 
-set (database_source
+SET(database_source
 	Database.cpp
 #	ProducerStore.cpp
 #	SubChainStore.cpp
-)
+    )
 
-#add_library (database STATIC ${database_source})
-
-add_library (database ${database_source})
-
-target_link_libraries (database leveldb)
+ADD_LIBRARY(database ${database_source})
+TARGET_LINK_LIBRARIES(database
+    leveldb)

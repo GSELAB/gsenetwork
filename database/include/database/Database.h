@@ -35,8 +35,8 @@ public:
 
 private:
     DatabaseImpl *impl;
-    //leveldb::DB *db;
-    //leveldb::Options options;
+    leveldb::DB *db;
+    leveldb::Options options;
 };
 
 }
