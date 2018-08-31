@@ -4,10 +4,12 @@ SET(core_source
     Common.cpp
     Log.cpp
     RLP.cpp
+    TransactionReceipt.cpp
+    Transaction.cpp
+    Block.cpp
     Address.cpp
     Worker.cpp)
 
 ADD_LIBRARY(core ${core_source})
-
-target_link_libraries(core
-    utils ${GSE_BOOST_LIBS})
+TARGET_LINK_LIBRARIES(core
+    utils crypto ${GSE_BOOST_LIBS})

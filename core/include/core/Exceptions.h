@@ -92,4 +92,12 @@ using errinfo_extraData = boost::error_info<struct tag_extraData, bytes>;
 using errinfo_externalFunction = boost::errinfo_api_function;
 using errinfo_interface = boost::error_info<struct tag_interface, std::string>;
 using errinfo_path = boost::error_info<struct tag_path, std::string>;
+
+
+// information to add to exceptions
+using errinfo_name = boost::error_info<struct tag_field, std::string>;
+using errinfo_field = boost::error_info<struct tag_field, int>;
+using errinfo_data = boost::error_info<struct tag_data, std::string>;
+using errinfo_target = boost::error_info<struct tag_target, h256>;
+using BadFieldError = boost::tuple<errinfo_field, errinfo_data>;
 }
