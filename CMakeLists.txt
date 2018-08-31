@@ -46,7 +46,7 @@ HunterGate(
     LOCAL
 )
 
-# *************************************** GSE Network ******************************************** #
+# ----------------------- GSE Network Project ----------------------- #
 PROJECT(GSENetwork)
 
 SET(PROJECT_VERSION 1.0)
@@ -64,11 +64,11 @@ INCLUDE(GSEExecutableHelper)
 INCLUDE(GSEDependencies)
 INCLUDE(GSEUtils)
 
+# Boost
 SET(Boost_USE_STATIC_LIBS ON)
 SET(Boost_USE_MULTITHREADED ON)
 hunter_add_package(Boost COMPONENTS program_options filesystem system thread context fiber log)
-find_package(Boost CONFIG REQUIRED program_options filesystem system thread context fiber log)
-
+FIND_PACKAGE(Boost CONFIG REQUIRED program_options filesystem system thread context fiber log)
 SET(GSE_BOOST_LIBS
     ${Boost_LOG_LIBRARY}
     ${Boost_LOG_SETUP_LIBRARY}
@@ -78,30 +78,24 @@ SET(GSE_BOOST_LIBS
     ${Boost_ATOMIC_LIBRARY}
     ${Boost_CONTEXT_LIBRARY}
     )
-MESSAGE(STATUS "GSE_BOOST_LIBS:----> ${GSE_BOOST_LIBS}")
 
 hunter_add_package(cryptopp)
-find_package(cryptopp CONFIG REQUIRED)
+FIND_PACKAGE(cryptopp CONFIG REQUIRED)
 
 #hunter_add_package(libscrypt)
-#find_package(libscrypt CONFIG REQUIRED)
+#FIND_PACKAGE(libscrypt CONFIG REQUIRED)
 
-find_package(Threads)
+FIND_PACKAGE(Threads)
 
-MESSAGE(STATUS "MINIUPNPC:${MINIUPNPC}")
+
 IF(MINIUPNPC)
-    find_package(Miniupnpc 1.8.2013 REQUIRED)
+    MESSAGE(STATUS "MINIUPNPC is configured")
+    FIND_PACKAGE(Miniupnpc 1.8.2013 REQUIRED)
 ENDIF()
 
-SET(UTILS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/utils/include")
-
-configure_project()
-
-# no test module exist util now. (not for the future)
-
-MESSAGE(STATUS "Boost_INCLUDE_DIR:${Boost_INCLUDE_DIR}")
-include_directories (
-    ${CMAKE_SOURCE_DIR}
+CONFIGURE_PROJECT()
+INCLUDE_DIRECTORIES(
+#   ${CMAKE_SOURCE_DIR}
     ${Boost_INCLUDE_DIR}
     "${PROJECT_SOURCE_DIR}/database/include/leveldb/include"
     "${PROJECT_SOURCE_DIR}/core/include"
@@ -114,22 +108,15 @@ include_directories (
     "${PROJECT_SOURCE_DIR}/rpc/include"
     "${PROJECT_SOURCE_DIR}/utils/include")
 
-#link_directories(
-#    "${PROJECT_SOURCE_DIR}/cmake/install/boost_1_63_0/stage/lib")
+ADD_SUBDIRECTORY(config)
+ADD_SUBDIRECTORY(utils)
+ADD_SUBDIRECTORY(core)
+ADD_SUBDIRECTORY(crypto)
+ADD_SUBDIRECTORY(database)
+ADD_SUBDIRECTORY(rpc)
+ADD_SUBDIRECTORY(net)
+ADD_SUBDIRECTORY(runtime)
+ADD_SUBDIRECTORY(producer)
+ADD_SUBDIRECTORY(chain)
 
-
-add_subdirectory (config)
-add_subdirectory (utils)
-add_subdirectory (core)
-
-add_subdirectory (crypto)
-add_subdirectory (database)
-
-add_subdirectory (rpc)
-add_subdirectory (net)
-
-add_subdirectory (runtime)
-add_subdirectory (producer)
-add_subdirectory (chain)
-
-add_subdirectory (programs)
+ADD_SUBDIRECTORY(programs)
