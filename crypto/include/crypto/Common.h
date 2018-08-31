@@ -55,6 +55,13 @@ struct SignatureStruct
 	/// @returns true if r,s,v values are valid, otherwise false
 	bool isValid() const noexcept;
 
+	SignatureStruct& operator=(SignatureStruct const& sig) {
+	    r = sig.r;
+	    s = sig.s;
+	    v = sig.v;
+	    return *this;
+	}
+
 	h256 r;
 	h256 s;
 	byte v = 0;

@@ -1,8 +1,8 @@
-set (crypto_source
+SET(crypto_source
      Common.cpp
      SHA3.cpp
      Hash.cpp)
 
-add_library (crypto ${crypto_source})
-
-target_link_libraries (crypto utils ${GSE_BOOST_LIBS})
+ADD_LIBRARY(crypto ${crypto_source})
+TARGET_LINK_LIBRARIES(crypto
+    utils core ${GSE_BOOST_LIBS})
