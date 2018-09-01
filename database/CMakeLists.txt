@@ -6,8 +6,7 @@ ADD_SUBDIRECTORY(leveldb)
 
 SET(database_source
 	Database.cpp
-#	ProducerStore.cpp
-#	SubChainStore.cpp
+    DatabaseController.cpp
     )
 
 ADD_LIBRARY(database ${database_source})

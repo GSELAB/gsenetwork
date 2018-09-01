@@ -12,57 +12,33 @@
 #include <cassert>
 
 #include "database/Database.h"
-#include "leveldb/db.h"
+
+using namespace std;
 
 namespace database {
 
-class DatabaseImpl {
-
-private:
-    leveldb::DB *db;
-    leveldb::Options options;
-};
-
-Database::Database()
+template<typename T>
+void Database<T>::put(T const& object)
 {
-
-}
-
-Database::Database(std::string &dbFile)
-{
-    /*
-    options.create_if_missing = true;
-    leveldb::Status status = leveldb::DB::Open(options, dbFile, &db);
+    // key <- std::string : value <- std::string
+    leveldb::Status status = m_db->Put(leveldb::WriteOptions(), object.getKey(), object.getRLPData());
     assert(status.ok());
-    */
 }
 
-Database::~Database()
+template<typename T>
+std::string Database<T>::get(std::string const& key) const
 {
-    //delete db;
-}
-
-void Database::put(std::string &key, std::string &value)
-{
-    /*
-    leveldb::Status status = db->Put(leveldb::WriteOptions(), key, value);
+    // key <- std::string : value <- std::string
+    std::string value;
+    leveldb::Status status = m_db->Get(leveldb::ReadOptions(), key, &value);
     assert(status.ok());
-    */
+    return value;
 }
 
-bool Database::get(std::string& key, std::string* value)
+template<typename T>
+void Database<T>::del(std::string const& key)
 {
-    /*
-    leveldb::Status status = db->Get(leveldb::ReadOptions(), key, value);
-    // assert(status.ok());
-    return true;
-    */
-    return true;
-}
-
-void Database::del(std::string& key)
-{
-    //leveldb::Status status = db->Delete(leveldb::WriteOptions(), key);
+    leveldb::Status status = m_db->Delete(leveldb::WriteOptions(), key);
 }
 
 } // endof namespace
