@@ -13,10 +13,11 @@
 
 #include<vector>
 
-#include <chain/DbManager.h>
-#include <chain/NetController.h>
-#include <producer/Producer.h>
+#include <chain/Controller.h>
+#include <core/Producer.h>
 #include <core/Account.h>
+
+using namespace core;
 
 namespace producer {
 
@@ -39,7 +40,7 @@ class ProducerServer {
 public:
     ProducerServer();
 
-    ProducerServer(chain::DbManager &dbManager);
+    ProducerServer(chain::Controller *controller);
 
     ~ProducerServer();
 
@@ -54,17 +55,16 @@ public:
     void generateBlock();
 
 private:
-    std::vector<std::shared_ptr<Producer>> producers;
+    std::vector<std::shared_ptr<Producer>> m_producers;
 
-    chain::DbManager *dbManager;
-    chain::NetController *netController;
+    chain::Controller *m_controller;
 
 
-    ProducerState state;
+    ProducerState m_state;
 
-    std::shared_ptr<core::Account> currentAccout;
+    std::shared_ptr<core::Account> m_currentAccout;
 
-    uint64_t chainId;
+    chain::ChainID m_chainID;
 };
 
 } // end of namespace

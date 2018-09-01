@@ -16,14 +16,12 @@ namespace producer {
 
 ProducerServer::ProducerServer()
 {
-    this->state = Undefined;
+    m_state = Undefined;
 }
 
-ProducerServer::ProducerServer(chain::DbManager &dbManager)
+ProducerServer::ProducerServer(chain::Controller* controller)
 {
-    this->dbManager = &dbManager;
-
-    this->state = Undefined;
+    m_controller = controller;
 }
 
 ProducerServer::~ProducerServer()
@@ -33,21 +31,21 @@ ProducerServer::~ProducerServer()
 
 int ProducerServer::init()
 {
-    if (this->state != Undefined)
+    if (m_state != Undefined)
         return -1;
 
     // init the procuders
-    this->state = Ready;
+    m_state = Ready;
     return 0;
 }
 
 int ProducerServer::start()
 {
-    if (this->state != Ready && this->state != Suspend)
+    if (m_state != Ready && m_state != Suspend)
         return -1;
 
-    this->state = Running;
-    while (this->state == Running) {
+    m_state = Running;
+    while (m_state == Running) {
         generateBlock();
     }
 
@@ -56,16 +54,16 @@ int ProducerServer::start()
 
 int ProducerServer::suspend()
 {
-    if (this->state != Running)
+    if (m_state != Running)
         return -1;
 
-    this->state = Suspend;
+    m_state = Suspend;
     return 0;
 }
 
 int ProducerServer::stop()
 {
-    this->state = Stop;
+    m_state = Stop;
     return 0;
 }
 

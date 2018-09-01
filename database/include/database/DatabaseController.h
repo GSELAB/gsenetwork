@@ -12,6 +12,8 @@
 #pragma once
 
 #include <chain/Controller.h>
+#include <database/Database.h>
+#include <core/Account.h>
 
 using namespace chain;
 
@@ -24,7 +26,10 @@ public:
     DatabaseController(Controller *controller);
 
 private:
+    Controller *m_controller;
 
-    Controller *controller;
+    Database<core::Account> m_accoutStore;
+    Database<core::Transaction> m_transactionStroe;
+    Database<core::Block> m_blockStroe;
 };
 } // namespace end

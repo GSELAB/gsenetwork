@@ -1,5 +1,4 @@
 SET(producer_source
-    Producer.cpp
     ProducerServer.cpp)
 
 ADD_LIBRARY(producer ${producer_source})
