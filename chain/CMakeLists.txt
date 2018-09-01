@@ -1,5 +1,4 @@
 SET (chain_source
-     DbManager.cpp
      NetController.cpp
      SubChainController.cpp
      Controller.cpp)
