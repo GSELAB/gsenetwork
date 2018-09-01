@@ -4,10 +4,13 @@ SET(core_source
     Common.cpp
     Log.cpp
     RLP.cpp
+    Address.cpp
+    Account.cpp
     TransactionReceipt.cpp
     Transaction.cpp
     Block.cpp
-    Address.cpp
+    Producer.cpp
+    SubChain.cpp
     Worker.cpp)
 
 ADD_LIBRARY(core ${core_source})
