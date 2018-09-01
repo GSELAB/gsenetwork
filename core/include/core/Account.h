@@ -11,20 +11,59 @@
 
 #pragma once
 
-//#include "core/Timestamp.h"
+#include <core/Object.h>
+#include <core/RLP.h>
+#include <core/Common.h>
+#include <core/Address.h>
 
 namespace core {
 
-class Account {
+#define ACCOUNT_COMMON_FIELDS (4)
+
+class Account: public Object {
 public:
+    Account(int64_t timestamp);
+
+    Account(bytesConstRef data);
+
+    ~Account();
+
+    bool operator==(Account const& account);
+
+    void streamRLP(RLPStream& rlpStream) const;
+
+    void setAddress(Address const& address);
+
+    void setAlive(bool status);
+
+    void setBalance(uint64_t balance);
+
+    void addContractAddress(Address const& address);
+
+    Address const& getAddress() const;
+
+    bool isAlive() const;
+
+    uint64_t getBalance() const;
+
+    int64_t getTimestamp() const;
+
+    Addresses const& getContractAddresses() const;
+
+    // @override
+    std::string getKey();
+
+    // @override
+    std::string getRLPData();
 
 private:
-
-    bool m_isAlive = false;
-
+    Address m_address;
+    bool m_alive = false;
     uint64_t m_balance;
+    int64_t m_timestamp;
+    Addresses m_contractAddresses;
 
-    //Timestamp m_createdTime;
+    h256 m_hash;
 };
 
 } /* namespace */

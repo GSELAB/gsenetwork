@@ -11,17 +11,20 @@
 
 #pragma once
 
-#include "core/Transaction.h"
-#include "core/Types.h"
-#include "core/Address.h"
+#include <core/Transaction.h>
+#include <core/TransactionReceipt.h>
+#include <core/Types.h>
+#include <core/Address.h>
 #include <core/Common.h>
 #include <core/RLP.h>
+#include <core/Object.h>
+#include <chain/Types.h>
 
 namespace core {
 
-#define BLOCK_HEADER_FIELDS (8)
+#define BLOCK_HEADER_FIELDS (9)
 
-class BlockHeader {
+class BlockHeader: public Object {
 public:
     BlockHeader();
 
@@ -72,7 +75,15 @@ public:
     h256 const& getHash() const;
 
     void clear();
+
+    // @override
+    std::string getKey();
+
+    // @override
+    std::string getRLPData();
+
 private:
+    chain::ChainID m_chainID;
     Address  m_producer;
     h256 m_parentHash;
     h256 m_mklRoot;
@@ -85,11 +96,19 @@ private:
     h256 m_hash; // sha3 of the blockheader
 };
 
-class Block {
+#define BLOCK_FIELDS 3
+
+class Block: public Object {
 public:
     Block();
 
+    Block(BlockHeader const&blockHeader);
+
     Block(Block const& block);
+
+    Block(bytesConstRef data);
+
+    void streamRLP(RLPStream& rlpStream) const;
 
     Block& operator=(Block const& block);
 
@@ -97,13 +116,32 @@ public:
 
     bool operator!=(Block const& block) const;
 
+    void setBlockHeader(BlockHeader const& blockHeader);
 
+    void addTransaction(Transaction const& transaction);
+
+    void addTransactionReceipt(TransactionReceipt const& transactionReceipt);
+
+    Address getProducer() const;
+
+    BlockHeader const& getBlockHeader() const;
+
+    Transactions const& getTransactions() const;
+
+    TransactionReceipts const& getTransactionReceipts() const;
+
+    // @override
+    std::string getKey();
+
+    // @override
+    std::string getRLPData();
 
 private:
     BlockHeader m_blockHeader;
     Transactions m_transactions;
+    TransactionReceipts m_transactionReceipts;
 
-
+    h256 m_hash;
 };
 
 }  /* namespace end */

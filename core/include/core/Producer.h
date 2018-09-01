@@ -12,18 +12,43 @@
 #pragma once
 
 #include<vector>
+
 #include <core/Address.h>
+#include <core/Object.h>
+#include <core/RLP.h>
 
 namespace core {
 
-class Producer {
+#define PRODUCER_FIELDS (3)
+
+class Producer: public Object {
 public:
-    Producer();
+    Producer(Address const& address, int64_t timestamp);
+
+    Producer(bytesConstRef data);
 
     ~Producer();
 
+    void streamRLP(RLPStream& rlpStream) const;
+
+    void setVotes(uint64_t votes);
+
+    Address const& getAddress() const;
+
+    int64_t getTimestamp() const;
+
+    uint64_t getVotes() const;
+
+    // @override
+    std::string getKey();
+
+    // @override
+    std::string getRLPData();
+
 private:
-    Address address;
+    Address m_address;
+    int64_t m_timestamp;
+    uint64_t m_votes;
 };
 
 } // end of namespace

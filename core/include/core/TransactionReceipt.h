@@ -43,4 +43,6 @@ private:
     bool m_isCode;
 };
 
+using TransactionReceipts = std::vector<TransactionReceipt>;
+
 } // end namespace

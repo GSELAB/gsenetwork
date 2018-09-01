@@ -74,6 +74,12 @@ public:
 
     uint64_t getValue() const;
 
+    // @override
+    std::string getKey();
+
+    // @override
+    std::string getRLPData();
+
 private:
     chain::ChainID m_chainID;
     uint32_t m_type;

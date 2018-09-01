@@ -40,6 +40,7 @@ Transaction::Transaction(bytesConstRef data)
     RLP const rlp(data);
     try {
         if (!rlp.isList()) {
+            BOOST_THROW_EXCEPTION(std::range_error("transaction RLP must be a list"));
             // BOOST_THROW_EXCEPTION(errinfo_comment("transaction RLP must be a list"));
         }
 
@@ -55,8 +56,9 @@ Transaction::Transaction(bytesConstRef data)
         h256 s = rlp[index = 8].toInt<u256>();
         m_signature = SignatureStruct(r, s, v);
     } catch (Exception& e) {
-        e << errinfo_name("Invalid transaction format") << BadFieldError(index, toHex(rlp[index].data().toBytes()));
-        throw;
+        //e << errinfo_name("Invalid transaction format") << BadFieldError(index, toHex(rlp[index].data().toBytes()));
+        //throw;
+        BOOST_THROW_EXCEPTION(e);
     }
 }
 
@@ -183,4 +185,19 @@ bytes const& Transaction::getData() const
 uint64_t Transaction::getValue() const
 {
     return m_value;
+}
+
+// @override
+std::string Transaction::getKey()
+{
+    return getHash().ref().toString();
+}
+
+// @override
+std::string Transaction::getRLPData()
+{
+    core::RLPStream rlpStream;
+    streamRLP(rlpStream);
+    bytesRef bsr = *(bytesRef*)&rlpStream.out();
+    return bsr.toString();
 }

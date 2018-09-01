@@ -17,13 +17,9 @@ namespace core {
 
 class Object {
 public:
-    Object() = default;
-    ~Object() = default;
+    virtual std::string getRLPData() = 0;
 
-    virtual bytesConstRef getData() = 0;
-
-private:
-    bytes data;
+    virtual std::string getKey() = 0;
 };
 
 } // end namespace

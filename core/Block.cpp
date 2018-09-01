@@ -86,9 +86,10 @@ bool BlockHeader::operator!=(BlockHeader const& header) const
 void BlockHeader::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(BLOCK_HEADER_FIELDS);
-    rlpStream << m_producer
+    rlpStream << m_chainID
+              << m_producer
               << m_parentHash
-              <<m_mklRoot
+              << m_mklRoot
               << m_transactionsRoot
               << m_receiptRoot
               << m_number
@@ -100,16 +101,17 @@ void BlockHeader::populate(RLP const& rlp)
 {
     unsigned index = 0;
     try {
-        m_producer = rlp[index = 0].toHash<Address>(RLP::VeryStrict);
-        m_parentHash = rlp[index = 1].toHash<h256>(RLP::VeryStrict);
-        m_mklRoot = rlp[index = 2].toHash<h256>(RLP::VeryStrict);
-        m_transactionsRoot = rlp[index = 3].toHash<h256>(RLP::VeryStrict);
-        m_receiptRoot = rlp[index = 4].toHash<h256>(RLP::VeryStrict);
-        m_number = rlp[index = 5].toPositiveInt64();
-        m_timestamp = rlp[index = 6].toPositiveInt64();
-        m_extra = rlp[index = 7].toBytes();
+        m_chainID = rlp[index++].toInt<chain::ChainID>();
+        m_producer = rlp[index++].toHash<Address>(RLP::VeryStrict);
+        m_parentHash = rlp[index++].toHash<h256>(RLP::VeryStrict);
+        m_mklRoot = rlp[index++].toHash<h256>(RLP::VeryStrict);
+        m_transactionsRoot = rlp[index++].toHash<h256>(RLP::VeryStrict);
+        m_receiptRoot = rlp[index++].toHash<h256>(RLP::VeryStrict);
+        m_number = rlp[index++].toPositiveInt64();
+        m_timestamp = rlp[index++].toPositiveInt64();
+        m_extra = rlp[index++].toBytes();
     } catch (Exception const& e) {
-        e << errinfo_name("Interpret RLP header failed") << BadFieldError(index, toHex(rlp[index].data().toBytes()));
+        e << errinfo_name("Interpret RLP header failed") << BadFieldError(index, toHex(rlp[index - 1].data().toBytes()));
         throw;
     }
 }
@@ -187,4 +189,169 @@ void BlockHeader::clear()
     m_timestamp = -1;
     m_extra.clear();
     m_hash = h256();
+}
+
+// @override
+std::string BlockHeader::getKey()
+{
+    if (m_hash) {
+        return m_hash.ref().toString();
+    }
+
+    RLPStream rlpStream;
+    streamRLP(rlpStream);
+    m_hash = sha3(&rlpStream.out());
+    return m_hash.ref().toString();
+}
+
+// @override
+std::string BlockHeader::getRLPData()
+{
+    RLPStream rlpStream;
+    streamRLP(rlpStream);
+    bytesRef& bsr = *(bytesRef*)&rlpStream.out();
+    return bsr.toString();
+}
+
+/* --- Block ---*/
+Block::Block()
+{
+
+}
+
+Block::Block(BlockHeader const&blockHeader)
+{
+    m_blockHeader = blockHeader;
+}
+
+Block::Block(Block const& block)
+{
+
+}
+
+Block::Block(bytesConstRef data)
+{
+    try {
+        RLP rlp(data);
+
+
+
+    } catch (Exception e) {
+        BOOST_THROW_EXCEPTION(e);
+    }
+}
+
+void Block::streamRLP(RLPStream& rlpStream) const
+{
+    rlpStream.appendList(3);
+
+    {
+        // block header rlp
+        RLPStream rlpStreamBlockHeader;
+        m_blockHeader.streamRLP(rlpStreamBlockHeader);
+
+        rlpStream.appendRaw(rlpStreamBlockHeader.out());
+    }
+
+    {
+        // transactions rlp
+        RLPStream rlpStreamTransactions;
+        rlpStreamTransactions.appendList(m_transactions.size());
+        for (unsigned i = 0, m = m_transactions.size(); i < m; i++) {
+            RLPStream rlpStreamTransaction;
+            m_transactions[i].streamRLP(rlpStreamTransaction);
+            rlpStreamTransactions.appendRaw(rlpStreamTransaction.out());
+        }
+
+        rlpStream.appendRaw(rlpStreamTransactions.out());
+    }
+
+    {
+        RLPStream rlpStreamReceipts;
+        rlpStreamReceipts.appendList(m_transactionReceipts.size());
+        for (unsigned i = 0, m = m_transactionReceipts.size(); i < m; i++) {
+            RLPStream rlpStreamReceipt;
+            m_transactionReceipts[i].streamRLP(rlpStreamReceipt);
+            rlpStreamReceipts.appendRaw(rlpStreamReceipt.out());
+        }
+
+        rlpStream.appendRaw(rlpStreamReceipts.out());
+    }
+}
+
+Block& Block::operator=(Block const& block)
+{
+    // Incomplete compare
+    m_blockHeader = block.getBlockHeader();
+
+    // add transactions & receipts
+    return *this;
+}
+
+bool Block::operator==(Block const& block) const
+{
+    // Incomplete compare
+    return (m_blockHeader == block.getBlockHeader());
+}
+
+bool Block::operator!=(Block const& block) const
+{
+    return !operator==(block);
+}
+
+void Block::setBlockHeader(BlockHeader const& blockHeader)
+{
+    m_blockHeader = blockHeader;
+}
+
+void Block::addTransaction(Transaction const& transaction)
+{
+    // TODO:
+}
+
+void Block::addTransactionReceipt(TransactionReceipt const& transactionReceipt)
+{
+    // TODO:
+}
+
+Address Block::getProducer() const
+{
+    return m_blockHeader.getProducer();
+}
+
+BlockHeader const& Block::getBlockHeader() const
+{
+    return m_blockHeader;
+}
+
+Transactions const& Block::getTransactions() const
+{
+    return m_transactions;
+}
+
+TransactionReceipts const& Block::getTransactionReceipts() const
+{
+    return m_transactionReceipts;
+}
+
+// @override
+std::string Block::getKey()
+{
+    if (m_hash) {
+        return m_hash.ref().toString();
+    }
+
+    RLPStream rlpStream;
+    streamRLP(rlpStream);
+    m_hash = sha3(&rlpStream.out());
+    return m_hash.ref().toString();
+}
+
+// @override
+std::string Block::getRLPData()
+{
+    RLPStream rlpStream;
+    streamRLP(rlpStream);
+    bytesRef& bsr = *(bytesRef*)&rlpStream.out();
+    return bsr.toString();
 }
