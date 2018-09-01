@@ -16,6 +16,11 @@
 
 #pragma once
 
+#include <string>
+#include <sstream>
+#include <iosfwd>
+
+namespace utils {
 /*
  * Json to Proto
  */
@@ -24,3 +29,14 @@
 /*
  * Proto to Json
  */
+
+template <typename T>
+inline std::string toString(T const& t)
+{
+    std::ostringstream o;
+    o << t;
+    return o.str();
+}
+
+std::string toHex(uint64_t data);
+} // end namespace

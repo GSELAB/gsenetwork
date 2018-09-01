@@ -13,3 +13,15 @@
  * @author guoygang <hero.gariker@gmail.com>
  * @date 2018
  */
+
+ #include <utils/Utils.h>
+
+ namespace utils {
+
+
+ std::string toHex(uint64_t data)
+ {
+    return std::string();
+ }
+
+ } // end namespace
