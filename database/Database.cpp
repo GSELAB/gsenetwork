@@ -17,7 +17,7 @@ using namespace std;
 
 namespace database {
 
-template<typename T>
+template<class T>
 void Database<T>::put(T const& object)
 {
     // key <- std::string : value <- std::string
