@@ -9,13 +9,11 @@
  *
  */
 
-#include "chain/NetController.h"
+#include "net/NetController.h"
 
 #include <net/All.h>
 
-using namespace net;
-
-namespace chain {
+namespace net {
 
 NetController *NetController::netController = nullptr;
 

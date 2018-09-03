@@ -11,8 +11,12 @@
 
 #pragma once
 
-#include <chain/NetController.h>
+#include <chain/Types.h>
+#include <net/NetController.h>
 #include <database/DatabaseController.h>
+#include <core/Transaction.h>
+#include <core/TransactionReceipt.h>
+#include <core/Block.h>
 
 namespace chain {
 
@@ -24,8 +28,18 @@ public:
 
     void init();
 
+    std::shared_ptr<TransactionReceipt> processTransaction(Transaction const& transaction, int64_t max_timestamp);
+
+    void processBlock(Block const& block);
+
+    void checkSwitch();
+
+
+
+
+
 private:
-    NetController *m_net;
+    net::NetController *m_net;
 
     database::DatabaseController *m_dbc;
 };

@@ -1,5 +1,4 @@
 SET (chain_source
-     NetController.cpp
      SubChainController.cpp
      Controller.cpp)
 

@@ -15,6 +15,7 @@
 #include <chain/Controller.h>
 
 using namespace database;
+using namespace net;
 
 namespace chain {
 

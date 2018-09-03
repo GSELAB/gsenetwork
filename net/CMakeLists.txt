@@ -11,7 +11,8 @@ SET(net_source
     Peer.cpp
     Capability.cpp
     Session.cpp
-    Host.cpp)
+    Host.cpp
+    NetController.cpp)
 
 ADD_LIBRARY(net ${net_source})
 TARGET_LINK_LIBRARIES(net

@@ -13,13 +13,10 @@
 
 #include <queue>
 
-//#include <bundle/All.h>
-//#include <net/Host.h>
-
 #include <core/Block.h>
 #include <core/Transaction.h>
 
-namespace chain {
+namespace net {
 
 class NetController {
 public:
