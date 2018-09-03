@@ -9,11 +9,6 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
 #pragma once
 
 #include <string>
@@ -29,7 +24,7 @@ namespace utils {
 /*
  * Proto to Json
  */
-
+/*
 template <typename T>
 inline std::string toString(T const& t)
 {
@@ -39,4 +34,12 @@ inline std::string toString(T const& t)
 }
 
 std::string toHex(uint64_t data);
+*/
+
+#define MAX_PATH_LENGTH (256)
+
+int MKDIR(std::string const& path);
+
+std::string pathcat(std::string const& path, std::string const& file);
+
 } // end namespace

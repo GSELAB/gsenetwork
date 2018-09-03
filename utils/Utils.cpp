@@ -9,19 +9,72 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
+#include <stdint.h>
+#include <string>
+#include <cassert>
 
- #include <utils/Utils.h>
+#ifdef WIN32
+error(Not supprot windows)
+#else
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
- namespace utils {
+#include <core/Log.h>
+#include <utils/Utils.h>
+
+namespace utils {
 
 
- std::string toHex(uint64_t data)
- {
+std::string toHex(uint64_t data)
+{
     return std::string();
- }
+}
 
- } // end namespace
+
+
+int MKDIR(std::string const& path)
+{
+    char dir[MAX_PATH_LENGTH] = { 0 };
+    uint32_t len = path.length();
+
+    if (len > MAX_PATH_LENGTH) {
+        CERROR << "SIZEOF(" << path << ") > " << MAX_PATH_LENGTH;
+        return -1;
+    }
+
+    for (unsigned i = 0; i < len; i++) {
+        dir[i] = path[i];
+        if (dir[i] == '/' || dir[i] == '\\') {
+            if (access(dir, 0) != 0) {
+                int ret = mkdir(dir, S_IRWXU);
+                if (ret != 0) {
+                    CERROR << "MKDIR " << dir << " failed!";
+                    return -1;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+std::string pathcat(std::string const& path, std::string const& file)
+{
+    size_t len = path.length();
+
+    size_t pos = file.find('/');
+    if (pos != std::string::npos)
+        CERROR << "Invalid file name!";
+    assert(pos == std::string::npos);
+
+    if (path[len - 1] == '/') {
+        return path + file;
+    } else {
+        return path + "/" + file;
+    }
+
+}
+
+} // end namespace
