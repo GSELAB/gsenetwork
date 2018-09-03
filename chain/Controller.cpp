@@ -9,31 +9,37 @@
  *
  */
 
-#include <chain/Controller.h>
-
 #include <boost/thread.hpp>
 #include <iostream>
 
+#include <chain/Controller.h>
+
+using namespace database;
+
 namespace chain {
 
-Controller::Controller() {
-    m_net = NetController::getInstance();
+Controller::Controller()
+{
+
 }
 
-Controller::~Controller() {
+Controller::~Controller()
+{
     // delete m_net;
 }
 
 namespace {
 void my_func()
 {
-    std::cout << "ok" << std::endl;
+    std::cout << "GSE TEST!" << std::endl;
 }
 }
 
 void Controller::init()
 {
-    // m_net->init();
+    m_net = NetController::getInstance();
+    m_dbc = new DatabaseController();
+    m_dbc->init();
 
     boost::thread t(my_func);
     t.join();
