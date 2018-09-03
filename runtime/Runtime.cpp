@@ -10,12 +10,15 @@
  */
 
 #include <runtime/Runtime.h>
+#include <core/Address.h>
+#include <storage/Repository.h>
 
 using namespace runtime;
+using namespace runtime::storage;
 
-Runtime::Runtime(Transaction const& transaction, Block const& block)
+Runtime::Runtime(Transaction const& transaction, Block const& block, std::shared_ptr<Repository> repository): m_transaction(transaction)
 {
-
+    m_repository = repository;
 }
 
 void Runtime::init()
@@ -25,6 +28,13 @@ void Runtime::init()
 
 void Runtime::excute()
 {
+    Address const& sender = m_transaction.getSender();
+    Address const& recipient = m_transaction.getRecipient();
+    bytes const& data = m_transaction.getData();
+    uint64_t value = m_transaction.getValue();
+
+    // transafer
+    m_repository->transfer(sender, recipient, value);
 
 }
 

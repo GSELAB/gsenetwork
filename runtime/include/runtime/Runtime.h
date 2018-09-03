@@ -13,14 +13,16 @@
 
 #include <core/Transaction.h>
 #include <core/Block.h>
+#include <storage/Repository.h>
 
 using namespace core;
+using namespace runtime::storage;
 
 namespace runtime {
 
 class Runtime {
 public:
-    Runtime(Transaction const& transaction, Block const& block);
+    Runtime(Transaction const& transaction, Block const& block, std::shared_ptr<Repository> repository);
 
     void init();
 
@@ -31,7 +33,8 @@ public:
     uint64_t getResult() const;
 
 private:
-    Transaction *transaction;
+    Transaction m_transaction;
+    std::shared_ptr<Repository> m_repository;
 
 };
 } // end namespace

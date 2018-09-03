@@ -7,4 +7,4 @@ ADD_SUBDIRECTORY(vm)
 
 ADD_LIBRARY(runtime ${runtime_source})
 TARGET_LINK_LIBRARIES(runtime
-    utils runtime_storage chain core crypto ${GSE_BOOST_LIBS})
+    utils runtime_storage database chain core crypto ${GSE_BOOST_LIBS})
