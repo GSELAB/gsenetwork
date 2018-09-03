@@ -47,6 +47,8 @@ BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(g_errorLogger,
     (boost::log::keywords::severity = VerbosityError)(boost::log::keywords::channel = "error"))
 #define cerror LOG(core::g_errorLogger::get())
 
+#define CERROR LOG(core::g_errorLogger::get())
+
 BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(g_warnLogger,
     boost::log::sources::severity_channel_logger_mt<>,
     (boost::log::keywords::severity = VerbosityWarning)(boost::log::keywords::channel = "warn"))
@@ -56,11 +58,13 @@ BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(g_noteLogger,
     boost::log::sources::severity_channel_logger_mt<>,
     (boost::log::keywords::severity = VerbosityInfo)(boost::log::keywords::channel = "info"))
 #define cnote LOG(core::g_noteLogger::get())
+#define CINFO LOG(core::g_noteLogger::get())
 
 BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(g_debugLogger,
     boost::log::sources::severity_channel_logger_mt<>,
     (boost::log::keywords::severity = VerbosityDebug)(boost::log::keywords::channel = "debug"))
 #define cdebug LOG(core::g_debugLogger::get())
+#define CDEBUG LOG(core::g_debugLogger::get())
 
 BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(g_traceLogger,
     boost::log::sources::severity_channel_logger_mt<>,
