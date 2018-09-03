@@ -12,6 +12,7 @@
 #pragma once
 
 #include <chain/NetController.h>
+#include <database/DatabaseController.h>
 
 namespace chain {
 
@@ -25,6 +26,8 @@ public:
 
 private:
     NetController *m_net;
+
+    database::DatabaseController *m_dbc;
 };
 
 extern Controller* toController();

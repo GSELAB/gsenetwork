@@ -12,6 +12,7 @@
 #include <iostream>
 
 #include <core/Address.h>
+#include <core/Log.h>
 #include <crypto/Common.h>
 
 #include <boost/algorithm/string.hpp>
@@ -109,6 +110,7 @@ int main(int argc, char** argv)
     signal(SIGINT, &exitHandler);
 
     // TODO : Controller
+    CINFO << "Controller->init\n";
     chain::toController()->init();
 
     if (true) {
