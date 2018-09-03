@@ -14,14 +14,12 @@
 #include <string>
 #include <memory>
 
-#include <chain/Controller.h>
 #include <database/Database.h>
 #include <core/Account.h>
 #include <core/Transaction.h>
 #include <core/Block.h>
 #include <core/SubChain.h>
 
-using namespace chain;
 using namespace core;
 using namespace std;
 
@@ -29,36 +27,35 @@ namespace database {
 
 class DatabaseController {
 public:
-    DatabaseController(Controller *controller);
+    DatabaseController();
 
     Account getAccount(Address const& address) const;
 
-    void putAccount(Account const& account);
+    void putAccount(Account& account);
 
     Transaction getTransaction(string const& key) const;
 
-    void putTransaction(Transaction const& transaction);
+    void putTransaction(Transaction& transaction);
 
     Block getBlock(string const& key) const;
 
     Block getBlock(uint64_t blockNumber) const;
 
-    void putBlock(Block const& block);
+    void putBlock(Block& block);
 
     SubChain getSubChain(chain::ChainID chainID) const;
 
-    void putSubChain(SubChain const& subChain);
+    void putSubChain(SubChain& subChain);
 
-protected:
     void init();
 
 private:
-    Controller *m_controller;
+//    Controller *m_controller;
 
-    unique_ptr<Database<core::Account>> m_accountStore;
-    unique_ptr<Database<core::Transaction>> m_transactionStore;
-    unique_ptr<Database<core::Block>> m_blockStore;
-    unique_ptr<Database<core::SubChain>> m_subChainStore;
+    unique_ptr<Database> m_accountStore;
+    unique_ptr<Database> m_transactionStore;
+    unique_ptr<Database> m_blockStore;
+    unique_ptr<Database> m_subChainStore;
 
 };
 } // namespace end

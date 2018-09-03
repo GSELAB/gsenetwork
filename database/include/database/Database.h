@@ -13,35 +13,28 @@
 
 #include <string>
 
-#include "leveldb/db.h"
 #include <core/Object.h>
-
-using namespace std;
 
 namespace database {
 
-template<typename T>
+class DatabaseImpl;
+
 class Database {
 public:
-    Database(string const& file) {
-        m_options.create_if_missing = true;
-        leveldb::Status status = leveldb::DB::Open(m_options, file, &m_db);
-        assert(status.ok());
-    }
+    Database(std::string const& file);
 
-    ~Database() {
-        delete m_db;
-    }
+    Database(std::string const& path, std::string const& file);
 
-    void put(T const& object);
+    ~Database();
+
+    void put(core::Object& object);
 
     std::string get(std::string const& key) const;
 
     void del(std::string const& key);
 
 private:
-    leveldb::DB *m_db;
-    leveldb::Options m_options;
+    std::unique_ptr<DatabaseImpl> m_impl;
 };
 
-}
+} // end namespace

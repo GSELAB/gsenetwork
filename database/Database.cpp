@@ -11,34 +11,85 @@
 
 #include <cassert>
 
-#include "database/Database.h"
+#include <leveldb/db.h>
+#include <database/Database.h>
+#include <core/Log.h>
+#include <utils/Utils.h>
 
 using namespace std;
 
 namespace database {
 
-template<class T>
-void Database<T>::put(T const& object)
+class DatabaseImpl {
+public:
+    DatabaseImpl(std::string const& file) {
+        m_options.create_if_missing = true;
+        leveldb::Status status = leveldb::DB::Open(m_options, file, &m_db);
+        if (status.ok() == false) {
+            CERROR << "Unable to open/create database " << file;
+        } else {
+            CINFO << "Open/create " << file << " success!";
+        }
+        assert(status.ok());
+    }
+
+    ~DatabaseImpl() {
+        delete m_db;
+    }
+
+    void put(std::string const& key, std::string const& value) {
+        leveldb::Status status = m_db->Put(leveldb::WriteOptions(), key, value);
+        assert(status.ok());
+    }
+
+    std::string get(std::string const& key) const {
+        std::string value;
+        leveldb::Status status = m_db->Get(leveldb::ReadOptions(), key, &value);
+        assert(status.ok());
+        return value;
+    }
+
+    void del(std::string const& key) {
+        leveldb::Status status = m_db->Delete(leveldb::WriteOptions(), key);
+    }
+
+private:
+    leveldb::DB *m_db;
+    leveldb::Options m_options;
+};
+
+Database::Database(std::string const& file)
 {
-    // key <- std::string : value <- std::string
-    leveldb::Status status = m_db->Put(leveldb::WriteOptions(), object.getKey(), object.getRLPData());
-    assert(status.ok());
+    utils::MKDIR(file);
+    m_impl = std::unique_ptr<DatabaseImpl>(new DatabaseImpl(file));
 }
 
-template<typename T>
-std::string Database<T>::get(std::string const& key) const
+Database::Database(std::string const& path, std::string const& file)
 {
-    // key <- std::string : value <- std::string
-    std::string value;
-    leveldb::Status status = m_db->Get(leveldb::ReadOptions(), key, &value);
-    assert(status.ok());
-    return value;
+    std::string pathFile = utils::pathcat(path, file);
+    utils::MKDIR(path);
+    m_impl = std::unique_ptr<DatabaseImpl>(new DatabaseImpl(pathFile));
 }
 
-template<typename T>
-void Database<T>::del(std::string const& key)
+Database::~Database()
 {
-    leveldb::Status status = m_db->Delete(leveldb::WriteOptions(), key);
+
+}
+
+void Database::put(core::Object& object)
+{
+    m_impl->put(object.getKey(), object.getRLPData());
+    //m_impl->put(*(std::string const*)&object.getKey(), *(std::string const*)&object.getRLPData());
+}
+
+std::string Database::get(std::string const& key) const
+{
+    return m_impl->get(key);
+}
+
+void Database::del(std::string const& key)
+{
+    m_impl->del(key);
 }
 
 } // endof namespace
