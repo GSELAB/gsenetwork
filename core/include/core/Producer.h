@@ -23,6 +23,8 @@ namespace core {
 
 class Producer: public Object {
 public:
+    Producer() {}
+
     Producer(Address const& address, int64_t timestamp);
 
     Producer(bytesConstRef data);

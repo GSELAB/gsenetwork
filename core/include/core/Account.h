@@ -22,13 +22,17 @@ namespace core {
 
 class Account: public Object {
 public:
+    Account() {}
+
     Account(int64_t timestamp);
 
     Account(bytesConstRef data);
 
     ~Account();
 
-    bool operator==(Account const& account);
+    bool operator==(Account const& account) const;
+
+    bool equal(Account const& account) const;
 
     void streamRLP(RLPStream& rlpStream) const;
 

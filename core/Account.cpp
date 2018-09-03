@@ -45,7 +45,15 @@ Account::~Account()
 
 }
 
-bool Account::operator==(Account const& account)
+bool Account::operator==(Account const& account) const
+{
+    return (m_address == account.getAddress()) &&
+        (m_alive == account.isAlive()) &&
+        (m_balance == account.getBalance()) &&
+        (m_timestamp == account.getTimestamp());
+}
+
+bool Account::equal(Account const& account) const
 {
     return (m_address == account.getAddress()) &&
         (m_alive == account.isAlive()) &&
