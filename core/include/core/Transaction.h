@@ -15,6 +15,7 @@
 #include "core/Address.h"
 #include <core/Common.h>
 #include <core/RLP.h>
+#include <core/Object.h>
 
 #include <crypto/Common.h>
 #include <chain/Types.h>
@@ -26,7 +27,7 @@ namespace core {
 // include signature
 #define TRANSACTION_FIELDS (6 + 3)
 
-class Transaction {
+class Transaction: public Object {
 public:
     static const uint32_t ContractCreation;
     static const uint32_t ContractCall;
