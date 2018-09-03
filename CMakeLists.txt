@@ -99,9 +99,9 @@ INCLUDE_DIRECTORIES(
     ${Boost_INCLUDE_DIR}
     "${PROJECT_SOURCE_DIR}/database/include/leveldb/include"
     "${PROJECT_SOURCE_DIR}/core/include"
-    "${PROJECT_SOURCE_DIR}/runtime/include"
     "${PROJECT_SOURCE_DIR}/runtime/storage/include"
     "${PROJECT_SOURCE_DIR}/runtime/vm/include"
+    "${PROJECT_SOURCE_DIR}/runtime/include"
     "${PROJECT_SOURCE_DIR}/crypto/include"
     "${PROJECT_SOURCE_DIR}/chain/include"
     "${PROJECT_SOURCE_DIR}/config/include"
