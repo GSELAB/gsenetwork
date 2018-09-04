@@ -49,9 +49,13 @@ public:
 
     void init();
 
+protected:
+    bool checkGenesisExisted();
+
 private:
 //    Controller *m_controller;
 
+    unique_ptr<Database> m_attributesStore;
     unique_ptr<Database> m_accountStore;
     unique_ptr<Database> m_transactionStore;
     unique_ptr<Database> m_blockStore;

@@ -25,12 +25,10 @@ public:
     DatabaseImpl(std::string const& file) {
         m_options.create_if_missing = true;
         leveldb::Status status = leveldb::DB::Open(m_options, file, &m_db);
-        if (status.ok() == false) {
+        if (!status.ok()) {
             CERROR << "Unable to open/create database " << file;
-        } else {
-            CINFO << "Open/create " << file << " success!";
+            BOOST_THROW_EXCEPTION(std::range_error("Error to call db->get()"));
         }
-        assert(status.ok());
     }
 
     ~DatabaseImpl() {
@@ -45,8 +43,13 @@ public:
     std::string get(std::string const& key) const {
         std::string value;
         leveldb::Status status = m_db->Get(leveldb::ReadOptions(), key, &value);
-        assert(status.ok());
-        return value;
+        if (status.ok()) {
+            return value;
+        } else if (status.IsNotFound()) {
+            return std::string();
+        }
+
+        BOOST_THROW_EXCEPTION(std::range_error("Error to call db->get()"));
     }
 
     void del(std::string const& key) {
@@ -61,25 +64,24 @@ private:
 Database::Database(std::string const& file)
 {
     utils::MKDIR(file);
-    m_impl = std::unique_ptr<DatabaseImpl>(new DatabaseImpl(file));
+    m_impl = new DatabaseImpl(file);
 }
 
 Database::Database(std::string const& path, std::string const& file)
 {
     std::string pathFile = utils::pathcat(path, file);
     utils::MKDIR(path);
-    m_impl = std::unique_ptr<DatabaseImpl>(new DatabaseImpl(pathFile));
+    m_impl = new DatabaseImpl(pathFile);
 }
 
 Database::~Database()
 {
-
+    delete m_impl;
 }
 
 void Database::put(core::Object& object)
 {
     m_impl->put(object.getKey(), object.getRLPData());
-    //m_impl->put(*(std::string const*)&object.getKey(), *(std::string const*)&object.getRLPData());
 }
 
 std::string Database::get(std::string const& key) const

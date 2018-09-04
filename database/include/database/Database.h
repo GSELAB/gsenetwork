@@ -34,7 +34,7 @@ public:
     void del(std::string const& key);
 
 private:
-    std::unique_ptr<DatabaseImpl> m_impl;
+    DatabaseImpl* m_impl;
 };
 
 } // end namespace
