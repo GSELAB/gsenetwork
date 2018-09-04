@@ -1,4 +1,5 @@
 SET(config_source
+    Constant.cpp
     DefaultConfig.cpp)
 
 ADD_LIBRARY(config ${config_source})
