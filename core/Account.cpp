@@ -133,7 +133,6 @@ std::string Account::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    bytesRef& bsr = *(bytesRef*)&rlpStream.out();
-    return bsr.toString();
+    return bytesConstRef(&rlpStream.out()).toString();
 }
 } // end namespace

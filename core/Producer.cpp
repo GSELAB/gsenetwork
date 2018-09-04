@@ -81,8 +81,7 @@ std::string Producer::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    bytesRef const& bsr = *(bytesRef *)&rlpStream.out();
-    return bsr.toString();
+    return bytesConstRef(&rlpStream.out()).toString();
 }
 
 } // end of producer

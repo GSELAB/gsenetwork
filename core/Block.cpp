@@ -209,8 +209,7 @@ std::string BlockHeader::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    bytesRef& bsr = *(bytesRef*)&rlpStream.out();
-    return bsr.toString();
+    return bytesConstRef(&rlpStream.out()).toString();
 }
 
 /* --- Block ---*/
@@ -352,6 +351,5 @@ std::string Block::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    bytesRef& bsr = *(bytesRef*)&rlpStream.out();
-    return bsr.toString();
+    return bytesConstRef(&rlpStream.out()).toString();
 }
