@@ -1,6 +1,6 @@
 
 hunter_upload_password(
-    # REPO_OWNER + REPO = https://github.com/ethereum/hunter-cache
+    # REPO_OWNER + REPO = https://github.com/guoygang/hunter_cache
     REPO_OWNER "ethereum"
     REPO "hunter-cache"
 
