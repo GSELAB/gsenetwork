@@ -34,14 +34,21 @@ public:
 
     void checkSwitch();
 
+    chain::ChainID getChainID() const;
 
+    void setChainID(chain::ChainID chainID);
 
+    // @addTransaction used by RPC module
+    bool addTransaction(Transaction const& transaction);
 
+    
 
 private:
     net::NetController *m_net;
 
     database::DatabaseController *m_dbc;
+
+    chain::ChainID m_chainID;
 };
 
 extern Controller* toController();
