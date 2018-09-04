@@ -42,4 +42,6 @@ int MKDIR(std::string const& path);
 
 std::string pathcat(std::string const& path, std::string const& file);
 
+int64_t currentTimestamp();
+
 } // end namespace

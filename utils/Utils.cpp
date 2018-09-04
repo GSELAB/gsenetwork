@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <string>
 #include <cassert>
+#include <time.h>
 
 #ifdef WIN32
 error(Not supprot windows)
@@ -75,6 +76,17 @@ std::string pathcat(std::string const& path, std::string const& file)
         return path + "/" + file;
     }
 
+}
+
+/*
+ * @return seconds from 1979.01.01 to now
+ * @ ctime(&(time_t)tt);
+ */
+int64_t currentTimestamp()
+{
+    int64_t curr;
+    curr = static_cast<int64_t>(time(NULL));
+    return curr;
 }
 
 } // end namespace
