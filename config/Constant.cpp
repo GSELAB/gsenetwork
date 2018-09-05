@@ -11,8 +11,15 @@
 
 #include <config/Constant.h>
 
+using namespace core;
+
 namespace config {
 
-ConstantState<bool> ATTRIBUTE_GENESIS_INITED(ATTRIBUTE_GENESIS_INITED_KEY, true);
+AttributeState<bool> ATTRIBUTE_GENESIS_INITED(ATTRIBUTE_GENESIS_INITED_KEY, true);
+
+AttributeState<uint64_t> ATTRIBUTE_CURRENT_BLOCK_HEIGHT(ATTRIBUTE_CURRENT_BLOCK_HEIGHT_KEY, 0);
+
+BlockHeader ZeroBlockHeader(0);
+Block ZeroBlock(ZeroBlockHeader);
 
 } // end namespace

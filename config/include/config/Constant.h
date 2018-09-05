@@ -14,6 +14,8 @@
 #include <core/Object.h>
 #include <core/RLP.h>
 #include <core/Log.h>
+#include <core/Block.h>
+#include <core/Exceptions.h>
 
 #include <boost/variant/variant.hpp>
 #include <boost/variant/get.hpp>
@@ -21,6 +23,9 @@
 using namespace core;
 
 namespace config {
+
+#define GENESIS_TIMESTAMP (0x00)
+
 //
 #define MAX_TRANSACTION_QUEUE_SIZE  (1024 * 128)
 
@@ -32,13 +37,12 @@ namespace config {
 // Max block size 1024 KB (1 M)
 #define MAX_BLOCK_SIZE (1024 * 1024 * 1204)
 
-
 /*
  * @ Constant State
  * @ support bool\uint32_t\uint64_t\bytes
  */
 template<typename T>
-class ConstantState: public core::Object {
+class AttributeState: public core::Object {
 public:
     enum Type: uint32_t {
         BoolType = 0,
@@ -48,7 +52,7 @@ public:
         UnknownType,
     };
 
-    ConstantState(std::string const& key, T const& value):m_key(key) {
+    AttributeState(std::string const& key, T const& value):m_key(key) {
         if (typeid(value) == typeid(bool)) {
             m_type = BoolType;
             m_value = (uint64_t)value;
@@ -68,60 +72,52 @@ public:
 
 #define CONSTANT_STATE_FIELDS (2)
 
-    ConstantState(std::string const& key, bytesConstRef const& data):m_key(key) {
+    AttributeState(std::string const& key, bytesConstRef const& data):m_key(key) {
         try {
             RLP rlp(data);
             if (rlp.isList() && rlp.itemCount() == CONSTANT_STATE_FIELDS) {
                 m_type = (Type)rlp[0].toInt<uint32_t>();
                 switch (m_type) {
-                    case BoolType: {
-                        if (typeid(T) != typeid(bool)) {
-                            BOOST_THROW_EXCEPTION(std::range_error("Constant type is invliad (bool)"));
-                        }
-
+                    case BoolType:
+                        if (typeid(T) != typeid(bool))
+                            THROW_GSEXCEPTION("Attribute type is not bool");
+                            //BOOST_THROW_EXCEPTION(std::range_error("Constant type is invliad (bool)"));
                         m_value = (uint64_t)rlp[1].toInt<uint8_t>();
                         break;
-                    }
-                    case Uint32Type: {
-                        if (typeid(T) != typeid(uint32_t)) {
-                            BOOST_THROW_EXCEPTION(std::range_error("Constant type is invliad (uint32_t)"));
-                        }
-
+                    case Uint32Type:
+                        if (typeid(T) != typeid(uint32_t))
+                            THROW_GSEXCEPTION("Attribute type is not uint32_t");
+                            //BOOST_THROW_EXCEPTION(std::range_error("Constant type is invliad (uint32_t)"));
                         m_value = (uint64_t)rlp[1].toInt<uint32_t>();
                         break;
-                    }
-                    case Uint64Type: {
-                        if (typeid(T) != typeid(uint64_t)) {
-                            BOOST_THROW_EXCEPTION(std::range_error("Constant type is invliad (uint64_t)"));
-                        }
-
+                    case Uint64Type:
+                        if (typeid(T) != typeid(uint64_t))
+                            THROW_GSEXCEPTION("Attribute type is not uint64_t");
+                            //BOOST_THROW_EXCEPTION(std::range_error("Constant type is invliad (uint64_t)"));
                         m_value = (uint64_t)rlp[1].toInt<uint64_t>();
                         break;
-                    }
-                    case BytesType: {
-                        if (typeid(T) != typeid(bytes)) {
-                            BOOST_THROW_EXCEPTION(std::range_error("Constant type is invliad (bytes)"));
-                        }
-
+                    case BytesType:
+                        if (typeid(T) != typeid(bytes))
+                            THROW_GSEXCEPTION("Attribute type is not bytes");
+                            //BOOST_THROW_EXCEPTION(std::range_error("Constant type is invliad (bytes)"));
                         m_data = rlp[1].toBytes();
                         break;
-                    }
-                    default: {
-                        BOOST_THROW_EXCEPTION(std::range_error("Constant type is invliad (unknown)"));
+                    default:
+                        THROW_GSEXCEPTION("Attribute type is not any type");
+                        // BOOST_THROW_EXCEPTION(std::range_error("Constant type is invliad (unknown)"));
                         break;
-                    }
-
                 }
+            } else {
+                THROW_GSEXCEPTION("None list || None CONSTANT_STATE_FIELDS");
+                //BOOST_THROW_EXCEPTION(std::range_error("None list || None CONSTANT_STATE_FIELDS"));
             }
         } catch (Exception e) {
-            BOOST_THROW_EXCEPTION(std::range_error("Invalid ConstantState format!"));
+            THROW_GSEXCEPTION("Attribute interpret failed");
+            //BOOST_THROW_EXCEPTION(std::range_error("Invalid ConstantState format!"));
         }
     }
 
-    bool operator==(T const& t) {
-        return (m_key == t.getKeyWord() &&
-            m_value == t.getValue());
-    }
+    bool operator==(AttributeState<T> const& t) { return m_key == t.getKeyWord() && m_value == t.getValue(); }
 
     void streamRLP(RLPStream& rlpStream) const {
         rlpStream.appendList(CONSTANT_STATE_FIELDS);
@@ -135,49 +131,40 @@ public:
             case BytesType:
                 rlpStream << m_data;
                 break;
-            default: {
-                BOOST_THROW_EXCEPTION(std::range_error("Invalid ConstantState format!"));
+            default:
+                //BOOST_THROW_EXCEPTION(std::range_error("Invalid ConstantState format!"));
+                THROW_GSEXCEPTION("Invalid attribute format!");
                 break;
-            }
         }
     }
 
-    std::string const& getKeyWord() const {
-        return m_key;
-    }
+    std::string const& getKeyWord() const { return m_key; }
 
-    Type getType() const {
-        return m_type;
-    }
+    Type getType() const { return m_type; }
 
-    bytes const& getData() const {
-        return m_data;
-    }
+    bytes const& getData() const { return m_data; }
 
-    T getValue() const {
-        return (T)m_value;
-    }
+    T getValue() const { return (T)m_value;}
 
     // @ override
-    std::string getRLPData() {
-        RLPStream rlpStream;
-        streamRLP(rlpStream);
-        return bytesConstRef(&rlpStream.out()).toString();
-    }
+    std::string getRLPData() { RLPStream rlpStream; streamRLP(rlpStream); return bytesConstRef(&rlpStream.out()).toString(); }
 
     // @ override
-    std::string getKey() {
-        return m_key;
-    }
+    std::string getKey() { return m_key; }
 
 private:
     std::string m_key;
     Type m_type;
-    uint64_t m_value;
+    uint64_t m_value = 0;
     bytes m_data;
 };
 
 #define ATTRIBUTE_GENESIS_INITED_KEY "attribute_genesis_inited_key"
-extern ConstantState<bool> ATTRIBUTE_GENESIS_INITED;
+extern AttributeState<bool> ATTRIBUTE_GENESIS_INITED;
+
+#define ATTRIBUTE_CURRENT_BLOCK_HEIGHT_KEY "attribute_current_block_height"
+extern AttributeState<uint64_t> ATTRIBUTE_CURRENT_BLOCK_HEIGHT;
+
+extern Block ZeroBlock;
 
 } // end namespace
