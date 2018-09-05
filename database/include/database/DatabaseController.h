@@ -32,9 +32,9 @@ public:
 
     void init();
 
-    void incrementBlockHeight(int64_t incr = 1);
+    void incrementBlockHeight(uint64_t incr = 1);
 
-    void decrementBlockHeight(int64_t decr = -1);
+    void decrementBlockHeight(uint64_t decr = -1);
 
     Account getAccount(Address const& address) const;
 

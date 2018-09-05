@@ -29,19 +29,18 @@ std::string TRANSACTION_DIR_FILE("./data/transaction");
 std::string BLOCK_DIR_FILE("./data/block");
 std::string SUBCHAIN_DIR_FILE("./data/subchain");
 
-DatabaseController::DatabaseController()
+DatabaseController::DatabaseController():
+    m_attributesStore(std::unique_ptr<Database>(new Database(ATTRIBUTE_DIR_FILE))),
+    m_accountStore(std::unique_ptr<Database>(new Database(ACCOUNT_DIR_FILE))),
+    m_transactionStore(std::unique_ptr<Database>(new Database(TRANSACTION_DIR_FILE))),
+    m_blockStore(std::unique_ptr<Database>(new Database(BLOCK_DIR_FILE))),
+    m_subChainStore(std::unique_ptr<Database>(new Database(SUBCHAIN_DIR_FILE)))
 {
-
+    CINFO << "Database environment initial success";
 }
 
 void DatabaseController::init()
 {
-    m_attributesStore = std::unique_ptr<Database>(new Database(ATTRIBUTE_DIR_FILE));
-    m_accountStore = std::unique_ptr<Database>(new Database(ACCOUNT_DIR_FILE));
-    m_transactionStore = std::unique_ptr<Database>(new Database(TRANSACTION_DIR_FILE));
-    m_blockStore = std::unique_ptr<Database>(new Database(BLOCK_DIR_FILE));
-    m_subChainStore = std::unique_ptr<Database>(new Database(SUBCHAIN_DIR_FILE));
-    CINFO << "Database environment initial success";
     if (checkGenesisExisted()) {
         AttributeState<uint64_t> height = getAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getKey());
         CINFO << "Current block height : " << height.getValue();
@@ -65,20 +64,16 @@ bool DatabaseController::checkGenesisExisted()
 
 bool DatabaseController::initGenesis()
 {
-    // init account list
     Genesis const& genesis = getGenesis();
-    size_t itemsCount = genesis.genesisItems.size();
-    for (unsigned i; i < itemsCount; i++) {
-        auto const& item = genesis.genesisItems[i];
+    for (auto const& item : genesis.genesisItems) {
         Account account(item.address, item.balance);
         putAccount(account);
     }
 
-    // init attribute of block chain height
     putBlock(ZeroBlock);
+    ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(ZERO_BLOCK_HEIGHT);
     putAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
 
-    // set genesis inited flag to be true
     putAttribute<bool>(ATTRIBUTE_GENESIS_INITED);
     return true;
 }
