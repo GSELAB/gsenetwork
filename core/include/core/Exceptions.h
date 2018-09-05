@@ -1,24 +1,3 @@
-/*
-    This file is part of cpp-ethereum.
-
-    cpp-ethereum is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    cpp-ethereum is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
-*/
-/** @file Exceptions.h
- * @author Gav Wood <i@gavwood.com>
- * @date 2014
- */
-
 #pragma once
 
 #include "FixedHash.h"
@@ -39,6 +18,7 @@ struct Exception : virtual std::exception, virtual boost::exception
 {
     const char* what() const noexcept override { return boost::diagnostic_information_what(*this); }
 };
+
 
 #define DEV_SIMPLE_EXCEPTION(X)  \
     struct X : virtual Exception \
@@ -100,4 +80,23 @@ using errinfo_field = boost::error_info<struct tag_field, int>;
 using errinfo_data = boost::error_info<struct tag_data, std::string>;
 using errinfo_target = boost::error_info<struct tag_target, h256>;
 using BadFieldError = boost::tuple<errinfo_field, errinfo_data>;
+
+
+struct GSException: virtual public std::exception {
+public:
+    explicit GSException(std::string const& message, int number = 0): m_errorMessage(message), m_number(number) {}
+
+    ~GSException() throw() {}
+
+    virtual const char* what() const noexcept override { return m_errorMessage.c_str(); }
+private:
+    int m_number = 0;
+    std::string m_errorMessage;
+};
+
+#define THROW_GSEXCEPTION(str) \
+    do { \
+        throw GSException(str); \
+    } while(0)
+
 }
