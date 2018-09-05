@@ -15,6 +15,9 @@
 #include <core/RLP.h>
 #include <core/Common.h>
 #include <core/Address.h>
+#include <config/Constant.h>
+
+using namespace config;
 
 namespace core {
 
@@ -23,6 +26,8 @@ namespace core {
 class Account: public Object {
 public:
     Account() {}
+
+    Account(Address const& address, uint64_t balance, int64_t timestamp = GENESIS_TIMESTAMP);
 
     Account(int64_t timestamp);
 

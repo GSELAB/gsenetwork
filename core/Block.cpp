@@ -21,6 +21,11 @@ BlockHeader::BlockHeader()
     // TODO: DO NOTHING
 }
 
+BlockHeader::BlockHeader(uint64_t number): m_number(number)
+{
+
+}
+
 BlockHeader::BlockHeader(bytes const& data): BlockHeader(&data)
 {
     // TODO: DO NOTHING

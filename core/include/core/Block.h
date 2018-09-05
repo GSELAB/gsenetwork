@@ -28,6 +28,8 @@ class BlockHeader: public Object {
 public:
     BlockHeader();
 
+    BlockHeader(uint64_t number);
+
     BlockHeader(bytes const& data);
 
     BlockHeader(bytes const& data, h256 const& hash);

@@ -13,12 +13,18 @@
 #include <crypto/SHA3.h>
 
 using namespace crypto;
+using namespace core;
 
 namespace core {
 
 Account::Account(int64_t timestamp): m_timestamp(timestamp), m_balance(0), m_alive(true)
 {
     // TODO: CREATE A NEW ACCOUNT
+}
+
+Account::Account(Address const& address, uint64_t balance, int64_t timestamp): m_address(address), m_balance(balance), m_timestamp(timestamp), m_alive(true)
+{
+
 }
 
 Account::Account(bytesConstRef data)
