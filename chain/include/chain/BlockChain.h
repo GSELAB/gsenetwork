@@ -11,15 +11,52 @@
 
 #pragma once
 
+#include <core/Controller.h>
+#include <core/Types.h>
+#include <core/Block.h>
+#include <core/Transaction.h>
+#include <storage/Repository.h>
+
 namespace chain {
 
 class BlockChain {
 public:
-    BlockChain();
+    struct MemoryItem {
+        uint64_t m_blockNumber;
+        std::shared_ptr<Reposity> m_repository;
+
+        MemoryItem(uint64_t number, std::shared_ptr<Reposity> repository): m_blockNumber(number), m_repository(repository) {}
+    };
+
+public:
+    BlockChain(): m_controller(&controller), m_chainID(DEFAULT_GSE_NETWORK) { }
+
+    BlockChain(Controller* controller): m_controller(controller), m_chainID(DEFAULT_GSE_NETWORK) { }
+
+    BlockChain(Controller* controller, ChainID const& chainID): m_controller(controller), m_chainID(chainID) { }
+
     ~BlockChain();
 
-private:
+    Controller* getController() const { return m_controller; }
 
+    ChainID const& getChainID() const { return m_chainID; }
+
+    void setChainID(ChainID const& chainID) { m_chainID = chainID; }
+
+    bool processBlock(Block const& block);
+
+    bool processTransaction(Block const& block, Transaction const& transaction);
+
+    bool processTransaction(Transaction const& transaction);
+
+    bool checkBifurcation();
+
+private:
+    Controller* m_controller;
+
+    ChainID m_chainID;
+
+    std::queue<MemoryItem> m_queueMemoryBlockChain;
 
 };
 } // end namespace

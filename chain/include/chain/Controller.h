@@ -22,9 +22,9 @@ namespace chain {
 
 class Controller {
 public:
-    Controller();
+    Controller(ChainID const& chainID): m_chainID(chainID) {}
 
-    ~Controller();
+    ~Controller() {}
 
     void init();
 
@@ -32,13 +32,16 @@ public:
 
     void processBlock(Block const& block);
 
-    void checkSwitch();
+    void processTransaction(Transaction const& transaction);
 
     chain::ChainID getChainID() const;
 
     void setChainID(chain::ChainID chainID);
 
-    // @addTransaction used by RPC module
+    // @only used by rpc module
+    bool generateTransaction();
+
+    // @only used by rpc module
     bool addTransaction(Transaction const& transaction);
 
     
@@ -51,6 +54,5 @@ private:
     chain::ChainID m_chainID;
 };
 
-extern Controller* toController();
-extern void delController();
-}
+extern Controller controller;
+} /* end namespace */

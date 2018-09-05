@@ -19,16 +19,6 @@ using namespace net;
 
 namespace chain {
 
-Controller::Controller()
-{
-
-}
-
-Controller::~Controller()
-{
-    // delete m_net;
-}
-
 namespace {
 void my_func()
 {
@@ -46,22 +36,6 @@ void Controller::init()
     t.join();
 }
 
-static Controller *controller = nullptr;
-Controller* toController()
-{
+Controller controller(DEFAULT_GSE_NETWORK);
 
-    if (!controller) {
-        return new Controller();
-    }
-
-    return controller;
-}
-
-void delController() {
-    if (controller) {
-        delete controller;
-        controller = nullptr;
-    }
-}
-
-}
+} /* end namespace */

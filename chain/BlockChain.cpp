@@ -10,16 +10,46 @@
  */
 
 #include <chain/BlockChain.h>
+#include <runtime/Runtime.h>
+
+using namespace core;
 
 namespace chain {
 
-BlockChain::BlockChain()
-{
 
+
+bool BlockChain::processBlock(Block const& block)
+{
+    bool ret;
+
+    /* DO CHECK BLOCK HEADER and TRANSACTIONS (PARALLEL) */
+    {
+
+    }
+
+    for (auto const& item : block.getTransactions())
+        if (!processTransaction(block, item))
+            ret = false;
+
+    return ret;
 }
 
-BlockChain::~BlockChain()
+bool BlockChain::processTransaction(Block const& block, Transaction const& transaction)
 {
 
+    //Runtime runtime()
+    return true;
+}
+
+bool BlockChain::processTransaction(Transaction const& transaction)
+{
+    // Runtime runtime();
+    return false;
+}
+
+bool BlockChain::checkBifurcation()
+{
+
+    return true;
 }
 } // end namespace
