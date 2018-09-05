@@ -142,9 +142,15 @@ public:
 
     Type getType() const { return m_type; }
 
+    void setType(Type const& type) { m_type = type; }
+
     bytes const& getData() const { return m_data; }
 
+    void setData(bytes const& data) { m_data = data; }
+
     T getValue() const { return (T)m_value;}
+
+    void setValue(T const& value) { m_value = value; }
 
     // @ override
     std::string getRLPData() { RLPStream rlpStream; streamRLP(rlpStream); return bytesConstRef(&rlpStream.out()).toString(); }
