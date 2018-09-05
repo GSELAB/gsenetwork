@@ -12,9 +12,11 @@
 #include <core/Block.h>
 #include <core/Exceptions.h>
 #include <crypto/SHA3.h>
+#include <storage/Repository.h>
 
 using namespace core;
 using namespace crypto;
+using namespace runtime;
 
 BlockHeader::BlockHeader()
 {

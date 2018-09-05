@@ -22,9 +22,12 @@
 
 namespace core {
 
+class Repository;
+
 #define BLOCK_HEADER_FIELDS (9)
 
 class BlockHeader: public Object {
+    friend class Repository;
 public:
     BlockHeader();
 
