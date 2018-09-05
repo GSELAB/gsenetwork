@@ -171,6 +171,7 @@ extern AttributeState<bool> ATTRIBUTE_GENESIS_INITED;
 #define ATTRIBUTE_CURRENT_BLOCK_HEIGHT_KEY "attribute_current_block_height"
 extern AttributeState<uint64_t> ATTRIBUTE_CURRENT_BLOCK_HEIGHT;
 
+#define ZERO_BLOCK_HEIGHT (0)
 extern Block ZeroBlock;
 
 } // end namespace
