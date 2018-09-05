@@ -30,4 +30,6 @@ enum ChainDomain : ChainID {
     GSE_SUB_NETWORK             = 0x010000,                     // < 0x010000 : the start of subchain
 };
 
+#define DEFAULT_GSE_NETWORK GSE_ROOT_NETWORK
+
 }
