@@ -30,6 +30,12 @@ class DatabaseController {
 public:
     DatabaseController();
 
+    void init();
+
+    void incrementBlockHeight(int64_t incr = 1);
+
+    void decrementBlockHeight(int64_t decr = -1);
+
     Account getAccount(Address const& address) const;
 
     void putAccount(Account& account);
@@ -54,12 +60,10 @@ public:
     template<class T>
     void putAttribute(AttributeState<T>& t);
 
-    void init();
-
-    bool initGenesis();
-
 protected:
     bool checkGenesisExisted();
+
+    bool initGenesis();
 
 private:
 //    Controller *m_controller;

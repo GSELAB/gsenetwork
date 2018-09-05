@@ -83,6 +83,29 @@ bool DatabaseController::initGenesis()
     return true;
 }
 
+void DatabaseController::incrementBlockHeight(uint64_t incr)
+{
+    if (incr != 1)
+        CWARN << "Increment block height:" << incr;
+
+    if (ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue() + incr < incr)
+        THROW_GSEXCEPTION("Invalid incr to increment block height");
+
+    ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue() + incr);
+    putAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
+}
+
+void DatabaseController::decrementBlockHeight(uint64_t decr)
+{
+    if (decr != 1)
+        CWARN << "Decrement block height:" << decr;
+
+    if (ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue() < decr)
+        THROW_GSEXCEPTION("Invalid decr to decrement block height");
+
+    ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue() - decr);
+}
+
 Account DatabaseController::getAccount(Address const& address) const
 {
     return Account(m_accountStore->get(address.ref().toString()));
