@@ -13,6 +13,8 @@
 #include <chain/Controller.h>
 #include <core/Log.h>
 #include <config/Constant.h>
+#include <chain/Genesis.h>
+#include <core/Exceptions.h>
 
 using namespace std;
 using namespace core;
@@ -39,35 +41,46 @@ void DatabaseController::init()
     m_transactionStore = std::unique_ptr<Database>(new Database(TRANSACTION_DIR_FILE));
     m_blockStore = std::unique_ptr<Database>(new Database(BLOCK_DIR_FILE));
     m_subChainStore = std::unique_ptr<Database>(new Database(SUBCHAIN_DIR_FILE));
-    CINFO << "Open database  success.";
+    CINFO << "Database environment initial success";
     if (checkGenesisExisted()) {
-        // TODO:
+        AttributeState<uint64_t> height = getAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getKey());
+        CINFO << "Current block height : " << height.getValue();
     } else {
-        // TODO: use genesis information
-        {
-
-        }
-
-        m_attributesStore->put(ATTRIBUTE_GENESIS_INITED);
+        initGenesis();
     }
-
-
 }
 
 bool DatabaseController::checkGenesisExisted()
 {
-    std::string value = m_attributesStore->get(ATTRIBUTE_GENESIS_INITED.getKey());
-    if (value.empty()) {
-        CINFO << "The datebase not inited, try to init the genesis." << value;
+    try {
+        AttributeState<bool> genesisState = getAttribute<bool>(ATTRIBUTE_GENESIS_INITED.getKey());
+        if (genesisState.getValue())
+            CINFO << "Genesis existed";
+        return genesisState.getValue();
+    } catch (GSException &e) {
+        CINFO << "Genesis not existed:" << e.what();
         return false;
-    } else {
-        ConstantState<bool> state(ATTRIBUTE_GENESIS_INITED.getKey(), bytesConstRef(&value));
-        if (state.getValue() == true) {
-            CINFO << "The datebase has genesis init.";
-        }
-
-        return true;
     }
+}
+
+bool DatabaseController::initGenesis()
+{
+    // init account list
+    Genesis const& genesis = getGenesis();
+    size_t itemsCount = genesis.genesisItems.size();
+    for (unsigned i; i < itemsCount; i++) {
+        auto const& item = genesis.genesisItems[i];
+        Account account(item.address, item.balance);
+        putAccount(account);
+    }
+
+    // init attribute of block chain height
+    putBlock(ZeroBlock);
+    putAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
+
+    // set genesis inited flag to be true
+    putAttribute<bool>(ATTRIBUTE_GENESIS_INITED);
+    return true;
 }
 
 Account DatabaseController::getAccount(Address const& address) const
@@ -113,5 +126,17 @@ SubChain DatabaseController::getSubChain(chain::ChainID chainID) const
 void DatabaseController::putSubChain(SubChain& subChain)
 {
     m_subChainStore->put(subChain);
+}
+
+template<class T>
+AttributeState<T> DatabaseController::getAttribute(string const& key) const
+{
+    return AttributeState<T>(key, m_attributesStore->get(key));
+}
+
+template<class T>
+void DatabaseController::putAttribute(AttributeState<T>& t)
+{
+    m_attributesStore->put(t);
 }
 } // end namespace

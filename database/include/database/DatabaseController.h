@@ -19,6 +19,7 @@
 #include <core/Transaction.h>
 #include <core/Block.h>
 #include <core/SubChain.h>
+#include <config/Constant.h>
 
 using namespace core;
 using namespace std;
@@ -47,7 +48,15 @@ public:
 
     void putSubChain(SubChain& subChain);
 
+    template<class T>
+    AttributeState<T> getAttribute(string const& key) const;
+
+    template<class T>
+    void putAttribute(AttributeState<T>& t);
+
     void init();
+
+    bool initGenesis();
 
 protected:
     bool checkGenesisExisted();

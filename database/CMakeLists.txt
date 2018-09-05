@@ -11,4 +11,4 @@ SET(database_source
 
 ADD_LIBRARY(database ${database_source})
 TARGET_LINK_LIBRARIES(database
-    leveldb)
+    leveldb config)
