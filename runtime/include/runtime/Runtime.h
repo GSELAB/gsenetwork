@@ -11,18 +11,20 @@
 
 #pragma once
 
-#include <core/Transaction.h>
-#include <core/Block.h>
 #include <storage/Repository.h>
+#include <core/Block.h>
+#include <core/Transaction.h>
 
 using namespace core;
-using namespace runtime::storage;
 
 namespace runtime {
 
 class Runtime {
 public:
-    Runtime(Transaction const& transaction, Block const& block, std::shared_ptr<Repository> repository);
+    Runtime(Transaction const& transaction, Block const& block);
+
+    // @just for pre execute
+    Runtime(Transaction const& transaction);
 
     void init();
 
@@ -34,7 +36,7 @@ public:
 
 private:
     Transaction m_transaction;
-    std::shared_ptr<Repository> m_repository;
+    std::shared_ptr<storage::Repository> m_repository;
 
 };
 } // end namespace

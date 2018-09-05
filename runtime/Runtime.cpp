@@ -14,11 +14,15 @@
 #include <storage/Repository.h>
 
 using namespace runtime;
-using namespace runtime::storage;
 
-Runtime::Runtime(Transaction const& transaction, Block const& block, std::shared_ptr<Repository> repository): m_transaction(transaction)
+Runtime::Runtime(Transaction const& transaction, Block const& block): m_transaction(transaction)
 {
-    m_repository = repository;
+
+}
+
+Runtime::Runtime(Transaction const& transaction)
+{
+
 }
 
 void Runtime::init()

@@ -12,6 +12,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <string>
 
 #include <core/Account.h>
 #include <database/DatabaseController.h>
@@ -21,7 +22,7 @@ using namespace core;
 
 namespace runtime {
 namespace storage {
-class Repository {
+class Repository: public std::enable_shared_from_this<Repository> {
 public:
     // virtual std::shared_ptr<Account> getAccount() const = 0;
     Repository();
@@ -34,6 +35,8 @@ public:
 
 private:
     DatabaseController *m_db;
+    std::shared_ptr<Repository> m_parent;
+
     const Account EmptyAccount;
     mutable std::unordered_map<Address, Account> m_accountCache;
 };
