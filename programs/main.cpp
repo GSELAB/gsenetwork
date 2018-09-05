@@ -111,7 +111,7 @@ int main(int argc, char** argv)
 
     // TODO : Controller
     CINFO << "Controller->init\n";
-    chain::toController()->init();
+    controller.init();
 
     if (true) {
 
