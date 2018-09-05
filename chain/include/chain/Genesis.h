@@ -17,7 +17,7 @@
 namespace chain {
 
 struct GenesisItem {
-    core::Address address;
+    const core::Address address;
     uint64_t balance;
 };
 
@@ -25,6 +25,6 @@ struct Genesis {
     std::vector<GenesisItem> genesisItems ;
 };
 
-extern Genesis const* getGenesis();
+extern Genesis const& getGenesis();
 
 } // end namespace

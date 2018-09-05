@@ -10,6 +10,8 @@
  */
 
 #include <chain/Genesis.h>
+#include <core/Account.h>
+#include <config/Constant.h>
 
 using namespace core;
 
@@ -38,9 +40,8 @@ static Genesis genesis = {
     .genesisItems = genesisItems,
 };
 
-Genesis const* getGenesis()
+Genesis const& getGenesis()
 {
-    return &genesis;
+    return genesis;
 }
-
 } // end namespace
