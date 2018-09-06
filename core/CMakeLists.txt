@@ -11,7 +11,8 @@ SET(core_source
     Block.cpp
     Producer.cpp
     SubChain.cpp
-    Worker.cpp)
+    Worker.cpp
+    Task.cpp)
 
 ADD_LIBRARY(core ${core_source})
 TARGET_LINK_LIBRARIES(core
