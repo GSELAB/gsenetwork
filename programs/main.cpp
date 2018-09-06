@@ -110,7 +110,7 @@ int main(int argc, char** argv)
     signal(SIGINT, &exitHandler);
 
     // TODO : Controller
-    CINFO << "Controller->init\n";
+    CINFO << "Start GSE Node";
     controller.init();
 
     if (true) {
@@ -120,7 +120,7 @@ int main(int argc, char** argv)
         }
     }
 
-    std::cout << "<-- GSENetwork shutdown -->" << std::endl;
+    std::cout << "GSE SHUTDOWN!" << std::endl;
     return 0;
 }
 
