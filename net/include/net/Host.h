@@ -30,7 +30,7 @@
 #include <net/BytesSocket.h>
 #include <net/Session.h>
 #include <core/Guards.h>
-#include <core/Worker.h>
+#include <core/Task.h>
 #include <core/CommonIO.h>
 #include <crypto/Common.h>
 #include <chrono>
@@ -42,7 +42,6 @@
 #include <utility>
 #include <vector>
 #include <unordered_map>
-//#include <boost/unordered_map.hpp>
 
 namespace ba = boost::asio;
 namespace bi = ba::ip;
@@ -66,8 +65,7 @@ namespace net {
 class Host;
 class HostCapabilityFace;
 
-class HostNodeTableHandler: public NodeTableEventHandler
-{
+class HostNodeTableHandler: public NodeTableEventHandler {
 public:
     HostNodeTableHandler(Host& _host);
 
@@ -79,20 +77,17 @@ private:
     Host& m_host;
 };
 
-struct SubReputation
-{
+struct SubReputation {
     bool isRude = false;
     int utility = 0;
     bytes data;
 };
 
-struct Reputation
-{
+struct Reputation {
     std::unordered_map<std::string, SubReputation> subs;
 };
 
-class ReputationManager
-{
+class ReputationManager {
 public:
     ReputationManager();
 
@@ -106,8 +101,7 @@ private:
     SharedMutex mutable x_nodes;
 };
 
-struct NodeInfo
-{
+struct NodeInfo {
     NodeInfo() = default;
     NodeInfo(NodeID const& _id, std::string const& _address, unsigned _port, std::string const& _version):
         id(_id), address(_address), port(_port), version(_version) {}
@@ -127,28 +121,20 @@ struct NodeInfo
  * @todo determinePublic: ipv6, udp
  * @todo per-session keepalive/ping instead of broadcast; set ping-timeout via median-latency
  */
-class Host: public Worker
-{
+class Host: public Task {
     friend class HostNodeTableHandler;
     friend class BytesHandshake;
 
     friend class Session;
 
 public:
-    /// Start server, listening for connections on the given port.
-    Host(
-        std::string const& _clientVersion,
-        NetworkConfig const& _n = NetworkConfig{},
-        bytesConstRef _restoreNetwork = bytesConstRef()
-    );
+    Host(std::string const& version, KeyPair const& alias, NetworkConfig const& netConfig, chain::ChainID chainID);
+
+    Host(std::string const& _clientVersion, NetworkConfig const& _n = NetworkConfig{}, bytesConstRef _restoreNetwork = bytesConstRef());
 
     /// Alternative constructor that allows providing the node key directly
     /// without restoring the network.
-    Host(
-        std::string const& _clientVersion,
-        KeyPair const& _alias,
-        NetworkConfig const& _n = NetworkConfig{}
-    );
+    Host(std::string const& _clientVersion, KeyPair const& _alias, NetworkConfig const& _n = NetworkConfig{});
 
     /// Will block on network process events.
     virtual ~Host();
@@ -162,8 +148,7 @@ public:
     /// Register a host capability with arbitrary name and version.
     /// Might be useful when you want to handle several subprotocol versions with a single
     /// capability class.
-    void registerCapability(std::shared_ptr<HostCapabilityFace> const& _cap,
-        std::string const& _name, u256 const& _version);
+    void registerCapability(std::shared_ptr<HostCapabilityFace> const& _cap, std::string const& _name, u256 const& _version);
 
     bool haveCapability(CapDesc const& _name) const { return m_capabilities.count(_name) != 0; }
     CapDescs caps() const { CapDescs ret; for (auto const& i: m_capabilities) ret.push_back(i.first); return ret; }
@@ -250,8 +235,7 @@ public:
     net::NodeInfo nodeInfo() const { return NodeInfo(id(), (networkConfig().publicIPAddress.empty() ? m_tcpPublic.address().to_string() : networkConfig().publicIPAddress), m_tcpPublic.port(), m_clientVersion); }
 
     /// Get sessions by capability name and version
-    std::vector<std::pair<std::shared_ptr<SessionFace>, std::shared_ptr<Peer>>> peerSessions(
-        std::string const& _name, u256 const& _version) const;
+    std::vector<std::pair<std::shared_ptr<SessionFace>, std::shared_ptr<Peer>>> peerSessions(std::string const& _name, u256 const& _version) const;
 
 protected:
     void onNodeTableEvent(NodeID const& _n, NodeTableEventType const& _e);

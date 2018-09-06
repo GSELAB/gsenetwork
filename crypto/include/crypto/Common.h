@@ -70,7 +70,7 @@ struct SignatureStruct
 /// A vector of secrets.
 using Secrets = std::vector<Secret>;
 
-/*
+
 /// Convert a secret key into the public key equivalent.
 Public toPublic(Secret const& _secret);
 
@@ -84,6 +84,7 @@ Address toAddress(Secret const& _secret);
 // Convert transaction from and nonce to address.
 Address toAddress(Address const& _from, u256 const& _nonce);
 
+/*
 /// Encrypts plain text using Public key.
 void encrypt(Public const& _k, bytesConstRef _plain, bytes& o_cipher);
 

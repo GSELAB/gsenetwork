@@ -10,12 +10,21 @@
  */
 
 #include "net/NetController.h"
-
 #include <net/All.h>
+#include <core/Log.h>
 
 namespace net {
 
-NetController *NetController::netController = nullptr;
+NetController::NetController(config::NetConfig const& netConfig): m_inited(false)
+{
+
+}
+
+NetController::~NetController()
+{
+    if (!m_host)
+        delete m_host;
+}
 
 void NetController::broadcast(char *msg)
 {
@@ -29,18 +38,20 @@ void NetController::broadcast(std::shared_ptr<core::Transaction> tMsg)
 
 void NetController::init()
 {
-    if (!isInit) {
+    CINFO << "NetController::init : m_inited:" << m_inited;
+    if (!m_inited) {
 
         const char *const localhost = "127.0.0.1";
         net::NetworkConfig conf(localhost, 0, false);
 
-        net::Host *host = new net::Host("GSE V1.0", conf);
-        host->start();
-        host->listenPort();
+        CINFO << "NetController::init new Host";
+        m_host = new Host("GSE V1.0", conf);
+        CINFO << "NetController::init host:" << m_host;
+        //net::Host *host = new net::Host("GSE V1.0", conf);
+        //host->start();
+        //host->listenPort();
 
-
-        delete host;
-        isInit = true;
+        m_inited = true;
     }
 }
 

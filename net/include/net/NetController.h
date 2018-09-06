@@ -15,19 +15,18 @@
 
 #include <core/Block.h>
 #include <core/Transaction.h>
+#include <config/NetConfig.h>
 
 namespace net {
 
+class Host;
+
 class NetController {
 public:
-    static NetController* getInstance()
-    {
-        if (!netController) {
-            netController = new NetController();
-        }
+    NetController(): m_inited(false) {}
+    NetController(config::NetConfig const& netConfig);
 
-        return netController;
-    }
+    ~NetController();
 
     void init();
 
@@ -45,18 +44,13 @@ public:
 
 
 private:
-    static NetController *netController;
+    bool m_inited;
 
-    NetController() { isInit = false; }
-    ~NetController() {}
-
-    bool isInit;
-
+    Host* m_host = nullptr;
 
     std::queue<std::shared_ptr<core::Transaction>> transactionsQueue;
 
     std::queue<std::shared_ptr<core::Block>> blocksQueue;
-
 };
 
 } // end of namespace
