@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include <core/Controller.h>
 #include <core/Types.h>
 #include <core/Block.h>
 #include <core/Transaction.h>
@@ -19,21 +18,25 @@
 
 namespace chain {
 
+class Controller;
+
+extern Controller controller;
+
 class BlockChain {
 public:
     struct MemoryItem {
         uint64_t m_blockNumber;
-        std::shared_ptr<Reposity> m_repository;
+        std::shared_ptr<runtime::storage::Repository> m_repository;
 
-        MemoryItem(uint64_t number, std::shared_ptr<Reposity> repository): m_blockNumber(number), m_repository(repository) {}
+        MemoryItem(uint64_t number, std::shared_ptr<runtime::storage::Repository> repository): m_blockNumber(number), m_repository(repository) {}
     };
 
 public:
     BlockChain(): m_controller(&controller), m_chainID(DEFAULT_GSE_NETWORK) { }
 
-    BlockChain(Controller* controller): m_controller(controller), m_chainID(DEFAULT_GSE_NETWORK) { }
+    BlockChain(Controller* c): m_controller(c), m_chainID(DEFAULT_GSE_NETWORK) { }
 
-    BlockChain(Controller* controller, ChainID const& chainID): m_controller(controller), m_chainID(chainID) { }
+    BlockChain(Controller* c, ChainID const& chainID): m_controller(c), m_chainID(chainID) { }
 
     ~BlockChain();
 

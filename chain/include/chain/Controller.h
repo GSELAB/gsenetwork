@@ -17,6 +17,7 @@
 #include <core/Transaction.h>
 #include <core/TransactionReceipt.h>
 #include <core/Block.h>
+#include <chain/BlockChain.h>
 
 namespace chain {
 
@@ -47,6 +48,8 @@ public:
     
 
 private:
+    chain::BlockChain *m_chain;
+
     net::NetController *m_net;
 
     database::DatabaseController *m_dbc;

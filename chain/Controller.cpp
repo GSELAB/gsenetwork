@@ -10,9 +10,9 @@
  */
 
 #include <boost/thread.hpp>
-#include <iostream>
 
 #include <chain/Controller.h>
+#include <core/Log.h>
 
 using namespace database;
 using namespace net;
@@ -22,19 +22,65 @@ namespace chain {
 namespace {
 void my_func()
 {
-    std::cout << "GSE TEST!" << std::endl;
+    CINFO << "GSE TEST!";
 }
 }
 
 void Controller::init()
 {
-    m_net = NetController::getInstance();
+    CINFO << "Start database init...";
     m_dbc = new DatabaseController();
     m_dbc->init();
 
+    CINFO << "Start network init...";
+    m_net = new NetController();
+    m_net->init();
+
+
+    CINFO << "Start test init...";
     boost::thread t(my_func);
     t.join();
 }
+
+std::shared_ptr<TransactionReceipt> Controller::processTransaction(Transaction const& transaction, int64_t max_timestamp)
+{
+    return nullptr;
+}
+
+void Controller::processBlock(Block const& block)
+{
+
+}
+
+void Controller::processTransaction(Transaction const& transaction)
+{
+
+}
+
+chain::ChainID Controller::getChainID() const
+{
+    return m_chainID;
+}
+
+void Controller::setChainID(chain::ChainID chainID)
+{
+    m_chainID = chainID;
+}
+
+// @only used by rpc module
+bool Controller::generateTransaction()
+{
+    return true;
+}
+
+// @only used by rpc module
+bool Controller::addTransaction(Transaction const& transaction)
+{
+    return true;
+}
+
+
+
 
 Controller controller(DEFAULT_GSE_NETWORK);
 

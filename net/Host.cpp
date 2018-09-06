@@ -39,6 +39,7 @@
 #include <net/BytesHandshake.h>
 #include <net/Host.h>
 #include <net/BytesSocket.h>
+#include <core/Log.h>
 
 using namespace std;
 using namespace core;
@@ -100,8 +101,21 @@ bytes ReputationManager::data(SessionFace const& _s, std::string const& _sub) co
     return bytes();
 }
 
+Host::Host(std::string const& version, KeyPair const& alias, NetworkConfig const& netConfig, chain::ChainID chainID):
+    Task("p2p", 0),
+    m_clientVersion(version),
+    m_netConfig(netConfig),
+    m_ifAddresses(Network::getInterfaceAddresses()),
+    m_ioService(2),
+    m_tcp4Acceptor(m_ioService),
+    m_alias(alias),
+    m_lastPing(chrono::steady_clock::time_point::min())
+{
+
+}
+
 Host::Host(string const& _clientVersion, KeyPair const& _alias, NetworkConfig const& _n):
-    Worker("p2p", 0),
+    Task("p2p", 0),
     m_clientVersion(_clientVersion),
     m_netConfig(_n),
     m_ifAddresses(Network::getInterfaceAddresses()),
@@ -110,12 +124,13 @@ Host::Host(string const& _clientVersion, KeyPair const& _alias, NetworkConfig co
     m_alias(_alias),
     m_lastPing(chrono::steady_clock::time_point::min())
 {
-    cnetnote << "Id: " << id();
+    CINFO << "Id:" << id();
 }
 
 Host::Host(string const& _clientVersion, NetworkConfig const& _n, bytesConstRef _restoreNetwork):
     Host(_clientVersion, networkAlias(_restoreNetwork), _n)
 {
+    CINFO << "Host constructor";
     m_restoreNetwork = _restoreNetwork.toBytes();
 }
 
@@ -979,6 +994,7 @@ bool Host::peerSlotsAvailable(Host::PeerSlotType _type /*= Ingress*/)
 
 KeyPair Host::networkAlias(bytesConstRef _b)
 {
+    CINFO << "Host::networkAlias :" << _b.toString();
     core::RLP r(_b);
     if (r.itemCount() == 3 && r[0].isInt() && r[0].toInt<unsigned>() >= 3)
         return KeyPair(Secret(r[1].toBytes()));
