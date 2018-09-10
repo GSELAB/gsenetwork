@@ -152,7 +152,7 @@ void sha3_256(uint8_t* result, uint8_t const* input, size_t length)
 
 void sha3_512(uint8_t* result, uint8_t const* input, size_t length)
 {
-    hash(result, 32, input, length, SHA3_RATE(512), 0x1);
+    hash(result, 64, input, length, SHA3_RATE(512), 0x1);
 }
 
 } // end namespace crypto
