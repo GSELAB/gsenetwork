@@ -10,7 +10,7 @@
  */
 
 #include <crypto/GKey.h>
-//#include <crypto/AES.h>
+#include <crypto/AES.h>
 #include <crypto/SHA3.h>
 #include <core/Log.h>
 
@@ -44,8 +44,7 @@ GKey GKey::create()
 
 GKey GKey::fromEncryptedSeed(bytesConstRef seed, std::string const& password)
 {
-    //return GKey(Secret(sha3(aesDecrypt(seed, password))));
-    return GKey();
+    return GKey(Secret(sha3(aesDecrypt(seed, password))));
 }
 
 Secret const& GKey::getSecret() const

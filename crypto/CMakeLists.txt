@@ -1,7 +1,10 @@
 SET(crypto_source
      Common.cpp
+     Secp256k1PP.cpp
+     Encrypt.cpp
+     Decrypt.cpp
      SHAx.cpp
-#     AES.cpp
+     AES.cpp
      SHA3.cpp
      GKey.cpp
      Hash.cpp)
