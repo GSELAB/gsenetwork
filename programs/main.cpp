@@ -14,29 +14,48 @@
 #include <core/Address.h>
 #include <core/Log.h>
 #include <crypto/Common.h>
+#include <crypto/GKey.h>
+#include <chain/Controller.h>
 
+#include <chrono>
+#include <thread>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/program_options/options_description.hpp>
 
-#include "chain/Controller.h"
-#include <chrono>
-#include <thread>
-
 
 using namespace std;
 using namespace crypto;
 using namespace chain;
+//using namespace core;
 
 namespace {
 
+void printFlag()
+{
+    std::cout << "\n" <<
+        "\t\tGGGGGGGGGGGGGGGGGGGGGGGGGGSSSSSSSSSSSSSSSSSSSSSSSEEEEEEEEEEEEEEEEEEEEEEEEEE\n" <<
+        "\t\tGGGGGGGGGGGGGGGGGGGGGGGGGGSSSSSSSSSSSSSSSSSSSSSSSEEEEEEEEEEEEEEEEEEEEEEEEEE\n" <<
+        "\t\tGGGGGG                 GGGSSS                 SSSEEE                 EEEEEE\n" <<
+        "\t\tGGGGGG   GGGGGGGGGGG   GGGSSS   SSSSSSSSSSSSSSSSSEEE   EEEEEEEEEEEEEEEEEEEE\n" <<
+        "\t\tGGGGGG   GGGGGGGGGGGGGGGGGSSS   SSSSSSSSSSSSSSSSSEEE   EEEEEEEEEEEEEEEEEEEE\n" <<
+        "\t\tGGGGGG   GGGGGGGGGGGGGGGGGSSS   SSSSSSSSSSSSSSSSSEEE   EEEEEEEEEEEEEEEEEEEE\n" <<
+        "\t\tGGGGGG   GGGGGGGGGGGGGGGGGSSS                 SSSEEE                 EEEEEE\n" <<
+        "\t\tGGGGGG   GGGGGGG       GGGSSSSSSSSSSSSSSSSS   SSSEEE   EEEEEEEEEEEEEEEEEEEE\n" <<
+        "\t\tGGGGGG   GGGGGGGGGGG   GGGSSSSSSSSSSSSSSSSS   SSSEEE   EEEEEEEEEEEEEEEEEEEE\n" <<
+        "\t\tGGGGGG   GGGGGGGGGGG   GGGSSSSSSSSSSSSSSSSS   SSSEEE   EEEEEEEEEEEEEEEEEEEE\n" <<
+        "\t\tGGGGGG           GGG   GGGSSS                 SSSEEE                 EEEEEE\n" <<
+        "\t\tGGGGGGGGGGGGGGGGGGGGGGGGGGSSSSSSSSSSSSSSSSSSSSSSSEEEEEEEEEEEEEEEEEEEEEEEEEE\n" <<
+        "\t\tGGGGGGGGGGGGGGGGGGGGGGGGGGSSSSSSSSSSSSSSSSSSSSSSSEEEEEEEEEEEEEEEEEEEEEEEEEE\n\n";
+}
+
 void init(int argc, char **argv)
 {
-    // init secp256k1 context
-
+    printFlag();
+    toPublic({});
     if (argc == 1) {
-        std::cout << "one param:" << argv[0] << "\n";
+        // std::cout << "one param:" << argv[0] << "\n";
     }
 
 }
@@ -61,7 +80,8 @@ void exitHandler(int sig)
             break;
     }
 
-    std::cout << "\nexit by signal  " << sigString << "\n";
+    controller.exit();
+    CINFO << "\nexit by signal  " << sigString;
 
 }
 
@@ -71,14 +91,10 @@ bool shouldExit()
 }
 
 #define SLEEP_SECONDS 2
-
 void doCheck()
 {
     //boost::thread::sleep(boost::get_system_time() + boost::posix_time::seconds(10));
-    //this_thread::sleep_for(chrono::milliseconds(100));
-    std::cout << "do check! sleep " << SLEEP_SECONDS << "\n";
     std::this_thread::sleep_for(chrono::seconds(SLEEP_SECONDS));
-    //this_thread::sleep_for(chrono::milliseconds(100));
 }
 
 }
@@ -86,32 +102,22 @@ void doCheck()
 
 int main(int argc, char** argv)
 {
-    //boost::thread::sleep(boost::get_system_time() + boost::posix_time::seconds(100));
-
-    /*
-    string localIP;
-    unsigned localPort = 25050;
-
-    bool enableProducer = false;
-    Address producerAddress;
-    Secret secret;
-    {
-        // init secret
-    }
-    Public pubK;
-    */
-
+    //setDefaultOrCLocale();
+    //bool enableProducer = false;
+    //Address producerAddress;
     init(argc, argv);
-
-
-
     signal(SIGABRT, &exitHandler);
     signal(SIGTERM, &exitHandler);
     signal(SIGINT, &exitHandler);
 
+    Secret sec("4077db9374f9498aff4b4ae6eb1400755655b50457930193948d2dc6cf70bf0f");
+    GKey key(sec);
+    CINFO << "Secret:" << toHex(key.getSecret().ref());
+    CINFO << "Public:" << toHex(key.getPublic().ref());
+    CINFO << "Address:" << toHex(key.getAddress().ref());
+
     // TODO : Controller
-    CINFO << "Start GSE Node";
-    controller.init();
+    controller.init(key);
 
     if (true) {
 
@@ -120,7 +126,7 @@ int main(int argc, char** argv)
         }
     }
 
-    std::cout << "GSE SHUTDOWN!" << std::endl;
+    CINFO <<  "GSE SHUTDOWN";
     return 0;
 }
 

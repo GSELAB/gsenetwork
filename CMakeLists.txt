@@ -85,6 +85,8 @@ FIND_PACKAGE(cryptopp CONFIG REQUIRED)
 #hunter_add_package(libscrypt)
 #FIND_PACKAGE(libscrypt CONFIG REQUIRED)
 
+INCLUDE(ProjectSecp256k1)
+
 FIND_PACKAGE(Threads)
 
 
