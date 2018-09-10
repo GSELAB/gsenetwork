@@ -30,6 +30,8 @@ class DatabaseController {
 public:
     DatabaseController();
 
+    ~DatabaseController();
+
     void init();
 
     void incrementBlockHeight(uint64_t incr = 1);

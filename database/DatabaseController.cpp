@@ -39,6 +39,11 @@ DatabaseController::DatabaseController():
     CINFO << "Database environment initial success";
 }
 
+DatabaseController::~DatabaseController()
+{
+    CINFO << "DatabaseController::~DatabaseController";
+}
+
 void DatabaseController::init()
 {
     if (checkGenesisExisted()) {
