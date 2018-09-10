@@ -24,26 +24,26 @@
 #include <crypto/Common.h>
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-//#include <secp256k1.h>
-//#include <secp256k1_ecdh.h>
-//#include <secp256k1_recovery.h>
-//#include <secp256k1_sha256.h>
+#include <secp256k1.h>
+#include <secp256k1_ecdh.h>
+#include <secp256k1_recovery.h>
+#include <secp256k1_sha256.h>
 
-/*
+#include <crypto/SHA3.h>
+#include <core/RLP.h>
+//#include <crypto/AES.h>
 #include <cryptopp/aes.h>
 #include <cryptopp/pwdbased.h>
 #include <cryptopp/sha.h>
 #include <cryptopp/modes.h>
-#include <libscrypt.h>
+#include <core/Log.h>
 
-#include <libdevcore/SHA3.h>
-#include <libdevcore/RLP.h>
 
-#include "AES.h"
-#include "CryptoPP.h"
-#include "Exceptions.h"
+//#include <libscrypt.h>
 
-*/
+//#include "CryptoPP.h"
+//#include "Exceptions.h"
+
 using namespace std;
 using namespace core;
 using namespace crypto;
@@ -51,7 +51,7 @@ using namespace crypto;
 namespace crypto
 {
 
-/*
+
 secp256k1_context const* getCtx()
 {
 	static std::unique_ptr<secp256k1_context, decltype(&secp256k1_context_destroy)> s_ctx{
@@ -60,7 +60,6 @@ secp256k1_context const* getCtx()
 	};
 	return s_ctx.get();
 }
-*/
 
 bool SignatureStruct::isValid() const noexcept
 {
@@ -70,10 +69,14 @@ bool SignatureStruct::isValid() const noexcept
 	return (v <= 1 && r > s_zero && s > s_zero && r < s_max && s < s_max);
 }
 
-/*
+Public toPublic1()
+{
+    return Public();
+}
 
 Public toPublic(Secret const& _secret)
 {
+    CINFO << "toPublic";
 	auto* ctx = getCtx();
 	secp256k1_pubkey rawPubkey;
 	// Creation will fail if the secret key is invalid.
@@ -103,11 +106,11 @@ Address toAddress(Secret const& _secret)
 	return toAddress(toPublic(_secret));
 }
 
+/*
 Address toAddress(Address const& _from, u256 const& _nonce)
 {
 	return right160(sha3(rlpList(_from, _nonce)));
 }
-
 
 void encrypt(Public const& _k, bytesConstRef _plain, bytes& o_cipher)
 {
@@ -213,7 +216,7 @@ bytesSec decryptAES128CTR(bytesConstRef _k, h128 const& _iv, bytesConstRef _ciph
 
 Public recover(Signature const& _sig, h256 const& _message)
 {
-    /* remark by Jorge
+    /*
 	int v = _sig[64];
 	if (v > 3)
 		return {};
@@ -239,14 +242,15 @@ Public recover(Signature const& _sig, h256 const& _message)
 	// Create the Public skipping the header.
 	return Public{&serializedPubkey[1], Public::ConstructFromPointer};
 	*/
-	return Public{};
+
+	return Public();
 }
 
 static const u256 c_secp256k1n("115792089237316195423570985008687907852837564279074904382605163141518161494337");
 
 Signature sign(Secret const& _k, h256 const& _hash)
 {
-    /* remark by Jorge
+    /*
 	auto* ctx = getCtx();
 	secp256k1_ecdsa_recoverable_signature rawSig;
 	if (!secp256k1_ecdsa_sign_recoverable(ctx, &rawSig, _hash.data(), _k.data(), nullptr, nullptr))
@@ -267,20 +271,15 @@ Signature sign(Secret const& _k, h256 const& _hash)
 	return s;
 	*/
 
-	Signature s;
-	return s;
-
+	return Signature();
 }
 
 bool verify(Public const& _p, Signature const& _s, h256 const& _hash)
 {
-    /* remark by Jorge
 	// TODO: Verify w/o recovery (if faster).
 	if (!_p)
 		return false;
 	return _p == recover(_s, _hash);
-	*/
-	return false;
 }
 /*
 bytesSec pbkdf2(string const& _pass, bytes const& _salt, unsigned _iterations, unsigned _dkLen)
@@ -320,17 +319,21 @@ bytesSec scrypt(std::string const& _pass, bytes const& _salt, uint64_t _n, uint3
 
 */
 
-//KeyPair::KeyPair(Secret const& _sec):
-//	m_secret(_sec),
-//	m_public(toPublic(_sec))
-KeyPair::KeyPair(Secret const& _sec):
-	m_secret(_sec)
+KeyPair::KeyPair(Secret const& _sec) //:m_secret(_sec), m_public(toPublic(_sec))
 {
-    // Invalid by Jorge
 	// Assign address only if the secret key is valid.
-	//if (m_public)
-	//	m_address = toAddress(m_public);
+	/*if (m_public)
+		m_address = toAddress(m_public);
+		*/
 }
+/*
+KeyPair::KeyPair(Secret const& _sec):m_secret(_sec), m_public(toPublic(_sec))
+{
+	// Assign address only if the secret key is valid.
+	if (m_public)
+		m_address = toAddress(m_public);
+}
+*/
 
 KeyPair KeyPair::create()
 {
@@ -344,8 +347,7 @@ KeyPair KeyPair::create()
 
 KeyPair KeyPair::fromEncryptedSeed(bytesConstRef _seed, std::string const& _password)
 {
-    // Invalid by Jorge
-	//return KeyPair(Secret(sha3(aesDecrypt(_seed, _password))));
+	// return KeyPair(Secret(sha3(aesDecrypt(_seed, _password))));
 	return KeyPair::create();
 }
 

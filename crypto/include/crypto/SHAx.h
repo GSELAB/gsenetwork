@@ -11,13 +11,13 @@
 
 #pragma once
 
-#include <core/FixedHash.h>
-
-using namespace core;
+#include <stdint.h>
+#include <stddef.h>
 
 namespace crypto {
 
-h256 sha256(bytesConstRef input) noexcept;
+void sha3_256(uint8_t* result, uint8_t const* input, size_t length);
 
-h160 ripemd160(bytesConstRef input);
-} // end of namespace
+void sha3_512(uint8_t* result, uint8_t const* input, size_t length);
+
+}

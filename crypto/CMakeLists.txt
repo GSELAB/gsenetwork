@@ -1,8 +1,12 @@
 SET(crypto_source
      Common.cpp
+     SHAx.cpp
+#     AES.cpp
      SHA3.cpp
+     GKey.cpp
      Hash.cpp)
 
 ADD_LIBRARY(crypto ${crypto_source})
 TARGET_LINK_LIBRARIES(crypto
-    utils core ${GSE_BOOST_LIBS})
+    utils core Secp256k1 cryptopp-static ${GSE_BOOST_LIBS})
+#cryptopp-static
