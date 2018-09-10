@@ -216,7 +216,6 @@ bytesSec decryptAES128CTR(bytesConstRef _k, h128 const& _iv, bytesConstRef _ciph
 
 Public recover(Signature const& _sig, h256 const& _message)
 {
-    /*
 	int v = _sig[64];
 	if (v > 3)
 		return {};
@@ -241,16 +240,12 @@ Public recover(Signature const& _sig, h256 const& _message)
 	assert(serializedPubkey[0] == 0x04);
 	// Create the Public skipping the header.
 	return Public{&serializedPubkey[1], Public::ConstructFromPointer};
-	*/
-
-	return Public();
 }
 
 static const u256 c_secp256k1n("115792089237316195423570985008687907852837564279074904382605163141518161494337");
 
 Signature sign(Secret const& _k, h256 const& _hash)
 {
-    /*
 	auto* ctx = getCtx();
 	secp256k1_ecdsa_recoverable_signature rawSig;
 	if (!secp256k1_ecdsa_sign_recoverable(ctx, &rawSig, _hash.data(), _k.data(), nullptr, nullptr))
@@ -269,9 +264,6 @@ Signature sign(Secret const& _k, h256 const& _hash)
 	}
 	assert(ss.s <= c_secp256k1n / 2);
 	return s;
-	*/
-
-	return Signature();
 }
 
 bool verify(Public const& _p, Signature const& _s, h256 const& _hash)
