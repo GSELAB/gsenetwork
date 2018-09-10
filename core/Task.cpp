@@ -11,7 +11,7 @@ namespace core {
 
 Task::Task(std::string const& name, unsigned idleWaitMs): m_name(name), m_idleWaitMs(idleWaitMs)
 {
-    CINFO << "Task:" << name;
+    // CINFO << "Task:" << name;
 }
 
 Task::Task(Task&& m)
@@ -28,7 +28,7 @@ Task& Task::operator=(Task&& m)
 
 void Task::startWorking()
 {
-    CINFO << "startWorking for thread" << m_name;
+    CINFO << "Task::startWorking for thread:" << m_name;
 	std::unique_lock<std::mutex> l(x_task);
 	if (m_task) {
 		TaskState ex = TaskState::Stopped;
@@ -39,7 +39,7 @@ void Task::startWorking()
 		m_state_notifier.notify_all();
 		m_task.reset(new thread([&]() {
 			setThreadName(m_name.c_str());
-			CINFO << "Thread begins";
+			CINFO << "Task::startWorking thread begin";
 			while (m_state != TaskState::Killing) {
 				TaskState ex = TaskState::Starting;
 				{

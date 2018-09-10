@@ -18,6 +18,8 @@
 #include <core/TransactionReceipt.h>
 #include <core/Block.h>
 #include <chain/BlockChain.h>
+#include <crypto/Common.h>
+#include <crypto/GKey.h>
 
 namespace chain {
 
@@ -27,7 +29,9 @@ public:
 
     ~Controller() {}
 
-    void init();
+    void init(crypto::GKey const& key);
+
+    void exit();
 
     std::shared_ptr<TransactionReceipt> processTransaction(Transaction const& transaction, int64_t max_timestamp);
 
@@ -55,6 +59,8 @@ private:
     database::DatabaseController *m_dbc;
 
     chain::ChainID m_chainID;
+
+    crypto::GKey m_key;
 };
 
 extern Controller controller;

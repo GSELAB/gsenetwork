@@ -28,7 +28,7 @@
 #include <algorithm>
 #include <random>
 #include <unordered_set>
-//#include <boost/functional/hash.hpp>
+#include <boost/functional/hash.hpp>
 #include <core/CommonData.h>
 
 namespace core {

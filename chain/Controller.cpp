@@ -26,20 +26,28 @@ void my_func()
 }
 }
 
-void Controller::init()
+void Controller::init(crypto::GKey const& key)
 {
+    m_key = key;
+
     CINFO << "Start database init...";
     m_dbc = new DatabaseController();
     m_dbc->init();
 
     CINFO << "Start network init...";
-    m_net = new NetController();
+    m_net = new NetController(m_key);
     m_net->init();
+}
 
+void Controller::exit()
+{
+    CINFO << "Controller release the resource...";
+    if (m_net)
+        delete m_net;
 
-    CINFO << "Start test init...";
-    boost::thread t(my_func);
-    t.join();
+    if (m_dbc)
+        delete m_dbc;
+
 }
 
 std::shared_ptr<TransactionReceipt> Controller::processTransaction(Transaction const& transaction, int64_t max_timestamp)
