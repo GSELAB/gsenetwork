@@ -110,8 +110,8 @@ public:
         Random = 0,
     };
 
-    NodeTable(ba::io_service& _io, KeyPair const& _alias, NodeIPEndpoint const& _endpoint, bool _enabled = true);
-    //NodeTable(boost::asio::io_service& io, KeyPair const& alias, NodeIPEndpoint const& endpoint, bool enable = true);
+    NodeTable(ba::io_service& _io, GKey const& key, NodeIPEndpoint const& _endpoint, bool _enabled = true);
+
     ~NodeTable();
 
     static int distance(NodeID const& x, NodeID const& y) {

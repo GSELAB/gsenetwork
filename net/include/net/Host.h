@@ -128,13 +128,14 @@ class Host: public Task {
     friend class Session;
 
 public:
-    Host(std::string const& version, KeyPair const& alias, NetworkConfig const& netConfig, chain::ChainID chainID);
+    // @just for test
+    Host(std::string const& version, GKey const& key, NetworkConfig const& netConfig, chain::ChainID chainID);
 
-    Host(std::string const& _clientVersion, NetworkConfig const& _n = NetworkConfig{}, bytesConstRef _restoreNetwork = bytesConstRef());
+    Host(std::string const& version, NetworkConfig const& netConfig = NetworkConfig{}, bytesConstRef restoreNetwork = bytesConstRef());
 
     /// Alternative constructor that allows providing the node key directly
     /// without restoring the network.
-    Host(std::string const& _clientVersion, KeyPair const& _alias, NetworkConfig const& _n = NetworkConfig{});
+    Host(std::string const& version, GKey const& key, NetworkConfig const& netConfig = NetworkConfig{});
 
     /// Will block on network process events.
     virtual ~Host();
@@ -223,7 +224,7 @@ public:
     }
 
     /// Get our current node ID.
-    NodeID id() const { return m_alias.pub(); }
+    NodeID id() const { return m_key.getPublic(); }
 
     /// Get the public TCP endpoint.
     bi::tcp::endpoint const& tcpPublic() const { return m_tcpPublic; }
@@ -279,7 +280,7 @@ private:
     virtual void doneWorking();
 
     /// Get or create host identifier (KeyPair).
-    static KeyPair networkAlias(bytesConstRef _b);
+    static GKey networkKey(bytesConstRef data);
 
     /// returns true if a member of m_requiredPeers
     bool isRequiredPeer(NodeID const&) const;
@@ -287,6 +288,8 @@ private:
     bool nodeTableHasNode(Public const& _id) const;
     Node nodeFromNodeTable(Public const& _id) const;
     bool addNodeToNodeTable(Node const& _node, NodeTable::NodeRelation _relation = NodeTable::NodeRelation::Unknown);
+
+    chain::ChainID m_chainID;
 
     bytes m_restoreNetwork;										///< Set by constructor and used to set Host key and restore network peers & nodes.
 
@@ -312,7 +315,8 @@ private:
     std::set<Peer*> m_pendingPeerConns;									/// Used only by connect(Peer&) to limit concurrently connecting to same node. See connect(shared_ptr<Peer>const&).
 
     bi::tcp::endpoint m_tcpPublic;											///< Our public listening endpoint.
-    KeyPair m_alias;															///< Alias for network communication. Network address is k*G. k is key material. TODO: Replace KeyPair.
+    //KeyPair m_alias;															///< Alias for network communication. Network address is k*G. k is key material. TODO: Replace KeyPair.
+    GKey m_key;
     std::shared_ptr<NodeTable> m_nodeTable;									///< Node table (uses kademlia-like discovery).
     mutable std::mutex x_nodeTable;
     std::shared_ptr<NodeTable> nodeTable() const { Guard l(x_nodeTable); return m_nodeTable; }

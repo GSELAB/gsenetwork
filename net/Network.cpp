@@ -128,22 +128,18 @@ int Network::tcp4Listen(bi::tcp::acceptor& _acceptor, NetworkConfig const& _conf
     // TODO: throw instead of returning -1
 
     bi::address listenIP;
-    try
-    {
+    try {
         listenIP = _config.listenIPAddress.empty() ? bi::address_v4() : bi::address::from_string(_config.listenIPAddress);
-    }
-    catch (...)
-    {
-        //cwarn << "Couldn't start accepting connections on host. Failed to accept socket on " << listenIP << ":" << _config.listenPort << ".\n" << boost::current_exception_diagnostic_information();
+    } catch (...) {
+        CWARN << "Couldn't start accepting connections on host. Failed to accept socket on " << listenIP << ":" << _config.listenPort << ".\n" << boost::current_exception_diagnostic_information();
         return -1;
     }
+
     bool requirePort = (bool)_config.listenPort;
 
-    for (unsigned i = 0; i < 2; ++i)
-    {
+    for (unsigned i = 0; i < 2; ++i) {
         bi::tcp::endpoint endpoint(listenIP, requirePort ? _config.listenPort : (i ? 0 : c_defaultListenPort));
-        try
-        {
+        try {
 #if defined(_WIN32)
             bool reuse = false;
 #else
@@ -154,14 +150,11 @@ int Network::tcp4Listen(bi::tcp::acceptor& _acceptor, NetworkConfig const& _conf
             _acceptor.bind(endpoint);
             _acceptor.listen();
             return _acceptor.local_endpoint().port();
-        }
-        catch (...)
-        {
+        } catch (...) {
             // bail if this is first attempt && port was specificed, or second attempt failed (random port)
-            if (i || requirePort)
-            {
+            if (i || requirePort) {
                 // both attempts failed
-                //cwarn << "Couldn't start accepting connections on host. Failed to accept socket on " << listenIP << ":" << _config.listenPort << ".\n" << boost::current_exception_diagnostic_information();
+                CWARN << "Couldn't start accepting connections on host. Failed to accept socket on " << listenIP << ":" << _config.listenPort << ".\n" << boost::current_exception_diagnostic_information();
                 _acceptor.close();
                 return -1;
             }

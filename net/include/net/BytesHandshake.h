@@ -93,7 +93,7 @@ protected:
     bytes m_handshakeOutBuffer;		//< Frame buffer for egress Hello packet.
     bytes m_handshakeInBuffer;		//< Frame buffer for ingress Hello packet.
 
-    KeyPair m_ecdheLocal = KeyPair::create(); // Ephemeral ECDH secret and agreement.
+    GKey m_ecdheLocal = GKey::create(); // Ephemeral ECDH secret and agreement.
     h256 m_nonce;   // Nonce generate by this host for handshake
 
     Public m_ecdheRemote;   // Remote ephemeral public key

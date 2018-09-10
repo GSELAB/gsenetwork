@@ -36,6 +36,7 @@
 #include <chrono>
 #include <core/Common.h>
 #include <crypto/Common.h>
+#include <crypto/GKey.h>
 
 #include <core/Log.h>
 #include <core/Exceptions.h>

@@ -21,54 +21,25 @@ inline bool operator==(std::weak_ptr<NodeEntry> const& _weak, std::shared_ptr<No
 NodeEntry::NodeEntry(NodeID const& nID, Public const& pubK, NodeIPEndpoint const &nIPEP) :
     Node(pubK, nIPEP), distance(NodeTable::distance(nID, pubK)) {}
 
-/*
-NodeTable::NodeTable(boost::asio::io_service& _io, KeyPair const& alias, NodeIPEndpoint const& endpoint, bool enable):
-    m_node(Node(alias.pub(), endpoint),
-    m_secret(alias.secret()),
-    m_socket(make_shared<NodeSocket>(_io, *reinterpret_cast<UDPSocketEvents*>(this), (boost::asio::ip::udp::endpoint)m_node.endpoint)),
-    m_socketPointer(m_socket.get()),
-    m_timers(_io)
-{
-    for (unsigned i = 0; i < s_bins; i++) {
-        m_state[i].distance = i;
-    }
-
-    if (!enable) {
-        cwarn << "Not enable ";
-        return;
-    }
-
-    try {
-        m_socketPointer->connect();
-        doDiscovery();
-    } catch (std::exception const& e) {
-        cwarn << "Exception connecting NodeTable socket: " << _e.what();
-        cwarn << "Discovery disabled.";
-    }
-}
-*/
-
-NodeTable::NodeTable(ba::io_service& _io, KeyPair const& _alias, NodeIPEndpoint const& _endpoint, bool _enabled):
-    m_node(Node(_alias.pub(), _endpoint)),
-    m_secret(_alias.secret()),
+NodeTable::NodeTable(ba::io_service& _io, GKey const& key, NodeIPEndpoint const& _endpoint, bool _enabled):
+    m_node(Node(key.getPublic(), _endpoint)),
+    m_secret(key.getSecret()),
     m_socket(make_shared<NodeSocket>(_io, *reinterpret_cast<UDPSocketEvents*>(this), (bi::udp::endpoint)m_node.endpoint)),
     m_socketPointer(m_socket.get()),
     m_timers(_io)
 {
+    CINFO << "NodeTable::NodeTable constructor";
     for (unsigned i = 0; i < s_bins; i++)
         m_state[i].distance = i;
 
     if (!_enabled)
         return;
 
-    try
-    {
+    try {
         m_socketPointer->connect();
         doDiscovery();
-    }
-    catch (std::exception const& _e)
-    {
-        //cwarn << "Exception connecting NodeTable socket: " << _e.what();
+    } catch (std::exception const& e) {
+        CWARN << "Exception connecting NodeTable socket: " << e.what();
         //cwarn << "Discovery disabled.";
     }
 }
@@ -169,14 +140,106 @@ std::shared_ptr<NodeEntry> NodeTable::nodeEntry(NodeID nID)
 void NodeTable::doDiscover(NodeID target, unsigned round, std::shared_ptr<std::set<std::shared_ptr<NodeEntry>>> tried)
 {
     // note : only called by doDiscovery
+    if (!m_socketPointer->isOpen()) return;
+    if (round == s_maxSteps) {
+        CINFO << "Terminating after " << round << "rounds";
+        doDiscovery();
+        return;
+    } else if (!round && !tried) {
+        tried = make_shared<set<shared_ptr<NodeEntry>>>();
+    }
 
+    auto nearest = nearestNodeEntries(target);
+    list<shared_ptr<NodeEntry>> triedList;
+    for (unsigned i = 0; i < nearest.size() && triedList.size() < s_alpha; i++) {
+        if (!tried->count(nearest[i])) {
+            auto r = nearest[i];
+            triedList.push_back(r);
+            FindNode p(r->endpoint, target);
+            p.sign(m_secret);
+            DEV_GUARDED(x_findNodeTimeout)
+                m_findNodeTimeout.push_back(make_pair(r->id, chrono::steady_clock::now()));
+            m_socketPointer->send(p);
+        }
+    }
+
+    if (triedList.empty()) {
+        CINFO << "Terminating after " << round << "rounds";
+        doDiscovery();
+        return;
+    }
+
+    while (!triedList.empty()) {
+        tried->insert(triedList.front());
+        triedList.pop_front();
+    }
+
+    m_timers.schedule(c_reqTimeout.count() * 2, [this, target, round, tried](boost::system::error_code const& ec) {
+        if (ec)
+            CWARN << "Discovery timer was probably cancelled: " << ec.value() << " " << ec.message();
+
+
+        if (ec.value() == boost::asio::error::operation_aborted || m_timers.isStopped())
+            return;
+
+        // error::operation_aborted means that the timer was probably aborted.
+        // It usually happens when "this" object is deallocated, in which case
+        // subsequent call to doDiscover() would cause a crash. We can not rely on
+        // m_timers.isStopped(), because "this" pointer was captured by the lambda,
+        // and therefore, in case of deallocation m_timers object no longer exists.
+
+        doDiscover(target, round + 1, tried);
+    });
 }
 
 std::vector<std::shared_ptr<NodeEntry>> NodeTable::nearestNodeEntries(NodeID nID)
 {
+    // send s_alpha FindNode packets to nodes we know, closest to target
+    static unsigned lastBin = s_bins - 1;
+    unsigned head = distance(m_node.id, nID);
+    unsigned tail = head == 0 ? lastBin : (head - 1) % s_bins;
 
+    // if d is 0, then we roll look forward, if last, we reverse, else, spread from d
+    map<unsigned, list<shared_ptr<NodeEntry>>> found;
+    if (head > 1 && tail != lastBin) {
+        while (head != tail && head < s_bins) {
+            Guard l(x_state);
+            for (auto const& n: m_state[head].nodes)
+                if (auto p = n.lock())
+                    found[distance(nID, p->id)].push_back(p);
 
-    std::vector<std::shared_ptr<NodeEntry>> ret;
+            if (tail)
+                for (auto const& n: m_state[tail].nodes)
+                    if (auto p = n.lock())
+                        found[distance(nID, p->id)].push_back(p);
+
+            head++;
+            if (tail)
+                tail--;
+        }
+    } else if (head < 2) {
+        while (head < s_bins) {
+            Guard l(x_state);
+            for (auto const& n: m_state[head].nodes)
+                if (auto p = n.lock())
+                    found[distance(nID, p->id)].push_back(p);
+            head++;
+        }
+    } else {
+        while (tail > 0) {
+            Guard l(x_state);
+            for (auto const& n: m_state[tail].nodes)
+                if (auto p = n.lock())
+                    found[distance(nID, p->id)].push_back(p);
+            tail--;
+        }
+    }
+
+    vector<shared_ptr<NodeEntry>> ret;
+    for (auto& nodes: found)
+        for (auto const& n: nodes.second)
+            if (ret.size() < s_bucketSize && !!n->endpoint && n->endpoint.isAllowed())
+                ret.push_back(n);
     return ret;
 }
 
@@ -290,13 +353,11 @@ void NodeTable::onReceived(UDPSocketFace*, boost::asio::ip::udp::endpoint const&
 {
     try {
         unique_ptr<DiscoveryDatagram> datagram = DiscoveryDatagram::interpretUDP(from, packet);
-        if (!datagram) {
+        if (!datagram)
             return;
-        }
 
         if (datagram->isExpired()) {
-            LOG(m_logger) << "Invalid packet (timestamp in the past) from "
-                          << from.address().to_string() << ":" << from.port();
+            CINFO << "Invalid packet (timestamp in the past) from " << from.address().to_string() << ":" << from.port();
             return;
         }
 
@@ -322,10 +383,8 @@ void NodeTable::onReceived(UDPSocketFace*, boost::asio::ip::udp::endpoint const&
                 DEV_GUARDED(x_evictions)
                 {
                     auto e = m_evictions.find(in.sourceid);
-                    if (e != m_evictions.end())
-                    {
-                        if (e->second.evictedTimePoint > std::chrono::steady_clock::now())
-                        {
+                    if (e != m_evictions.end()) {
+                        if (e->second.evictedTimePoint > std::chrono::steady_clock::now()) {
                             found = true;
                             leastSeenID = e->first;
                             evictionEntry = e->second;
@@ -410,11 +469,9 @@ void NodeTable::onReceived(UDPSocketFace*, boost::asio::ip::udp::endpoint const&
 
         noteActiveNode(datagram->sourceid, from);
     } catch(std::exception const&e) {
-        LOG(m_logger) << "Exception processing message from " << from.address().to_string() << ":"
-                      << from.port() << ": " << e.what();
+        CINFO << "Exception processing message from " << from.address().to_string() << ":" << from.port() << ": " << e.what();
     } catch(...) {
-        LOG(m_logger) << "Exception processing message from " << from.address().to_string() << ":"
-                      << from.port();
+        CINFO << "Exception processing message from " << from.address().to_string() << ":" << from.port();
     }
 }
 

@@ -101,41 +101,43 @@ bytes ReputationManager::data(SessionFace const& _s, std::string const& _sub) co
     return bytes();
 }
 
-Host::Host(std::string const& version, KeyPair const& alias, NetworkConfig const& netConfig, chain::ChainID chainID):
-    Task("p2p", 0),
+Host::Host(std::string const& version, GKey const& key, NetworkConfig const& netConfig, chain::ChainID chainID):
+    Task("GSE-P2P-NETWORK", 0),
     m_clientVersion(version),
     m_netConfig(netConfig),
     m_ifAddresses(Network::getInterfaceAddresses()),
     m_ioService(2),
     m_tcp4Acceptor(m_ioService),
-    m_alias(alias),
-    m_lastPing(chrono::steady_clock::time_point::min())
+    m_key(key),
+    m_lastPing(chrono::steady_clock::time_point::min()),
+    m_chainID(chainID)
 {
-
+    CINFO << "Host constructor";
 }
 
-Host::Host(string const& _clientVersion, KeyPair const& _alias, NetworkConfig const& _n):
-    Task("p2p", 0),
-    m_clientVersion(_clientVersion),
-    m_netConfig(_n),
+Host::Host(string const& version, GKey const& key, NetworkConfig const& netConfig):
+    Task("GSE-P2P-NETWORK", 0),
+    m_clientVersion(version),
+    m_netConfig(netConfig),
     m_ifAddresses(Network::getInterfaceAddresses()),
     m_ioService(2),
     m_tcp4Acceptor(m_ioService),
-    m_alias(_alias),
+    m_key(key),
     m_lastPing(chrono::steady_clock::time_point::min())
 {
     CINFO << "Id:" << id();
 }
 
-Host::Host(string const& _clientVersion, NetworkConfig const& _n, bytesConstRef _restoreNetwork):
-    Host(_clientVersion, networkAlias(_restoreNetwork), _n)
+Host::Host(string const& version, NetworkConfig const& netConfig, bytesConstRef restoreNetwork):
+    Host(version, networkKey(restoreNetwork), netConfig)
 {
     CINFO << "Host constructor";
-    m_restoreNetwork = _restoreNetwork.toBytes();
+    m_restoreNetwork = restoreNetwork.toBytes();
 }
 
 Host::~Host()
 {
+    CINFO << "Host::~Host";
     stop();
     terminate();
 }
@@ -151,7 +153,7 @@ void Host::start()
     if (isWorking())
         return;
 
-    cwarn << "Network start failed!";
+    CWARN << "Network start failed!";
     doneWorking();
 }
 
@@ -179,6 +181,7 @@ void Host::stop()
 
 void Host::doneWorking()
 {
+    CINFO << "Host::doneWorking";
     // reset ioservice (cancels all timers and allows manually polling network, below)
     m_ioService.reset();
 
@@ -413,62 +416,54 @@ void Host::determinePublic()
     bool publicIsHost = !lset && pset && ifAddresses.count(paddr);
 
     bi::tcp::endpoint ep(bi::address(), m_listenPort);
-    if (m_netConfig.traverseNAT && listenIsPublic)
-    {
-        cnetnote << "Listen address set to Public address: " << laddr << ". UPnP disabled.";
+    if (m_netConfig.traverseNAT && listenIsPublic) {
+        CINFO << "Listen address set to Public address: " << laddr << ". UPnP disabled.";
         ep.address(laddr);
     }
-    else if (m_netConfig.traverseNAT && publicIsHost)
-    {
-        cnetnote << "Public address set to Host configured address: " << paddr << ". UPnP disabled.";
+    else if (m_netConfig.traverseNAT && publicIsHost) {
+        CINFO << "Public address set to Host configured address: " << paddr << ". UPnP disabled.";
         ep.address(paddr);
-    }
-    else if (m_netConfig.traverseNAT)
+    } else if (m_netConfig.traverseNAT)
     {
         bi::address natIFAddr;
         ep = Network::traverseNAT(lset && ifAddresses.count(laddr) ? std::set<bi::address>({laddr}) : ifAddresses, m_listenPort, natIFAddr);
 
         if (lset && natIFAddr != laddr)
             // if listen address is set, Host will use it, even if upnp returns different
-            cwarn << "Listen address " << laddr << " differs from local address " << natIFAddr
+            CWARN << "Listen address " << laddr << " differs from local address " << natIFAddr
                   << " returned by UPnP!";
 
-        if (pset && ep.address() != paddr)
-        {
+        if (pset && ep.address() != paddr) {
             // if public address is set, Host will advertise it, even if upnp returns different
-            cwarn << "Specified public address " << paddr << " differs from external address "
+            CWARN << "Specified public address " << paddr << " differs from external address "
                   << ep.address() << " returned by UPnP!";
             ep.address(paddr);
         }
-    }
-    else if (pset)
+    } else if (pset) {
         ep.address(paddr);
+    }
 
     m_tcpPublic = ep;
 }
 
 void Host::runAcceptor()
 {
+    CINFO << "Host::runAcceptor <>";
     assert(m_listenPort > 0);
-
-    if (m_run && !m_accepting)
-    {
-        cnetdetails << "Listening on local port " << m_listenPort << " (public: " << m_tcpPublic
+    if (m_run && !m_accepting) {
+        CINFO << "Host::runAcceptor listening on local port:" << m_listenPort << " (public: " << m_tcpPublic
                     << ")";
         m_accepting = true;
 
         auto socket = make_shared<BytesSocket>(m_ioService);
-        m_tcp4Acceptor.async_accept(socket->ref(), [=](boost::system::error_code ec)
-        {
+        m_tcp4Acceptor.async_accept(socket->ref(), [=](boost::system::error_code ec) {
             m_accepting = false;
-            if (ec || !m_run)
-            {
+            if (ec || !m_run) {
                 socket->close();
                 return;
             }
-            if (peerCount() > peerSlots(Ingress))
-            {
-                cnetdetails << "Dropping incoming connect due to maximum peer count (" << Ingress
+            if (peerCount() > peerSlots(Ingress)) {
+                CINFO << "Dropping incoming connect due to maximum peer count (" << Ingress
                             << " * ideal peer count): " << socket->remoteEndpoint();
                 socket->close();
                 if (ec.value() < 1)
@@ -477,21 +472,17 @@ void Host::runAcceptor()
             }
 
             bool success = false;
-            try
-            {
+            try {
                 // incoming connection; we don't yet know nodeid
                 auto handshake = make_shared<BytesHandshake>(this, socket);
                 m_connecting.push_back(handshake);
                 handshake->start();
                 success = true;
+            } catch (Exception const& _e) {
+                CWARN << "ERROR: " << diagnostic_information(_e);
             }
-            catch (Exception const& _e)
-            {
-                cwarn << "ERROR: " << diagnostic_information(_e);
-            }
-            catch (std::exception const& _e)
-            {
-                cwarn << "ERROR: " << _e.what();
+            catch (std::exception const& _e) {
+                CWARN << "ERROR: " << _e.what();
             }
 
             if (!success)
@@ -606,43 +597,34 @@ void Host::relinquishPeer(NodeID const& _node)
 
 void Host::connect(std::shared_ptr<Peer> const& _p)
 {
-    if (!m_run)
-        return;
+    if (!m_run) return;
 
-    if (havePeerSession(_p->id))
-    {
-        cnetdetails << "Aborted connect. Node already connected.";
+    if (havePeerSession(_p->id)) {
+        CWARN << "Aborted connect. Node already connected.";
         return;
     }
 
-    if (!nodeTableHasNode(_p->id) && _p->peerType == PeerType::Optional)
-        return;
+    if (!nodeTableHasNode(_p->id) && _p->peerType == PeerType::Optional) return;
 
     // prevent concurrently connecting to a node
     Peer *nptr = _p.get();
-    if (m_pendingPeerConns.count(nptr))
-        return;
+    if (m_pendingPeerConns.count(nptr)) return;
     m_pendingPeerConns.insert(nptr);
 
     _p->m_lastAttempted = std::chrono::system_clock::now();
 
     bi::tcp::endpoint ep(_p->endpoint);
-    cnetdetails << "Attempting connection to node " << _p->id << "@" << ep << " from " << id();
+    CINFO << "Attempting connection to node " << _p->id << "@" << ep << " from " << id();
     auto socket = make_shared<BytesSocket>(m_ioService);
-    socket->ref().async_connect(ep, [=](boost::system::error_code const& ec)
-    {
+    socket->ref().async_connect(ep, [=](boost::system::error_code const& ec) {
         _p->m_lastAttempted = std::chrono::system_clock::now();
         _p->m_failedAttempts++;
 
-        if (ec)
-        {
-            cnetdetails << "Connection refused to node " << _p->id << "@" << ep << " ("
-                        << ec.message() << ")";
+        if (ec) {
+            CWARN << "Connection refused to node " << _p->id << "@" << ep << " (" << ec.message() << ")";
             // Manually set error (session not present)
             _p->m_lastDisconnect = TCPError;
-        }
-        else
-        {
+        } else {
             cnetdetails << "Connecting to " << _p->id << "@" << ep;
             auto handshake = make_shared<BytesHandshake>(this, socket, _p->id);
             {
@@ -684,8 +666,10 @@ size_t Host::peerCount() const
 
 void Host::run(boost::system::error_code const&)
 {
+    //CINFO << "Host::run m_run:" << m_run;
     if (!m_run)
     {
+        CINFO << "Host::run m_run:" << m_run;
         // reset NodeTable
         DEV_GUARDED(x_nodeTable)
             m_nodeTable.reset();
@@ -782,18 +766,17 @@ void Host::startedWorking()
 
     // try to open acceptor (todo: ipv6)
     int port = Network::tcp4Listen(m_tcp4Acceptor, m_netConfig);
-    if (port > 0)
-    {
+    if (port > 0) {
         m_listenPort = port;
         determinePublic();
         runAcceptor();
-    }
-    else
+    } else {
         LOG(m_logger) << "p2p.start.notice id: " << id() << " TCP Listen port is invalid or unavailable.";
+    }
 
     auto nodeTable = make_shared<NodeTable>(
         m_ioService,
-        m_alias,
+        m_key,
         NodeIPEndpoint(bi::address::from_string(listenAddress()), listenPort(), listenPort()),
         m_netConfig.discovery
     );
@@ -802,22 +785,20 @@ void Host::startedWorking()
         m_nodeTable = nodeTable;
     restoreNetwork(&m_restoreNetwork);
 
-    LOG(m_logger) << "p2p.started id: " << id();
+    LOG(m_logger) << "Host::startedWorking p2p.started id: " << id();
 
     run(boost::system::error_code());
 }
 
 void Host::doWork()
 {
-    try
-    {
+    CINFO << "Host::doWork";
+    try {
         if (m_run)
             m_ioService.run();
-    }
-    catch (std::exception const& _e)
-    {
-        cwarn << "Exception in Network Thread: " << _e.what();
-        cwarn << "Network Restart is Recommended.";
+    } catch (std::exception const& _e) {
+        CWARN << "Exception in Network Thread: " << _e.what();
+        CWARN << "Network Restart is Recommended.";
     }
 }
 
@@ -899,7 +880,7 @@ bytes Host::saveNetwork() const
     // else: TODO: use previous configuration if available
 
     core::RLPStream ret(3);
-    ret << net::c_protocolVersion << m_alias.secret().ref();
+    ret << net::c_protocolVersion << m_key.getSecret().ref();
     ret.appendList(count);
     if (!!count)
         ret.appendRaw(network.out(), count);
@@ -992,14 +973,14 @@ bool Host::peerSlotsAvailable(Host::PeerSlotType _type /*= Ingress*/)
     return peerCount() + m_pendingPeerConns.size() < peerSlots(_type);
 }
 
-KeyPair Host::networkAlias(bytesConstRef _b)
+GKey Host::networkKey(bytesConstRef data)
 {
-    CINFO << "Host::networkAlias :" << _b.toString();
-    core::RLP r(_b);
+    CINFO << "Host::networkKey :" << data.toString();
+    core::RLP r(data);
     if (r.itemCount() == 3 && r[0].isInt() && r[0].toInt<unsigned>() >= 3)
-        return KeyPair(Secret(r[1].toBytes()));
+        return GKey(Secret(r[1].toBytes()));
     else
-        return KeyPair::create();
+        return GKey::create();
 }
 
 bool Host::nodeTableHasNode(Public const& _id) const

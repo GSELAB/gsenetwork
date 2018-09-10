@@ -46,13 +46,13 @@ public:
     BytesFrameCoder(BytesHandshake const& init);
 
     //
-    BytesFrameCoder(bool originated, h512 const& remoteEphemeral, h256 const& remoteNonce, KeyPair const& ecdheLocal,
+    BytesFrameCoder(bool originated, h512 const& remoteEphemeral, h256 const& remoteNonce, GKey const& ecdheLocal,
         h256 const& nonce, bytesConstRef ackClipher, bytesConstRef authCipher);
 
     ~BytesFrameCoder();
 
     // establish shared secrets and setup aes and mac states
-    void setup(bool originated, h512 const& remoteEphemeral, h256 const& remoteNonce, KeyPair const& ecdheLocal,
+    void setup(bool originated, h512 const& remoteEphemeral, h256 const& remoteNonce, GKey const& ecdheLocal,
         h256 const& nonce, bytesConstRef ackClipher, bytesConstRef authCipher);
 
     // write single-frame payload of packet(s)

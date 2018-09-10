@@ -16,6 +16,7 @@
 #include <core/Block.h>
 #include <core/Transaction.h>
 #include <config/NetConfig.h>
+#include <crypto/GKey.h>
 
 namespace net {
 
@@ -23,8 +24,8 @@ class Host;
 
 class NetController {
 public:
-    NetController(): m_inited(false) {}
-    NetController(config::NetConfig const& netConfig);
+    NetController(crypto::GKey const& key): m_key(key), m_inited(false) {}
+    NetController(crypto::GKey const& key, config::NetConfig const& netConfig): m_key(key), m_inited(false) {}
 
     ~NetController();
 
@@ -45,6 +46,8 @@ public:
 
 private:
     bool m_inited;
+
+    crypto::GKey m_key;
 
     Host* m_host = nullptr;
 

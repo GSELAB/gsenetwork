@@ -132,7 +132,6 @@ private:
     Logger m_logger{createLogger(VerbosityInfo, "udp")};
 };
 
-
 template <typename Handler, unsigned MaxDatagramSize>
 void UDPSocket<Handler, MaxDatagramSize>::connect()
 {
@@ -142,6 +141,7 @@ void UDPSocket<Handler, MaxDatagramSize>::connect()
         return;
     }
 
+    LOG(m_logger) << "UDPSocket<Handler, MaxDatagramSize>::connect m_endpoint：" << m_endpoint;
     m_socket.open(boost::asio::ip::udp::v4());
     try {
         m_socket.bind(m_endpoint);
@@ -189,6 +189,7 @@ void UDPSocket<Handler, MaxDatagramSize>::doRead()
             return disconnectWithError(_ec);
         }
 
+        CINFO << "UDPSocket recv data from " << m_recvEndpoint;
         if (_ec != boost::system::errc::success) {
             cnetlog << "Receiving UDP message failed. " << _ec.value() << " : " << _ec.message();
         }

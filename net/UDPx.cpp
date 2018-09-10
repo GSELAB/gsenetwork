@@ -16,5 +16,4 @@ Public BytesDatagramFace::authenticate(bytesConstRef sig, bytesConstRef rlp)
     Signature const& signature = *(Signature const*)sig.data();
     return crypto::recover(signature, sha3(rlp));
 }
-
 } // end namespace

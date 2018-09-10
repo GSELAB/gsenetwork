@@ -49,13 +49,13 @@ BytesFrameCoder::BytesFrameCoder(BytesHandshake const&init) : m_impl(new BytesFr
         init.m_nonce, &init.m_ackCipher, &init.m_authCipher);
 }
 
-BytesFrameCoder::BytesFrameCoder(bool originated, h512 const& remoteEphemeral, h256 const& remoteNonce, KeyPair const& ecdheLocal,
+BytesFrameCoder::BytesFrameCoder(bool originated, h512 const& remoteEphemeral, h256 const& remoteNonce, GKey const& ecdheLocal,
     h256 const& nonce, bytesConstRef ackCipher, bytesConstRef authCipher)
 {
     setup(originated, remoteEphemeral, remoteNonce, ecdheLocal, nonce, ackCipher, authCipher);
 }
 
-void BytesFrameCoder::setup(bool originated, h512 const& remoteEphemeral, h256 const& remoteNonce, KeyPair const& ecdheLocal,
+void BytesFrameCoder::setup(bool originated, h512 const& remoteEphemeral, h256 const& remoteNonce, GKey const& ecdheLocal,
     h256 const& nonce, bytesConstRef ackClipher, bytesConstRef authCipher)
 {
 
