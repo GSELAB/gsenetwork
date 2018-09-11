@@ -28,12 +28,16 @@ public:
 
     virtual bool isValid() const; //  noexecept;
 
+    uint8_t getObjectType() const { return m_object; }
+
+    void setObjectType(uint8_t object) { m_object = object; }
+
 private:
     chain::ChainID m_chainId;
+    uint8_t m_object;
     uint8_t m_cap;
     bytes m_type;
     bytes m_data;
-
 };
 
 } // end namespace

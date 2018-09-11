@@ -11,27 +11,69 @@
 
 #include <chain/BlockChain.h>
 #include <runtime/Runtime.h>
+#include <core/Log.h>
 
 using namespace core;
+using namespace runtime::storage;
 
 namespace chain {
 
+BlockChain::BlockChain(crypto::GKey const& key): m_key(key)
+{
+    if (m_controller == nullptr) m_controller = &controller;
+    if (m_chainID == GSE_UNKNOWN_NETWORK) {
+        // THROW_GSEXCEPTION("GSE_UNKNOWN_NETWORK");
+        CWARN << "GSE_UNKNOWN_NETWORK, SET DEFAULT_GSE_NETWORK";
+        m_chainID = DEFAULT_GSE_NETWORK;
+    }
 
+    m_dispatcher = new Dispatch(this);
+}
+
+BlockChain::BlockChain(crypto::GKey const& key, Controller* c, ChainID const& chainID): m_key(key), m_controller(c), m_chainID(chainID)
+{
+    m_dispatcher = new Dispatch(this);
+}
+
+void BlockChain::init()
+{
+    CINFO << "Block chain init";
+}
 
 bool BlockChain::processBlock(Block const& block)
 {
-    bool ret;
-
     /* DO CHECK BLOCK HEADER and TRANSACTIONS (PARALLEL) */
     {
 
     }
 
-    for (auto const& item : block.getTransactions())
-        if (!processTransaction(block, item))
-            ret = false;
+    MemoryItem item;
+    {
+        Guard g(x_memoryQueue);
+        std::shared_ptr<runtime::storage::Repository> repository =
+            std::make_shared<runtime::storage::Repository>(m_memoryQueue.back().getRepository());
+        item.setBlockNumber(block.getNumber());
+        item.setRepository(repository);
+    }
 
-    return ret;
+    try {
+
+        for (auto const& item : block.getTransactions())
+            if (!processTransaction(block, item)) {
+                // Record the failed
+            }
+    } catch (std::exception const& e) {
+        CWARN << "Error occur process the block " << block.getNumber();
+        return false;
+    }
+
+    item.setDone();
+    {
+        Guard g(x_memoryQueue);
+        m_memoryQueue.push(item);
+    }
+
+    return true;
 }
 
 bool BlockChain::processTransaction(Block const& block, Transaction const& transaction)
@@ -51,5 +93,56 @@ bool BlockChain::checkBifurcation()
 {
 
     return true;
+}
+
+void BlockChain::processObject(std::unique_ptr<core::Object> object)
+{
+
+}
+
+void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
+{
+    m_chain->processObject(interpretObject(from, msg));
+}
+
+/*
+ * 0x01: Transactoon
+ * 0x02: BlockHeader
+ * 0x03: Block
+ * 0x04: Account
+ * 0x05: Producer
+ * 0x06: SubChain
+ *
+ */
+std::unique_ptr<core::Object> Dispatch::interpretObject(bi::tcp::endpoint const& from, BytesPacket const& msg)
+{
+    unique_ptr<Object> object;
+
+
+    switch (msg.getObjectType()) {
+        case 0x01: // Transaction
+            object.reset(new Transaction(bytesConstRef(&msg.data())));
+            break;
+        case 0x02: // BlockHeader
+            object.reset(new BlockHeader(bytesConstRef(&msg.data())));
+            break;
+        case 0x03:
+            object.reset(new Block(bytesConstRef(&msg.data())));
+            break;
+        case 0x04:
+            object.reset(new Account(bytesConstRef(&msg.data())));
+            break;
+        case 0x05:
+            object.reset(new Producer(bytesConstRef(&msg.data())));
+            break;
+        case 0x06:
+            object.reset(new SubChain(bytesConstRef(&msg.data())));
+            break;
+        default:
+            THROW_GSEXCEPTION("Unknown object type -> interpretObject");
+            break;
+    }
+
+    return object;
 }
 } // end namespace

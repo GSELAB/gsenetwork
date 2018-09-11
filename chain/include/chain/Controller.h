@@ -49,10 +49,8 @@ public:
     // @only used by rpc module
     bool addTransaction(Transaction const& transaction);
 
-    
-
 private:
-    chain::BlockChain *m_chain;
+    BlockChain *m_chain;
 
     net::NetController *m_net;
 

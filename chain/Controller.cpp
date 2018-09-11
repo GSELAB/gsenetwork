@@ -19,13 +19,6 @@ using namespace net;
 
 namespace chain {
 
-namespace {
-void my_func()
-{
-    CINFO << "GSE TEST!";
-}
-}
-
 void Controller::init(crypto::GKey const& key)
 {
     m_key = key;
@@ -34,19 +27,21 @@ void Controller::init(crypto::GKey const& key)
     m_dbc = new DatabaseController();
     m_dbc->init();
 
+    CINFO << "Start GSE Chain init...";
+    m_chain = new BlockChain(key, this);
+    m_chain->init();
+
     CINFO << "Start network init...";
-    m_net = new NetController(m_key);
+    m_net = new NetController(m_key, m_chain->getDispatcher());
     m_net->init();
 }
 
 void Controller::exit()
 {
     CINFO << "Controller release the resource...";
-    if (m_net)
-        delete m_net;
-
-    if (m_dbc)
-        delete m_dbc;
+    if (m_net) delete m_net;
+    if (m_chain) delete m_chain;
+    if (m_dbc) delete m_dbc;
 
 }
 

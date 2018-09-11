@@ -11,34 +11,70 @@
 
 #pragma once
 
+#include <core/Guards.h>
 #include <core/Types.h>
 #include <core/Block.h>
+#include <core/Producer.h>
+#include <core/SubChain.h>
 #include <core/Transaction.h>
 #include <storage/Repository.h>
+#include <net/NetController.h>
+#include <crypto/GKey.h>
+
+using namespace net;
 
 namespace chain {
 
 class Controller;
-
 extern Controller controller;
+
+class BlockChain;
+
+class Dispatch: public DispatchFace {
+public:
+    Dispatch(BlockChain *chain): m_chain(chain) {}
+
+    virtual ~Dispatch() {}
+
+    void processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg);
+
+    static std::unique_ptr<core::Object> interpretObject(bi::tcp::endpoint const& from, BytesPacket const& msg);
+private:
+    BlockChain *m_chain;
+};
 
 class BlockChain {
 public:
     struct MemoryItem {
+        MemoryItem(): m_isDone(false) {}
+
+        MemoryItem(uint64_t number, std::shared_ptr<runtime::storage::Repository> repository): m_isDone(false), m_blockNumber(number), m_repository(repository) {}
+
+        std::shared_ptr<runtime::storage::Repository> getRepository() const { return m_repository; }
+
+        void setRepository(std::shared_ptr<runtime::storage::Repository> repository) { m_repository = repository; }
+
+        uint64_t getBlockNumber() const { return m_blockNumber; }
+
+        void setBlockNumber(uint64_t blockNumber) { m_blockNumber = blockNumber; }
+
+        bool isDone() const { return m_isDone; }
+
+        void setDone() { m_isDone = true; }
+
+        bool m_isDone = false;
         uint64_t m_blockNumber;
         std::shared_ptr<runtime::storage::Repository> m_repository;
-
-        MemoryItem(uint64_t number, std::shared_ptr<runtime::storage::Repository> repository): m_blockNumber(number), m_repository(repository) {}
     };
 
 public:
-    BlockChain(): m_controller(&controller), m_chainID(DEFAULT_GSE_NETWORK) { }
+    BlockChain(crypto::GKey const& key);
 
-    BlockChain(Controller* c): m_controller(c), m_chainID(DEFAULT_GSE_NETWORK) { }
+    BlockChain(crypto::GKey const& key, Controller* c, ChainID const& chainID = DEFAULT_GSE_NETWORK);
 
-    BlockChain(Controller* c, ChainID const& chainID): m_controller(c), m_chainID(chainID) { }
+    virtual ~BlockChain() {}
 
-    ~BlockChain();
+    void init();
 
     Controller* getController() const { return m_controller; }
 
@@ -46,20 +82,29 @@ public:
 
     void setChainID(ChainID const& chainID) { m_chainID = chainID; }
 
-    bool processBlock(Block const& block);
+    bool processBlock(core::Block const& block);
 
-    bool processTransaction(Block const& block, Transaction const& transaction);
+    bool processTransaction(core::Block const& block, Transaction const& transaction);
 
-    bool processTransaction(Transaction const& transaction);
+    bool processTransaction(core::Transaction const& transaction);
 
     bool checkBifurcation();
 
+    DispatchFace* getDispatcher() const { return m_dispatcher; }
+
+    void processObject(std::unique_ptr<core::Object> object);
+
 private:
-    Controller* m_controller;
 
-    ChainID m_chainID;
+    Controller* m_controller = nullptr;
 
-    std::queue<MemoryItem> m_queueMemoryBlockChain;
+    GKey m_key;
+    ChainID m_chainID = GSE_UNKNOWN_NETWORK;
 
+    DispatchFace* m_dispatcher;
+
+    mutable Mutex x_memoryQueue;
+    std::queue<MemoryItem> m_memoryQueue;
+    uint64_t m_solidifyIndex;
 };
 } // end namespace

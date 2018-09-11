@@ -1,6 +1,7 @@
 SET (chain_source
     Genesis.cpp
     SubChainController.cpp
+    BlockChain.cpp
     Controller.cpp)
 
 ADD_LIBRARY (chain  ${chain_source})
