@@ -87,6 +87,9 @@ public:
     // @override
     std::string getRLPData();
 
+    // @override
+    uint8_t getObjectType() const { return 0x02; }
+
 private:
     chain::ChainID m_chainID;
     Address  m_producer;
@@ -135,11 +138,16 @@ public:
 
     TransactionReceipts const& getTransactionReceipts() const;
 
+    uint64_t getNumber() const { return m_blockHeader.getNumber(); }
+
     // @override
     std::string getKey();
 
     // @override
     std::string getRLPData();
+
+    // @override
+    uint8_t getObjectType() const { return 0x03; }
 
 private:
     BlockHeader m_blockHeader;

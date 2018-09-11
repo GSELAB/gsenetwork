@@ -65,6 +65,9 @@ public:
     // @override
     std::string getRLPData();
 
+    // @override
+    uint8_t getObjectType() const { return 0x04; }
+
 private:
     Address m_address;
     bool m_alive = false;

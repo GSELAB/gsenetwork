@@ -15,11 +15,23 @@
 
 namespace core {
 
+/*
+ * 0x01: Transactoon
+ * 0x02: BlockHeader
+ * 0x03: Block
+ * 0x04: Account
+ * 0x05: Producer
+ * 0x06: SubChain
+ *
+ * 0x20: AttributeState
+ */
 class Object {
 public:
     virtual std::string getRLPData() = 0;
 
     virtual std::string getKey() = 0;
+
+    virtual uint8_t getObjectType() const = 0;
 };
 
 } // end namespace

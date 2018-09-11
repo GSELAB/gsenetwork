@@ -52,6 +52,9 @@ public:
     // @override
     std::string getRLPData();
 
+    // @override
+    uint8_t getObjectType() const { return 0x06; }
+
 private:
     chain::ChainID m_chainID;
     Address m_creator;

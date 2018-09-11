@@ -47,6 +47,9 @@ public:
     // @override
     std::string getRLPData();
 
+    // @override
+    uint8_t getObjectType() const { return 0x05; }
+
 private:
     Address m_address;
     int64_t m_timestamp;

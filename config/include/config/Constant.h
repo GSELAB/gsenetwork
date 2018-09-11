@@ -74,7 +74,7 @@ public:
 
     AttributeState(std::string const& key, bytesConstRef const& data):m_key(key) {
         try {
-            RLP rlp(data);
+            core::RLP rlp(data);
             if (rlp.isList() && rlp.itemCount() == CONSTANT_STATE_FIELDS) {
                 m_type = (Type)rlp[0].toInt<uint32_t>();
                 switch (m_type) {
@@ -119,7 +119,7 @@ public:
 
     bool operator==(AttributeState<T> const& t) { return m_key == t.getKeyWord() && m_value == t.getValue(); }
 
-    void streamRLP(RLPStream& rlpStream) const {
+    void streamRLP(core::RLPStream& rlpStream) const {
         rlpStream.appendList(CONSTANT_STATE_FIELDS);
         rlpStream << m_type;
         switch (m_type) {
@@ -153,11 +153,13 @@ public:
     void setValue(T const& value) { m_value = value; }
 
     // @ override
-    std::string getRLPData() { RLPStream rlpStream; streamRLP(rlpStream); return bytesConstRef(&rlpStream.out()).toString(); }
+    std::string getRLPData() { core::RLPStream rlpStream; streamRLP(rlpStream); return bytesConstRef(&rlpStream.out()).toString(); }
 
     // @ override
     std::string getKey() { return m_key; }
 
+    //@override
+    uint8_t getObjectType() const { return 0x20; }
 private:
     std::string m_key;
     Type m_type;
