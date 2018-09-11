@@ -10,7 +10,6 @@
  */
 
 #include <database/DatabaseController.h>
-#include <chain/Controller.h>
 #include <core/Log.h>
 #include <config/Constant.h>
 #include <chain/Genesis.h>
