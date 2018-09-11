@@ -49,6 +49,8 @@ void NetController::init()
     if (!m_inited) {
         NetworkConfig conf(DEFAULT_LOCAL_IP, DEFAULT_LISTEN_PORT, false);
         m_host = new Host("GSE V1.0", m_key, conf, chain::DEFAULT_GSE_NETWORK);
+        if (m_dispatcher)
+            m_host->addDispatcher(m_dispatcher);
         m_host->start();
         CINFO << "NetController::init listen port:" << m_host->listenPort();
         m_inited = true;

@@ -64,6 +64,7 @@ namespace net {
 
 class Host;
 class HostCapabilityFace;
+class DispatchFace;
 
 class HostNodeTableHandler: public NodeTableEventHandler {
 public:
@@ -238,6 +239,8 @@ public:
     /// Get sessions by capability name and version
     std::vector<std::pair<std::shared_ptr<SessionFace>, std::shared_ptr<Peer>>> peerSessions(std::string const& _name, u256 const& _version) const;
 
+    void addDispatcher(DispatchFace* dispatcher) { m_dispatchers.push_back(dispatcher); }
+
 protected:
     void onNodeTableEvent(NodeID const& _n, NodeTableEventType const& _e);
 
@@ -350,6 +353,8 @@ private:
     bool m_dropPeers = false;
 
     ReputationManager m_repMan;
+
+    std::vector<DispatchFace*> m_dispatchers;
 
     Logger m_logger{createLogger(VerbosityDebug, "net")};
 };
