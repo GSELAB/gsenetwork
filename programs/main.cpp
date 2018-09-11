@@ -10,6 +10,8 @@
  */
 
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include <core/Address.h>
 #include <core/Log.h>
@@ -17,18 +19,15 @@
 #include <crypto/GKey.h>
 #include <chain/Controller.h>
 
-#include <chrono>
-#include <thread>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/program_options/options_description.hpp>
 
-
 using namespace std;
 using namespace crypto;
 using namespace chain;
-//using namespace core;
 
 namespace {
 
@@ -54,10 +53,6 @@ void init(int argc, char **argv)
 {
     printFlag();
     toPublic({});
-    if (argc == 1) {
-        // std::cout << "one param:" << argv[0] << "\n";
-    }
-
 }
 
 bool s_shouldExit = false;
@@ -96,9 +91,7 @@ void doCheck()
     //boost::thread::sleep(boost::get_system_time() + boost::posix_time::seconds(10));
     std::this_thread::sleep_for(chrono::seconds(SLEEP_SECONDS));
 }
-
-}
-
+} // namespace
 
 int main(int argc, char** argv)
 {
@@ -118,13 +111,8 @@ int main(int argc, char** argv)
 
     // TODO : Controller
     controller.init(key);
-
-    if (true) {
-
-        while (!shouldExit()) {
-            doCheck();
-        }
-    }
+    while (!shouldExit())
+        doCheck();
 
     CINFO <<  "GSE SHUTDOWN";
     return 0;
