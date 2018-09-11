@@ -17,15 +17,25 @@
 #include <core/Transaction.h>
 #include <config/NetConfig.h>
 #include <crypto/GKey.h>
+#include <net/BytesPacket.h>
+#include <net/Common.h>
 
 namespace net {
+
+class DispatchFace {
+public:
+    virtual ~DispatchFace() {}
+
+    virtual void processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg) = 0;
+};
 
 class Host;
 
 class NetController {
 public:
-    NetController(crypto::GKey const& key): m_key(key), m_inited(false) {}
-    NetController(crypto::GKey const& key, config::NetConfig const& netConfig): m_key(key), m_inited(false) {}
+    NetController(crypto::GKey const& key, DispatchFace* dispatcher);
+
+    NetController(crypto::GKey const& key, DispatchFace* dispatcher, config::NetConfig const& netConfig);
 
     ~NetController();
 
@@ -49,7 +59,9 @@ private:
 
     crypto::GKey m_key;
 
-    Host* m_host = nullptr;
+    DispatchFace* m_dispatcher;
+
+    Host* m_host;
 
     std::queue<std::shared_ptr<core::Transaction>> transactionsQueue;
 

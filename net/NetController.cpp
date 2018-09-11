@@ -17,6 +17,16 @@
 
 namespace net {
 
+NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher): m_key(key), m_inited(false)
+{
+    m_dispatcher = dispatcher;
+}
+
+NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher, config::NetConfig const& netConfig): m_key(key), m_inited(false)
+{
+    m_dispatcher = dispatcher;
+}
+
 NetController::~NetController()
 {
     CINFO << "NetController::~NetController";
