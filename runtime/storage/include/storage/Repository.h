@@ -27,6 +27,8 @@ public:
     // virtual std::shared_ptr<Account> getAccount() const = 0;
     Repository();
 
+    Repository(std::shared_ptr<Repository> parent): m_parent(parent) {}
+
     Account const& getAccount(Address const& address) const;
 
     bool transfer(Address const& from, Address const& to, uint64_t value);
