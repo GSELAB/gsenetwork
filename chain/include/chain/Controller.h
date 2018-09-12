@@ -24,6 +24,7 @@
 
 namespace chain {
 
+// @thread safe
 class Controller: public producer::ProcuderEventHandleFace {
 public:
     Controller(ChainID const& chainID): m_chainID(chainID) {}
@@ -55,6 +56,12 @@ public:
 
     // @used by producer
     void processProducerEvent();
+
+    uint64_t getLastBlockNumber() const { return m_chain->getLastBlockNumber(); }
+
+    std::shared_ptr<core::Transaction> getTransactionFromCache() { return m_chain->getTransactionFromCache(); }
+
+    std::shared_ptr<core::Block> getBlockFromCache() { return m_chain->getBlockFromCache(); }
 
 private:
     chain::ChainID m_chainID;

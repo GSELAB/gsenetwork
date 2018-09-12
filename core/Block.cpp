@@ -313,6 +313,7 @@ void Block::setBlockHeader(BlockHeader const& blockHeader)
 void Block::addTransaction(Transaction const& transaction)
 {
     // TODO:
+    m_transactions.push_back(transaction);
 }
 
 void Block::addTransactionReceipt(TransactionReceipt const& transactionReceipt)

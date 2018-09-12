@@ -22,6 +22,8 @@
 
 using namespace core;
 
+class Controller;
+
 namespace producer {
 
 class ProcuderEventHandleFace {
@@ -31,6 +33,12 @@ public:
     virtual void broadcast(std::unique_ptr<Block> block) = 0;
 
     virtual void processProducerEvent() = 0;
+
+    virtual uint64_t getLastBlockNumber() const = 0;
+
+    virtual std::shared_ptr<core::Transaction> getTransactionFromCache() = 0;
+
+    virtual std::shared_ptr<core::Block> getBlockFromCache() = 0;
 };
 
 /* The producer's state. */

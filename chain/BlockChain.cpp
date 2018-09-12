@@ -35,6 +35,12 @@ BlockChain::BlockChain(crypto::GKey const& key, Controller* c, ChainID const& ch
     m_dispatcher = new Dispatch(this);
 }
 
+BlockChain::~BlockChain()
+{
+    CINFO << "BlockChain::~BlockChain";
+    if (m_dispatcher) delete m_dispatcher;
+}
+
 void BlockChain::init()
 {
     CINFO << "Block chain init";
@@ -100,9 +106,45 @@ void BlockChain::processObject(std::unique_ptr<core::Object> object)
 
 }
 
+uint64_t BlockChain::getLastBlockNumber() const
+{
+    Guard l(x_memoryQueue);
+    if (m_memoryQueue.empty()) {
+        // read from db
+
+        return 0;
+    }
+
+    return m_memoryQueue.back().getBlockNumber();
+}
+
 void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
 {
     m_chain->processObject(interpretObject(from, msg));
+}
+
+std::shared_ptr<core::Transaction> BlockChain::getTransactionFromCache()
+{
+    std::shared_ptr<core::Transaction> ret = nullptr;
+    Guard l(x_transactionsQueue);
+    if (!this->transactionsQueue.empty()) {
+        ret = this->transactionsQueue.front();
+        this->transactionsQueue.pop();
+    }
+
+    return ret;
+}
+
+std::shared_ptr<core::Block> BlockChain::getBlockFromCache()
+{
+    std::shared_ptr<core::Block> ret = nullptr;
+    Guard l(x_blocksQueue);
+    if (!transactionsQueue.empty()) {
+        ret = blocksQueue.front();
+        blocksQueue.pop();
+    }
+
+    return ret;
 }
 
 /*

@@ -52,6 +52,7 @@ void Controller::exit()
     if (m_net) delete m_net;
     if (m_chain) delete m_chain;
     if (m_dbc) delete m_dbc;
+    if (m_producerServer) delete m_producerServer;
 
 }
 

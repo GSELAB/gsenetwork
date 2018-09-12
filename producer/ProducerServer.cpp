@@ -15,15 +15,16 @@
 
 using namespace utils;
 
+extern Controller controller;
+
 namespace producer {
 
 ProducerServer::~ProducerServer()
 {
-    if (isWorking()) {
-        CWARN << "~ProducerServer stop working";
+    CINFO << "ProducerServer::~ProducerServer";
+    if (isWorking())
         stopWorking();
-    }
-
+    stop();
     terminate();
 }
 
@@ -68,7 +69,6 @@ void ProducerServer::doWork()
         m_prevTimestamp = timestamp;
     } else {
         if ((timestamp - m_prevTimestamp) >= (PRODUCER_INTERVAL - PRODUCER_SLEEP_INTERVAL / 5)) {
-            // m_prevTimestamp = timestamp;
             m_prevTimestamp = m_prevTimestamp + PRODUCER_INTERVAL;
         } else {
             // CINFO << "Try to sleep " << PRODUCER_SLEEP_INTERVAL;
@@ -77,16 +77,25 @@ void ProducerServer::doWork()
         }
     }
 
-    CINFO << "Try to genereate block... current(" << timestamp << ")" << " time(" << m_prevTimestamp << ")";
-    std::shared_ptr<Block> block = std::make_shared<Block>();
+    BlockHeader blockHeader(m_eventHandle->getLastBlockNumber());
+    blockHeader.setProducer(m_key.getAddress());
+    // blockHeader.setParentHash();
+    blockHeader.setTimestamp(timestamp);
+    //blockHeader.setExtra();
+    std::shared_ptr<Block> block = std::make_shared<Block>(blockHeader);
+    for (unsigned i = 0; i < 20; i++) {
+        std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
+        if (transaction) {
+            CINFO << "Package transaction to current block(" << block->getNumber() << ")";
+            block->addTransaction(*transaction);
+        }
+    }
 
-    /*
-    while (block->getSize() < MAX_BLOCK_SIZE) {
-        //std::shared_ptr<bundle::TransactionBundle> transaction = netController->getTransactionFromCache();
+    CINFO << "Try to genereate block(number = " << block->getNumber() << ") success -> time(" << m_prevTimestamp << ")";
+    // do broadcast opeartion
+    {
 
     }
-    */
-
 }
 
 

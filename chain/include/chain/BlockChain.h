@@ -44,6 +44,12 @@ private:
     BlockChain *m_chain;
 };
 
+enum BlockChainStatus {
+    NormalStatus = 0x01,
+    SyncStatus,
+    ProducerStatus,
+};
+
 class BlockChain {
 public:
     struct MemoryItem {
@@ -73,7 +79,7 @@ public:
 
     BlockChain(crypto::GKey const& key, Controller* c, ChainID const& chainID = DEFAULT_GSE_NETWORK);
 
-    virtual ~BlockChain() {}
+    virtual ~BlockChain();
 
     void init();
 
@@ -95,6 +101,12 @@ public:
 
     void processObject(std::unique_ptr<core::Object> object);
 
+    uint64_t getLastBlockNumber() const;
+
+    std::shared_ptr<core::Transaction> getTransactionFromCache();
+
+    std::shared_ptr<core::Block> getBlockFromCache();
+
 private:
 
     Controller* m_controller = nullptr;
@@ -107,5 +119,13 @@ private:
     mutable Mutex x_memoryQueue;
     std::queue<MemoryItem> m_memoryQueue;
     uint64_t m_solidifyIndex;
+    BlockChainStatus m_blockChainStatus = NormalStatus;
+
+    // ? Change Mutex to spinlock ??? ?
+    mutable Mutex x_transactionsQueue;
+    std::queue<std::shared_ptr<core::Transaction>> transactionsQueue;
+
+    mutable Mutex x_blocksQueue;
+    std::queue<std::shared_ptr<core::Block>> blocksQueue;
 };
 } // end namespace
