@@ -39,7 +39,7 @@ void Task::startWorking()
 		m_state_notifier.notify_all();
 		m_task.reset(new thread([&]() {
 			setThreadName(m_name.c_str());
-			CINFO << "Task::startWorking thread begin";
+			CINFO << "Task:" << m_name << " thread begin";
 			while (m_state != TaskState::Killing) {
 				TaskState ex = TaskState::Starting;
 				{
@@ -48,7 +48,7 @@ void Task::startWorking()
                     m_state = TaskState::Started;
 				}
 
-                CINFO << "Trying to set Started: Thread was" << (unsigned)ex;
+                CINFO << "Task:" << m_name << "Thread was" << (unsigned)ex;
 				m_state_notifier.notify_all();
 
 				try {
@@ -56,7 +56,7 @@ void Task::startWorking()
 					workLoop();
 					doneWorking();
 				} catch (std::exception const& _e) {
-				    CWARN << "Exception thrown in Task thread: " << _e.what();
+				    CWARN << "Task:" << m_name << " Exception thrown in Task thread: " << _e.what();
 				}
 
 //				ex = TaskState::Stopping;
@@ -66,13 +66,13 @@ void Task::startWorking()
                     // the condition variable-related lock
                     unique_lock<mutex> l(x_task);
                     ex = m_state.exchange(TaskState::Stopped);
-                    CINFO << "State: Stopped: Thread was" << (unsigned)ex;
+                    CINFO << "Task:" << m_name << " State: Stopped: Thread was" << (unsigned)ex;
                     if (ex == TaskState::Killing || ex == TaskState::Starting)
                         m_state.exchange(ex);
                 }
 
 				m_state_notifier.notify_all();
-				CINFO << "Waiting until not Stopped...";
+				CINFO << "Task:" << m_name << " Waiting until not Stopped...";
 
                 {
                     unique_lock<mutex> l(x_task);
@@ -84,7 +84,7 @@ void Task::startWorking()
 			}
 		}));
 
-		CINFO << "Spawning" << m_name;
+		CINFO << "Spawning:" << m_name;
 	}
 
 	DEV_TIMED_ABOVE("Start Task", 100)
@@ -95,8 +95,7 @@ void Task::startWorking()
 void Task::stopWorking()
 {
 	std::unique_lock<Mutex> l(x_task);
-	if (m_task)
-	{
+	if (m_task) {
 		TaskState ex = TaskState::Started;
 		if (!m_state.compare_exchange_strong(ex, TaskState::Stopping))
 			return;
@@ -112,10 +111,8 @@ void Task::terminate()
 {
 	CINFO << "stopWorking for thread" << m_name;
 	std::unique_lock<Mutex> l(x_task);
-	if (m_task)
-	{
-		if (m_state.exchange(TaskState::Killing) == TaskState::Killing)
-			return; // Somebody else is doing this
+	if (m_task) {
+		if (m_state.exchange(TaskState::Killing) == TaskState::Killing) return; // Somebody else is doing this
 		l.unlock();
 		m_state_notifier.notify_all();
 		DEV_TIMED_ABOVE("Terminate task", 100)
@@ -128,8 +125,7 @@ void Task::terminate()
 
 void Task::workLoop()
 {
-	while (m_state == TaskState::Started)
-	{
+	while (m_state == TaskState::Started) {
 		if (m_idleWaitMs)
 			this_thread::sleep_for(chrono::milliseconds(m_idleWaitMs));
 		doWork();
