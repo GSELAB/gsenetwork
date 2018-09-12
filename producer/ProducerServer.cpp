@@ -11,72 +11,84 @@
 
 #include <producer/ProducerServer.h>
 #include <config/Constant.h>
+#include <utils/Utils.h>
+
+using namespace utils;
 
 namespace producer {
 
-ProducerServer::ProducerServer()
-{
-    m_state = Undefined;
-}
-
-ProducerServer::ProducerServer(chain::Controller* controller)
-{
-    m_controller = controller;
-}
-
 ProducerServer::~ProducerServer()
 {
+    if (isWorking()) {
+        CWARN << "~ProducerServer stop working";
+        stopWorking();
+    }
 
+    terminate();
 }
 
-int ProducerServer::init()
+void ProducerServer::start()
 {
-    if (m_state != Undefined)
-        return -1;
+    if (m_state != Ready) {
+        CWARN << "ProducerServer::start failed due to m_state(" << m_state << ")";
+        return;
+    }
 
-    // init the procuders
-    m_state = Ready;
-    return 0;
-}
+    startWorking();
+    if (isWorking()) return;
 
-int ProducerServer::start()
-{
-    if (m_state != Ready && m_state != Suspend)
-        return -1;
+    CWARN << "Start producer failed!";
+    doneWorking();
 
+    /*
     m_state = Running;
     while (m_state == Running) {
         generateBlock();
     }
-
-    return 0;
+    */
 }
 
-int ProducerServer::suspend()
+void ProducerServer::suspend()
 {
     if (m_state != Running)
-        return -1;
+        return;
 
     m_state = Suspend;
-    return 0;
 }
 
-int ProducerServer::stop()
+void ProducerServer::stop()
 {
     m_state = Stop;
-    return 0;
 }
 
-void ProducerServer::generateBlock()
+void ProducerServer::doWork()
 {
-    /*
-    std::shared_ptr<bundle::BlockBundle> block = std::make_shared<bundle::BlockBundle>(new bundle::BlockBundle());
+    int64_t timestamp = currentTimestamp();
+    if (m_prevTimestamp < 0) {
+        m_prevTimestamp = timestamp;
+    } else {
+        if ((timestamp - m_prevTimestamp) >= (PRODUCER_INTERVAL - PRODUCER_SLEEP_INTERVAL / 5)) {
+            // m_prevTimestamp = timestamp;
+            m_prevTimestamp = m_prevTimestamp + PRODUCER_INTERVAL;
+        } else {
+            // CINFO << "Try to sleep " << PRODUCER_SLEEP_INTERVAL;
+            sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
+            return;
+        }
+    }
 
+    CINFO << "Try to genereate block... current(" << timestamp << ")" << " time(" << m_prevTimestamp << ")";
+    std::shared_ptr<Block> block = std::make_shared<Block>();
+
+    /*
     while (block->getSize() < MAX_BLOCK_SIZE) {
         //std::shared_ptr<bundle::TransactionBundle> transaction = netController->getTransactionFromCache();
 
     }
     */
+
 }
+
+
 
 } // end of namespace

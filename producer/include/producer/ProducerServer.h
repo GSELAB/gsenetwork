@@ -11,15 +11,27 @@
 
 #pragma once
 
-#include<vector>
+#include <vector>
+#include <string>
 
-#include <chain/Controller.h>
 #include <core/Producer.h>
 #include <core/Account.h>
+#include <core/Task.h>
+#include <crypto/GKey.h>
+#include <config/Constant.h>
 
 using namespace core;
 
 namespace producer {
+
+class ProcuderEventHandleFace {
+public:
+    virtual ~ProcuderEventHandleFace() {}
+
+    virtual void broadcast(std::unique_ptr<Block> block) = 0;
+
+    virtual void processProducerEvent() = 0;
+};
 
 /* The producer's state. */
 enum ProducerState {
@@ -36,35 +48,32 @@ enum ProducerRet {
     PR_UNDEFINED,
 };
 
-class ProducerServer {
+class ProducerServer: public Task {
 public:
-    ProducerServer();
+    ProducerServer(crypto::GKey const& key, ProcuderEventHandleFace* eventHandle):
+        Task("GSE-PRODUCER", 0), m_key(key), m_eventHandle(eventHandle), m_state(Ready) {}
 
-    ProducerServer(chain::Controller *controller);
+    virtual ~ProducerServer();
 
-    ~ProducerServer();
+    void start();
 
-    int init();
+    void suspend();
 
-    int start();
+    void stop();
 
-    int suspend();
-
-    int stop();
-
-    void generateBlock();
+    void doWork();
 
 private:
-    std::vector<std::shared_ptr<Producer>> m_producers;
-
-    chain::Controller *m_controller;
-
-
-    ProducerState m_state;
-
-    std::shared_ptr<core::Account> m_currentAccout;
-
     chain::ChainID m_chainID;
+    crypto::GKey m_key;
+
+    std::vector<std::shared_ptr<Producer>> m_producers;
+    ProducerState m_state;
+    std::shared_ptr<Account> m_currentAccout;
+
+    ProcuderEventHandleFace* m_eventHandle;
+
+    int64_t m_prevTimestamp = -1;
 };
 
 } // end of namespace
