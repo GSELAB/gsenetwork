@@ -37,6 +37,12 @@ namespace config {
 // Max block size 1024 KB (1 M)
 #define MAX_BLOCK_SIZE (1024 * 1024 * 1204)
 
+// 0.1 second = 100 ms
+#define PRODUCER_SLEEP_INTERVAL  (100)
+
+// 2 second = 2000 ms
+#define PRODUCER_INTERVAL (2000)
+
 /*
  * @ Constant State
  * @ support bool\uint32_t\uint64_t\bytes
