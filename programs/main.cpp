@@ -18,6 +18,7 @@
 #include <crypto/Common.h>
 #include <crypto/GKey.h>
 #include <chain/Controller.h>
+#include <config/Argument.h>
 
 
 #include <boost/algorithm/string.hpp>
@@ -53,6 +54,10 @@ void init(int argc, char **argv)
 {
     printFlag();
     toPublic({});
+    if (argc > 1 && (strncmp(argv[1], "-p", 2) == 0 || strncmp(argv[1], "-P", 2) == 0)) {
+        CINFO << "Set argInstance.m_producerON true";
+        argInstance.m_producerON = true;
+    }
 }
 
 bool s_shouldExit = false;
