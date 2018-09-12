@@ -6,4 +6,4 @@ SET (chain_source
 
 ADD_LIBRARY (chain  ${chain_source})
 TARGET_LINK_LIBRARIES(chain
-    utils core crypto database config net ${GSE_BOOST_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+    utils core crypto database config net producer ${GSE_BOOST_LIBS} ${CMAKE_THREAD_LIBS_INIT})

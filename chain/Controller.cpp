@@ -13,9 +13,11 @@
 
 #include <chain/Controller.h>
 #include <core/Log.h>
+#include <config/Argument.h>
 
 using namespace database;
 using namespace net;
+using namespace producer;
 
 namespace chain {
 
@@ -34,6 +36,14 @@ void Controller::init(crypto::GKey const& key)
     CINFO << "Start network init...";
     m_net = new NetController(m_key, m_chain->getDispatcher());
     m_net->init();
+
+    if (argInstance.m_producerON) {
+        CINFO << "Start produce...";
+        m_producerServer = new ProducerServer(m_key, this);
+        m_producerServer->start();
+        //m_producerServer->start();
+    }
+
 }
 
 void Controller::exit()
@@ -82,7 +92,17 @@ bool Controller::addTransaction(Transaction const& transaction)
     return true;
 }
 
+// @used by producer
+void Controller::broadcast(std::unique_ptr<Block> block)
+{
 
+}
+
+// @used by producer
+void Controller::processProducerEvent()
+{
+
+}
 
 
 Controller controller(DEFAULT_GSE_NETWORK);

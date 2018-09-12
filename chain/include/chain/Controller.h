@@ -20,14 +20,15 @@
 #include <chain/BlockChain.h>
 #include <crypto/Common.h>
 #include <crypto/GKey.h>
+#include <producer/ProducerServer.h>
 
 namespace chain {
 
-class Controller {
+class Controller: public producer::ProcuderEventHandleFace {
 public:
     Controller(ChainID const& chainID): m_chainID(chainID) {}
 
-    ~Controller() {}
+    virtual ~Controller() {}
 
     void init(crypto::GKey const& key);
 
@@ -49,16 +50,22 @@ public:
     // @only used by rpc module
     bool addTransaction(Transaction const& transaction);
 
+    // @used by producer
+    void broadcast(std::unique_ptr<Block> block);
+
+    // @used by producer
+    void processProducerEvent();
+
 private:
-    BlockChain *m_chain;
-
-    net::NetController *m_net;
-
-    database::DatabaseController *m_dbc;
-
     chain::ChainID m_chainID;
-
     crypto::GKey m_key;
+
+    BlockChain* m_chain;
+    net::NetController* m_net;
+    database::DatabaseController* m_dbc;
+    producer::ProducerServer* m_producerServer;
+
+
 };
 
 extern Controller controller;
