@@ -84,9 +84,22 @@ std::string pathcat(std::string const& path, std::string const& file)
  */
 int64_t currentTimestamp()
 {
-    int64_t curr;
-    curr = static_cast<int64_t>(time(NULL));
-    return curr;
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
+int64_t currentMillisecond()
+{
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
+int64_t currentMicrosecond()
+{
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    return tv.tv_sec * 1000000 + tv.tv_usec;
+}
 } // end namespace
