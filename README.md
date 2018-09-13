@@ -40,5 +40,11 @@ $ make
 
 ## Run GSE Node
 ```
-...
+# Normal GSE Node.
+$ cd programs
+$ ./gsenode
+
+# Producer
+$ cd programs
+$ ./gsenode -p
 ```
