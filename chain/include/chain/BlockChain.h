@@ -22,6 +22,7 @@
 #include <crypto/GKey.h>
 
 using namespace net;
+using namespace core;
 
 namespace chain {
 
@@ -89,23 +90,25 @@ public:
 
     void setChainID(ChainID const& chainID) { m_chainID = chainID; }
 
-    bool processBlock(core::Block const& block);
+    bool processBlock(std::shared_ptr<Block> block);
 
-    bool processTransaction(core::Block const& block, Transaction const& transaction);
+    bool processProducerBlock(std::shared_ptr<Block> block);
 
-    bool processTransaction(core::Transaction const& transaction);
+    bool processTransaction(Block const& block, Transaction const& transaction);
+
+    bool processTransaction(Transaction const& transaction);
 
     bool checkBifurcation();
 
     DispatchFace* getDispatcher() const { return m_dispatcher; }
 
-    void processObject(std::unique_ptr<core::Object> object);
+    void processObject(std::unique_ptr<Object> object);
 
     uint64_t getLastBlockNumber() const;
 
-    std::shared_ptr<core::Transaction> getTransactionFromCache();
+    std::shared_ptr<Transaction> getTransactionFromCache();
 
-    std::shared_ptr<core::Block> getBlockFromCache();
+    std::shared_ptr<Block> getBlockFromCache();
 
 private:
 
@@ -117,7 +120,7 @@ private:
     DispatchFace* m_dispatcher;
 
     mutable Mutex x_memoryQueue;
-    std::queue<MemoryItem> m_memoryQueue;
+    std::queue<MemoryItem*> m_memoryQueue;
     uint64_t m_solidifyIndex;
     BlockChainStatus m_blockChainStatus = NormalStatus;
 

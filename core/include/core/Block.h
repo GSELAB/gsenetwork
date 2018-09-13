@@ -116,6 +116,10 @@ public:
 
     Block(bytesConstRef data);
 
+    // ~Block() {} cause signal c + c uncatched exception
+    //virtual ~Block();
+
+
     void streamRLP(RLPStream& rlpStream) const;
 
     Block& operator=(Block const& block);

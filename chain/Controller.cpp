@@ -41,7 +41,6 @@ void Controller::init(crypto::GKey const& key)
         CINFO << "Start produce...";
         m_producerServer = new ProducerServer(m_key, this);
         m_producerServer->start();
-        //m_producerServer->start();
     }
 
 }
@@ -52,7 +51,7 @@ void Controller::exit()
     if (m_net) delete m_net;
     if (m_chain) delete m_chain;
     if (m_dbc) delete m_dbc;
-    if (m_producerServer) delete m_producerServer;
+    if (argInstance.m_producerON && m_producerServer) delete m_producerServer;
 
 }
 
@@ -94,9 +93,15 @@ bool Controller::addTransaction(Transaction const& transaction)
 }
 
 // @used by producer
-void Controller::broadcast(std::unique_ptr<Block> block)
+void Controller::broadcast(std::shared_ptr<Block> block)
 {
+    // send it to p2p net work
+    {
 
+    }
+
+    // send to current block chain
+    m_chain->processProducerBlock(block);
 }
 
 // @used by producer

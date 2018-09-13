@@ -30,15 +30,15 @@ class ProcuderEventHandleFace {
 public:
     virtual ~ProcuderEventHandleFace() {}
 
-    virtual void broadcast(std::unique_ptr<Block> block) = 0;
+    virtual void broadcast(std::shared_ptr<Block> block) = 0;
 
     virtual void processProducerEvent() = 0;
 
     virtual uint64_t getLastBlockNumber() const = 0;
 
-    virtual std::shared_ptr<core::Transaction> getTransactionFromCache() = 0;
+    virtual std::shared_ptr<Transaction> getTransactionFromCache() = 0;
 
-    virtual std::shared_ptr<core::Block> getBlockFromCache() = 0;
+    virtual std::shared_ptr<Block> getBlockFromCache() = 0;
 };
 
 /* The producer's state. */

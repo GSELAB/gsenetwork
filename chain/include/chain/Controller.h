@@ -43,7 +43,7 @@ public:
 
     chain::ChainID getChainID() const;
 
-    void setChainID(chain::ChainID chainID);
+    void setChainID(ChainID chainID);
 
     // @only used by rpc module
     bool generateTransaction();
@@ -52,7 +52,7 @@ public:
     bool addTransaction(Transaction const& transaction);
 
     // @used by producer
-    void broadcast(std::unique_ptr<Block> block);
+    void broadcast(std::shared_ptr<Block> block);
 
     // @used by producer
     void processProducerEvent();
@@ -71,8 +71,6 @@ private:
     net::NetController* m_net;
     database::DatabaseController* m_dbc;
     producer::ProducerServer* m_producerServer;
-
-
 };
 
 extern Controller controller;

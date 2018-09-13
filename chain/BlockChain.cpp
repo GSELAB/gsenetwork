@@ -46,40 +46,61 @@ void BlockChain::init()
     CINFO << "Block chain init";
 }
 
-bool BlockChain::processBlock(Block const& block)
+#define MAX_QUEUE_SIZE 10
+
+bool BlockChain::processBlock(std::shared_ptr<Block> block)
 {
     /* DO CHECK BLOCK HEADER and TRANSACTIONS (PARALLEL) */
     {
 
     }
 
-    MemoryItem item;
+    CINFO << "Process block number(" << block->getNumber() << ") transactions amount(" << block->getTransactions().size() << ")";
+    MemoryItem* mItem = new MemoryItem();
     {
         Guard g(x_memoryQueue);
-        std::shared_ptr<runtime::storage::Repository> repository =
-            std::make_shared<runtime::storage::Repository>(m_memoryQueue.back().getRepository());
-        item.setBlockNumber(block.getNumber());
-        item.setRepository(repository);
+        std::shared_ptr<runtime::storage::Repository> repository;
+        if (m_memoryQueue.empty()) {
+            repository = std::make_shared<runtime::storage::Repository>(block);
+        } else {
+            repository = std::make_shared<runtime::storage::Repository>(block, m_memoryQueue.back()->getRepository());
+        }
+        mItem->setBlockNumber(block->getNumber());
+        mItem->setRepository(repository);
+        if (m_memoryQueue.size() > MAX_QUEUE_SIZE) {
+            // CINFO << "m_memoryQueue.size() > MAX_QUEUE_SIZE";
+            MemoryItem* delItem = m_memoryQueue.front();
+            m_memoryQueue.pop();
+            delete delItem;
+        }
+
+        if (!m_memoryQueue.empty()) {
+            m_memoryQueue.front()->getRepository()->setParentNULL();
+        }
     }
 
     try {
-
-        for (auto const& item : block.getTransactions())
-            if (!processTransaction(block, item)) {
+        for (auto const& item : block->getTransactions())
+            if (!processTransaction(*block, item)) {
                 // Record the failed
             }
     } catch (std::exception const& e) {
-        CWARN << "Error occur process the block " << block.getNumber();
+        CWARN << "Error occur process the block " << block->getNumber();
         return false;
     }
 
-    item.setDone();
+    mItem->setDone();
     {
         Guard g(x_memoryQueue);
-        m_memoryQueue.push(item);
+        m_memoryQueue.push(mItem);
     }
 
     return true;
+}
+
+bool BlockChain::processProducerBlock(std::shared_ptr<Block> block)
+{
+    return processBlock(block);
 }
 
 bool BlockChain::processTransaction(Block const& block, Transaction const& transaction)
@@ -115,7 +136,7 @@ uint64_t BlockChain::getLastBlockNumber() const
         return 0;
     }
 
-    return m_memoryQueue.back().getBlockNumber();
+    return m_memoryQueue.back()->getBlockNumber();
 }
 
 void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
@@ -159,8 +180,6 @@ std::shared_ptr<core::Block> BlockChain::getBlockFromCache()
 std::unique_ptr<core::Object> Dispatch::interpretObject(bi::tcp::endpoint const& from, BytesPacket const& msg)
 {
     unique_ptr<Object> object;
-
-
     switch (msg.getObjectType()) {
         case 0x01: // Transaction
             object.reset(new Transaction(bytesConstRef(&msg.data())));

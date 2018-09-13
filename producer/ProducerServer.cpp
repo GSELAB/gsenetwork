@@ -77,11 +77,12 @@ void ProducerServer::doWork()
         }
     }
 
-    BlockHeader blockHeader(m_eventHandle->getLastBlockNumber());
+    BlockHeader blockHeader(m_eventHandle->getLastBlockNumber() + 1);
     blockHeader.setProducer(m_key.getAddress());
     // blockHeader.setParentHash();
     blockHeader.setTimestamp(timestamp);
     //blockHeader.setExtra();
+
     std::shared_ptr<Block> block = std::make_shared<Block>(blockHeader);
     for (unsigned i = 0; i < 20; i++) {
         std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
@@ -94,8 +95,32 @@ void ProducerServer::doWork()
     CINFO << "Try to genereate block(number = " << block->getNumber() << ") success -> time(" << m_prevTimestamp << ")";
     // do broadcast opeartion
     {
-
+        m_eventHandle->broadcast(block);
     }
+
+/*
+    BlockHeader blockHeader(m_eventHandle->getLastBlockNumber() + 1);
+    blockHeader.setProducer(m_key.getAddress());
+    // blockHeader.setParentHash();
+    blockHeader.setTimestamp(timestamp);
+    //blockHeader.setExtra();
+
+    Block block(blockHeader);
+    for (unsigned i = 0; i < 20; i++) {
+        std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
+        if (transaction) {
+            CINFO << "Package transaction to current block(" << block.getNumber() << ")";
+            block.addTransaction(*transaction);
+        }
+    }
+
+    CINFO << "Try to genereate block(number = " << block.getNumber() << ") success -> time(" << m_prevTimestamp << ")";
+    // do broadcast opeartion
+    {
+        m_eventHandle->broadcast(block);
+    }
+
+*/
 }
 
 

@@ -10,16 +10,12 @@
  */
 
 #include <storage/Repository.h>
+#include <core/Log.h>
 
 using namespace core;
 
 namespace runtime {
 namespace storage {
-
-Repository::Repository()
-{
-
-}
 
 Account const& Repository::getAccount(Address const& address) const
 {
