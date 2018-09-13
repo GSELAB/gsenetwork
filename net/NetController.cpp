@@ -59,6 +59,7 @@ void NetController::init()
 
 void NetController::broadcast(std::shared_ptr<core::Block> bMsg)
 {
+    CINFO << "Net broadcast block(" << bMsg->getNumber() << ")";
 
 }
 

@@ -96,9 +96,7 @@ bool Controller::addTransaction(Transaction const& transaction)
 void Controller::broadcast(std::shared_ptr<Block> block)
 {
     // send it to p2p net work
-    {
-
-    }
+    m_net->broadcast(block);
 
     // send to current block chain
     m_chain->processProducerBlock(block);
