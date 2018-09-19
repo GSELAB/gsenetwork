@@ -56,9 +56,9 @@ public:
 };
 
 namespace DS {
-static JITCache* init(CacheMode mode, JITListener* listener);
-static std::unique_ptr<llvm::Module> getObject(std::string const& id, llvm::LLVMContext& llvmContext);
-static void clear();
+JITCache* init(CacheMode mode, JITListener* listener);
+std::unique_ptr<llvm::Module> getObject(std::string const& id, llvm::LLVMContext& llvmContext);
+void clear();
 }
 }
 }

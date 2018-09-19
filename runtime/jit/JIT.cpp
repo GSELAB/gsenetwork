@@ -90,8 +90,22 @@ public:
 
     llvm::ExecutionEngine& engine() { return *m_engine; }
 
-    void compile(byte const* code, size_t size) {
+    void compile(byte const* code, size_t size, std::string const& id) {
 
+        IRBuilder irBuilder(getLLVMContext());
+        auto module = llvm::make_unique<llvm::Module>(id, irBuilder.getContext());
+        {
+
+
+        }
+        //.compile(code, code + size, codeID);
+
+        m_engine->addModule(std::move(module));
+    }
+
+    void execute(std::string const& funcName) {
+        uint64_t funcAddr = m_engine->getFunctionAddress(funcName.c_str());
+        ((void(*)(void))funcAddr)();
     }
 
     void checkMemorySize() {

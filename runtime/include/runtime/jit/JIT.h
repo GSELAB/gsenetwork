@@ -1,6 +1,7 @@
 #pragma once
 
 #include <runtime/jit/JITListener.h>
+#include <llvm/IR/IRBuilder.h>
 
 #ifndef __INNER_WORK__
 #define __INNER_WORK__
@@ -9,6 +10,7 @@ namespace runtime {
 namespace jit {
 
 using byte = uint8_t;
+using IRBuilder = llvm::IRBuilder<>;
 
 enum class JITReturn {
     // Success codes
