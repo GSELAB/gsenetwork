@@ -8,9 +8,9 @@ INCLUDE(GNUInstallDirs)
 
 IF(UNIX)
     MESSAGE(STATUS "Unix system")
-    SET(toolchain cxx11-pic)
+    SET(toolchain cxx14-pic)
 ELSE()
-    SET(toolchain cxx11)
+    SET(toolchain cxx14)
 ENDIF()
 cable_configure_toolchain(DEFAULT ${toolchain})
 
@@ -85,6 +85,9 @@ FIND_PACKAGE(cryptopp CONFIG REQUIRED)
 #hunter_add_package(libscrypt)
 #FIND_PACKAGE(libscrypt CONFIG REQUIRED)
 
+hunter_add_package(websocketpp)
+FIND_PACKAGE(websocketpp CONFIG REQUIRED)
+
 INCLUDE(ProjectSecp256k1)
 
 FIND_PACKAGE(Threads)
@@ -99,6 +102,7 @@ CONFIGURE_PROJECT()
 INCLUDE_DIRECTORIES(
 #   ${CMAKE_SOURCE_DIR}
     ${Boost_INCLUDE_DIR}
+    "${PROJECT_SOURCE_DIR}/libs/fc/include"
     "${PROJECT_SOURCE_DIR}/database/include/leveldb/include"
     "${PROJECT_SOURCE_DIR}/core/include"
     "${PROJECT_SOURCE_DIR}/runtime/storage/include"
@@ -113,6 +117,7 @@ INCLUDE_DIRECTORIES(
     "${PROJECT_SOURCE_DIR}/rpc/include"
     "${PROJECT_SOURCE_DIR}/utils/include")
 
+ADD_SUBDIRECTORY(libs)
 ADD_SUBDIRECTORY(config)
 ADD_SUBDIRECTORY(utils)
 ADD_SUBDIRECTORY(core)
