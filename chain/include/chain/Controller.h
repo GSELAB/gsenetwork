@@ -21,6 +21,7 @@
 #include <crypto/Common.h>
 #include <crypto/GKey.h>
 #include <producer/ProducerServer.h>
+#include <rpc/RpcService.h>
 
 namespace chain {
 
@@ -71,6 +72,7 @@ private:
     net::NetController* m_net;
     database::DatabaseController* m_dbc;
     producer::ProducerServer* m_producerServer;
+    rpc::RpcService *m_rpcServer;
 };
 
 extern Controller controller;
