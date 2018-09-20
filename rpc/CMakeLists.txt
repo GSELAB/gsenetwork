@@ -1,4 +1,5 @@
 SET(rpc_source
+    WebSocket.cpp
     RpcService.cpp)
 
 ADD_LIBRARY(rpc ${rpc_source})

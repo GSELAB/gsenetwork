@@ -9,12 +9,9 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
 #pragma once
+
+#include <rpc/WebSocket.h>
 
 namespace rpc {
 
@@ -25,7 +22,7 @@ public:
     ~RpcService();
 
 private:
-
+    WebSocket *m_server;
 };
 
 } // end of namespace rpc
