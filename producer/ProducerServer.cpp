@@ -94,9 +94,8 @@ void ProducerServer::doWork()
 
     CINFO << "Try to genereate block(number = " << block->getNumber() << ") success -> time(" << m_prevTimestamp << ")";
     // do broadcast opeartion
-    {
-        m_eventHandle->broadcast(block);
-    }
+    m_eventHandle->broadcast(block);
+
 
 /*
     BlockHeader blockHeader(m_eventHandle->getLastBlockNumber() + 1);
