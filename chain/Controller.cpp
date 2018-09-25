@@ -95,11 +95,11 @@ bool Controller::addTransaction(Transaction const& transaction)
 // @used by producer
 void Controller::broadcast(std::shared_ptr<Block> block)
 {
-    // send it to p2p net work
-    m_net->broadcast(block);
-
     // send to current block chain
     m_chain->processProducerBlock(block);
+
+    // send it to p2p net work
+    m_net->broadcast(block);
 }
 
 // @used by producer
