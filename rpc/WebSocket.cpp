@@ -12,38 +12,46 @@ namespace url_handler {
 
 #define CALL()
 
+enum URLCode {
+    Default = 200,
+    GetVersion = 200,
+
+};
+
 void WebSocket::registerUrlHandlers()
 {
     // get
-    addHandler("get_version", [&](std::string, std::string body, URLRequestCallback urlRC) {
-        CINFO << "get_version";
+    addHandler("/get_version", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        CINFO << "/get_version";
+        urlRC(URLCode::Default, m_face->getVersion() + "\n");
     });
     // addHandler("getinfo", );
 
-    // put
+    addHandler("/create_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        CINFO << "/create_transaction";
+        // TODO: Add content here
+        std::string ret("undefined\n");
+        {
 
-    addHandler("create_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
-        CINFO << "create_transaction";
+        }
+
+        urlRC(URLCode::Default, ret);
     });
 
-    addHandler("push_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
-        CINFO << "push_transaction";
+    addHandler("/push_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        CINFO << "/push_transaction";
+        // TODO: Add content here
+        std::string ret("undefined\n");
+        {
+
+        }
+        urlRC(URLCode::Default, ret);
     });
 }
 
 void on_message(RpcServer* server, ConnectHDL hdl, MessagePtr msg)
 {
     server->send(hdl, msg->get_payload(), msg->get_opcode());
-}
-
-WebSocket::WebSocket(unsigned short listenPort): m_listenPort(listenPort)
-{
-    // CINFO << "WebSocket::WebSocket";
-}
-
-WebSocket::~WebSocket()
-{
-    //CINFO << "Stop rpc service";
 }
 
 bool WebSocket::init()
@@ -111,41 +119,36 @@ void WebSocket::onHttp(RpcServer* server, ConnectHDL hdl)
     try {
         RpcServer::connection_ptr con = server->get_con_from_hdl(hdl);
         bool secure = con->get_uri()->get_secure();
-        bi::tcp::endpoint const& ep = con->get_socket().lowest_layer().local_endpoint();
+        bi::tcp::endpoint const ep = con->get_socket().lowest_layer().local_endpoint();
 
         Request const& req = con->get_request();
+        std::string const& host = req.get_header("Host");
+        if (host.empty()) {
+            CERROR << "host is empty";
+            con->set_status(websocketpp::http::status_code::bad_request);
+                return;
+        }
 
+        con->append_header("Content-type", "application/json");
         string const body = con->get_request_body();
         string const resource = con->get_resource();
 
-        CINFO << ep << ":" << "resource-" << resource;
-
-
+        auto handler_itr = m_urlHandlers.find(resource);
+        if (handler_itr != m_urlHandlers.end()) {
+            handler_itr->second(resource, body, [con](int code, std::string body) {
+                con->set_body(body);
+                con->set_status(websocketpp::http::status_code::value(code));
+                // con->send_http_response();
+            });
+        } else {
+            CERROR << "Not found " << resource;
+            con->set_body("Not found " + resource + "\n");
+            con->set_status(websocketpp::http::status_code::not_found);
+        }
 
     } catch( ... ) {
         CERROR << "Error occur onHttp.";
     }
-
-        //websocketpp::http::parser::request rt = con->get_request();
-        //const string& strUri = rt.get_uri();
-        //const string& strMethod = rt.get_method();
-        //const string& strBody = rt.get_body();
-        //const string& strVersion = rt.get_version();
-        //CINFO << strMethod.c_str() << ":" <<strUri.c_str() << ":" << strBody << ":" << strVersion;
-
-        /*
-        con->set_body("everything is ok now!");
-        con->set_status(websocketpp::http::status_code::value(600));//websocketpp::http::status_code::ok
-
-        websocketpp::http::parser::response rp;
-        string strContent = rt.raw();
-        rp.consume(strContent.c_str(), strContent.size());
-        //if ( strMethod.compare("POST") == 0 )	{
-            websocketpp::http::parser::request r;
-            size_t nRet = r.consume(strUri.c_str(), strUri.size());
-            int k = 0;
-        //}
-        */
 }
 
 void WebSocket::send()
@@ -155,7 +158,7 @@ void WebSocket::send()
 
 void WebSocket::addHandler(std::string const& url, URLHandler const& handler)
 {
-    CINFO << "Add url handler :" << url;
+    // CINFO << "Add url handler :" << url;
     m_urlHandlers.insert(std::make_pair(url, handler));
 }
 

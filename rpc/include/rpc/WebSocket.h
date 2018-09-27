@@ -23,6 +23,8 @@ class WebSocketEventHandlerFace {
 public:
     virtual ~WebSocketEventHandlerFace() {}
 
+    virtual std::string const& getVersion() const = 0;
+
 };
 
 struct AsioStubConfig: public websocketpp::config::asio {
@@ -64,9 +66,9 @@ typedef websocketpp::http::parser::request Request;
 
 class WebSocket {
 public:
-    WebSocket(unsigned short listenPort);
+    WebSocket(WebSocketEventHandlerFace* face, unsigned short listenPort): m_face(face), m_listenPort(listenPort) {}
 
-    ~WebSocket();
+    ~WebSocket() {}
 
     bool init();
 
@@ -92,5 +94,7 @@ private:
 
     // url handlers
     std::map<std::string, URLHandler> m_urlHandlers;
+
+    WebSocketEventHandlerFace *m_face;
 };
 }

@@ -25,8 +25,10 @@
 
 namespace chain {
 
+static std::string ChainVersion("version 1.0");
+
 // @thread safe
-class Controller: public producer::ProcuderEventHandleFace {
+class Controller: public producer::ProcuderEventHandleFace, public rpc::WebSocketEventHandlerFace {
 public:
     Controller(ChainID const& chainID): m_chainID(chainID) {}
 
@@ -63,6 +65,9 @@ public:
     std::shared_ptr<core::Transaction> getTransactionFromCache() { return m_chain->getTransactionFromCache(); }
 
     std::shared_ptr<core::Block> getBlockFromCache() { return m_chain->getBlockFromCache(); }
+
+    // rpc used
+    string const& getVersion() const { return ChainVersion; }
 
 private:
     chain::ChainID m_chainID;

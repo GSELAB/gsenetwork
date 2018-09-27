@@ -46,7 +46,7 @@ void Controller::init(crypto::GKey const& key)
 
     if (argInstance.m_rpcON) {
         CINFO << "Start rpc service ...";
-        m_rpcServer = new RpcService();
+        m_rpcServer = new RpcService(this);
         m_rpcServer->start();
     }
 

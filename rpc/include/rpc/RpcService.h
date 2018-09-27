@@ -17,7 +17,7 @@ namespace rpc {
 
 class RpcService {
 public:
-    RpcService();
+    RpcService(WebSocketEventHandlerFace* face);
 
     ~RpcService();
 
