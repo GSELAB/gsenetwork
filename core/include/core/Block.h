@@ -144,6 +144,8 @@ public:
 
     uint64_t getNumber() const { return m_blockHeader.getNumber(); }
 
+    h256 const& getHash();
+
     // @override
     std::string getKey();
 

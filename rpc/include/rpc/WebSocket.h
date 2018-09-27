@@ -9,7 +9,7 @@
 #include <websocketpp/server.hpp>
 #include <websocketpp/config/asio_no_tls.hpp>
 
-#include <core/Transaction.h>
+#include <core/JsonHelper.h>
 
 namespace rpc {
 
@@ -30,6 +30,8 @@ public:
     virtual uint64_t getBlockNumberRef() const = 0;
 
     virtual void broadcast(core::Transaction const& transaction) = 0;
+
+    virtual Block getBlockByNumber(uint64_t number) = 0;
 
 };
 

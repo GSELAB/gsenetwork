@@ -341,6 +341,18 @@ TransactionReceipts const& Block::getTransactionReceipts() const
     return m_transactionReceipts;
 }
 
+h256 const& Block::getHash()
+{
+    if (m_hash) {
+        return m_hash;
+    }
+
+    RLPStream rlpStream;
+    streamRLP(rlpStream);
+    m_hash = sha3(&rlpStream.out());
+    return m_hash;
+}
+
 // @override
 std::string Block::getKey()
 {

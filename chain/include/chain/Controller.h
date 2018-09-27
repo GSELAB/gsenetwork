@@ -73,6 +73,8 @@ public:
 
     void broadcast(core::Transaction const& transaction);
 
+    core::Block getBlockByNumber(uint64_t number);
+
 private:
     chain::ChainID m_chainID;
     crypto::GKey m_key;

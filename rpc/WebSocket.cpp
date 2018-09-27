@@ -3,6 +3,7 @@
 #include <core/Log.h>
 
 using namespace std;
+using namespace core;
 
 namespace rpc {
 
@@ -14,8 +15,6 @@ namespace url_handler {
 
 enum URLCode {
     Default = 200,
-    GetVersion = 200,
-
 };
 
 void WebSocket::registerUrlHandlers()
@@ -25,7 +24,23 @@ void WebSocket::registerUrlHandlers()
         CINFO << "/get_version";
         urlRC(URLCode::Default, m_face->getVersion() + "\n");
     });
-    // addHandler("getinfo", );
+
+    addHandler("/get_block", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        std::string ret;
+        Json::Reader reader(Json::Features::strictMode());
+        Json::Value root;
+        if (reader.parse(body, root)) {
+            uint64_t number = root["blockNumber"].asInt();
+            CINFO << "get_block " << number;
+            Block block = m_face->getBlockByNumber(number);
+            ret = toJson(block).toStyledString();
+        } else {
+            ret = "Parse body failed, invalid format.\n";
+            CINFO << ret;
+        }
+
+        urlRC(URLCode::Default, ret);
+    });
 
     addHandler("/create_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
         CINFO << "/create_transaction";

@@ -19,6 +19,7 @@ using namespace database;
 using namespace net;
 using namespace producer;
 using namespace rpc;
+using namespace core;
 
 namespace chain {
 
@@ -122,6 +123,22 @@ void Controller::broadcast(Transaction const& transaction)
     // send to current transactions cache
 
     // send to p2p network
+}
+
+Block Controller::getBlockByNumber(uint64_t number)
+{
+    // find block from cache
+    {
+
+    }
+
+    // not found , find block from leveldb
+    {
+
+    }
+
+    BlockHeader header(5);
+    return Block(header);
 }
 
 

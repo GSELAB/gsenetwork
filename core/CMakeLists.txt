@@ -12,8 +12,9 @@ SET(core_source
     Producer.cpp
     SubChain.cpp
     Worker.cpp
-    Task.cpp)
+    Task.cpp
+    JsonHelper.cpp)
 
 ADD_LIBRARY(core ${core_source})
 TARGET_LINK_LIBRARIES(core
-    utils crypto ${GSE_BOOST_LIBS})
+    utils crypto jsoncpp_lib_static ${GSE_BOOST_LIBS})

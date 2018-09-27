@@ -82,6 +82,9 @@ SET(GSE_BOOST_LIBS
 hunter_add_package(cryptopp)
 FIND_PACKAGE(cryptopp CONFIG REQUIRED)
 
+hunter_add_package(jsoncpp)
+find_package(jsoncpp CONFIG REQUIRED)
+
 #hunter_add_package(libscrypt)
 #FIND_PACKAGE(libscrypt CONFIG REQUIRED)
 
