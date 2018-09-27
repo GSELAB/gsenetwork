@@ -18,6 +18,7 @@
 using namespace database;
 using namespace net;
 using namespace producer;
+using namespace rpc;
 
 namespace chain {
 
@@ -43,6 +44,12 @@ void Controller::init(crypto::GKey const& key)
         m_producerServer->start();
     }
 
+    if (argInstance.m_rpcON) {
+        CINFO << "Start rpc service ...";
+        m_rpcServer = new RpcService();
+        m_rpcServer->start();
+    }
+
 }
 
 void Controller::exit()
@@ -52,6 +59,7 @@ void Controller::exit()
     if (m_chain) delete m_chain;
     if (m_dbc) delete m_dbc;
     if (argInstance.m_producerON && m_producerServer) delete m_producerServer;
+    if (argInstance.m_rpcON && m_rpcServer) delete m_rpcServer;
 
 }
 
