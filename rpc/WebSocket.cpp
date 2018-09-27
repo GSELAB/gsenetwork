@@ -49,11 +49,6 @@ void WebSocket::registerUrlHandlers()
     });
 }
 
-void on_message(RpcServer* server, ConnectHDL hdl, MessagePtr msg)
-{
-    server->send(hdl, msg->get_payload(), msg->get_opcode());
-}
-
 bool WebSocket::init()
 {
     registerUrlHandlers();
