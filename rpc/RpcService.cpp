@@ -9,23 +9,30 @@
  *
  */
 
-/*
- * @author guoygang <hero.gariker@gmail.com>
- * @date 2018
- */
-
-#include "rpc/RpcService.h"
+#include <rpc/RpcService.h>
+#include <core/Log.h>
 
 namespace rpc {
 
 RpcService::RpcService()
 {
-
+    CINFO << "RpcService::RpcService";
+    m_server = new WebSocket(65056);
 }
 
 RpcService::~RpcService()
 {
+    CINFO << "RpcService::~RpcService";
+    if (m_server) {
+        m_server->shutdown();
+        delete m_server;
+    }
+}
 
+void RpcService::start()
+{
+    m_server->init();
+    m_server->startService();
 }
 
 } // end of namespace rpc

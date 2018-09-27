@@ -1,6 +1,9 @@
 #pragma once
 
+#include <map>
+
 #include <boost/asio.hpp>
+#include <boost/optional.hpp>
 
 #include <websocketpp/config/core.hpp>
 #include <websocketpp/server.hpp>
@@ -10,6 +13,11 @@ namespace rpc {
 
 namespace ba = boost::asio;
 namespace bi = boost::asio::ip;
+
+using URLRequestCallback = std::function<void(int, std::string)>;
+using URLHandler = std::function<void(std::string, std::string, URLRequestCallback)>;
+
+
 
 class WebSocketEventHandlerFace {
 public:
@@ -52,6 +60,7 @@ struct AsioStubConfig: public websocketpp::config::asio {
 typedef websocketpp::server<AsioStubConfig> RpcServer;
 typedef websocketpp::connection_hdl ConnectHDL;
 typedef RpcServer::message_ptr MessagePtr;
+typedef websocketpp::http::parser::request Request;
 
 class WebSocket {
 public:
@@ -59,19 +68,29 @@ public:
 
     ~WebSocket();
 
-    bool socketInit();
+    bool init();
+
+    void startService();
 
     bool shutdown();
 
-    void onMessage(ConnectHDL hdl, MessagePtr msg);
+    void onMessage(RpcServer* server, ConnectHDL hdl, MessagePtr msg);
 
     void onHttp(RpcServer* server, ConnectHDL hdl);
 
     void send();
 
+protected:
+    void registerUrlHandlers();
+    void addHandler(std::string const& url, URLHandler const& handler);
 private:
     unsigned short m_listenPort;
     RpcServer m_rpcServer;
+
+    bool m_initialSuccess = false;
     // boost::optional<bi::tcp::endpoint> m_httpListenEndpoint;
+
+    // url handlers
+    std::map<std::string, URLHandler> m_urlHandlers;
 };
 }

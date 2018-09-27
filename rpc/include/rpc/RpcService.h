@@ -21,6 +21,8 @@ public:
 
     ~RpcService();
 
+    void start();
+
 private:
     WebSocket *m_server;
 };
