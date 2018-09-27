@@ -9,6 +9,8 @@
 #include <websocketpp/server.hpp>
 #include <websocketpp/config/asio_no_tls.hpp>
 
+#include <core/Transaction.h>
+
 namespace rpc {
 
 namespace ba = boost::asio;
@@ -24,6 +26,10 @@ public:
     virtual ~WebSocketEventHandlerFace() {}
 
     virtual std::string const& getVersion() const = 0;
+
+    virtual uint64_t getBlockNumberRef() const = 0;
+
+    virtual void broadcast(core::Transaction const& transaction) = 0;
 
 };
 
@@ -84,7 +90,9 @@ public:
 
 protected:
     void registerUrlHandlers();
-    void addHandler(std::string const& url, URLHandler const& handler);
+
+    void addHandler(std::string const& url, URLHandler const& handler) { m_urlHandlers.insert(std::make_pair(url, handler)); }
+
 private:
     unsigned short m_listenPort;
     RpcServer m_rpcServer;

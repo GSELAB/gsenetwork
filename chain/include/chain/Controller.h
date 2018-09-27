@@ -66,8 +66,12 @@ public:
 
     std::shared_ptr<core::Block> getBlockFromCache() { return m_chain->getBlockFromCache(); }
 
-    // rpc used
+    // used by rpc
     string const& getVersion() const { return ChainVersion; }
+
+    uint64_t getBlockNumberRef() const { return getLastBlockNumber(); }
+
+    void broadcast(core::Transaction const& transaction);
 
 private:
     chain::ChainID m_chainID;

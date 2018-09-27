@@ -30,9 +30,9 @@ void WebSocket::registerUrlHandlers()
     addHandler("/create_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
         CINFO << "/create_transaction";
         // TODO: Add content here
-        std::string ret("undefined\n");
+        std::string ret("Undefined\n");
         {
-
+            // body to json
         }
 
         urlRC(URLCode::Default, ret);
@@ -41,9 +41,9 @@ void WebSocket::registerUrlHandlers()
     addHandler("/push_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
         CINFO << "/push_transaction";
         // TODO: Add content here
-        std::string ret("undefined\n");
+        std::string ret("Undefined\n");
         {
-
+            // body to rlp transaction
         }
         urlRC(URLCode::Default, ret);
     });
@@ -94,8 +94,6 @@ void WebSocket::startService()
             //??? should start multi threads
             if (1) {
                 m_rpcServer.run();
-            } else {
-
             }
         }
 
@@ -124,9 +122,9 @@ void WebSocket::onHttp(RpcServer* server, ConnectHDL hdl)
         Request const& req = con->get_request();
         std::string const& host = req.get_header("Host");
         if (host.empty()) {
-            CERROR << "host is empty";
+            CERROR << "Host is empty";
             con->set_status(websocketpp::http::status_code::bad_request);
-                return;
+            return;
         }
 
         con->append_header("Content-type", "application/json");
@@ -142,7 +140,7 @@ void WebSocket::onHttp(RpcServer* server, ConnectHDL hdl)
             });
         } else {
             CERROR << "Not found " << resource;
-            con->set_body("Not found " + resource + "\n");
+            con->set_body("Undefined " + resource + "\n");
             con->set_status(websocketpp::http::status_code::not_found);
         }
 
@@ -155,12 +153,5 @@ void WebSocket::send()
 {
 
 }
-
-void WebSocket::addHandler(std::string const& url, URLHandler const& handler)
-{
-    // CINFO << "Add url handler :" << url;
-    m_urlHandlers.insert(std::make_pair(url, handler));
-}
-
 } // namespace rpc
 

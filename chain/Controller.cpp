@@ -116,6 +116,14 @@ void Controller::processProducerEvent()
 
 }
 
+// used by rpc
+void Controller::broadcast(Transaction const& transaction)
+{
+    // send to current transactions cache
+
+    // send to p2p network
+}
+
 
 Controller controller(DEFAULT_GSE_NETWORK);
 
