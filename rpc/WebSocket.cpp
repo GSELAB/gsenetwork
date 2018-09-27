@@ -61,15 +61,12 @@ bool WebSocket::init()
     try {
         m_rpcServer.clear_access_channels(websocketpp::log::alevel::all);
         m_rpcServer.clear_error_channels(websocketpp::log::alevel::all);
-
         m_rpcServer.init_asio();
         m_rpcServer.set_reuse_addr(true);
+        m_rpcServer.set_message_handler([&](ConnectHDL hdl, MessagePtr msg) {
+            onMessage(&m_rpcServer, hdl, msg);
+        });
 
-        // m_rpcServer.set_message_handler(websocketpp::lib::bind(&on_message, &m_rpcServer, websocketpp::lib::placeholders::_1, websocketpp::lib::placeholders::_2));
-        //// m_rpcServer.set_socket_init_handler(websocketpp::lib::bind(&on_socket_init, websocketpp::lib::placeholders::_1, websocketpp::lib::placeholders::_2));
-        // m_rpcServer.set_http_handler(websocketpp::lib::bind(&on_http, &m_rpcServer, websocketpp::lib::placeholders::_1));
-
-        m_rpcServer.set_message_handler(websocketpp::lib::bind(&on_message, &m_rpcServer, websocketpp::lib::placeholders::_1, websocketpp::lib::placeholders::_2));
         m_rpcServer.set_http_handler([&](ConnectHDL hdl) {
             onHttp(&m_rpcServer, hdl);
         });
@@ -109,6 +106,7 @@ bool WebSocket::shutdown()
 
 void WebSocket::onMessage(RpcServer* server, ConnectHDL hdl, MessagePtr msg)
 {
+    CINFO << "WebSocket::onMessage";
     server->send(hdl, msg->get_payload(), msg->get_opcode());
 }
 
