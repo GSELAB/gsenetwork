@@ -64,6 +64,8 @@ void ProducerServer::stop()
 
 void ProducerServer::doWork()
 {
+    unsigned i;
+
     int64_t timestamp = currentTimestamp();
     if (m_prevTimestamp < 0) {
         m_prevTimestamp = timestamp;
@@ -84,13 +86,30 @@ void ProducerServer::doWork()
     //blockHeader.setExtra();
 
     std::shared_ptr<Block> block = std::make_shared<Block>(blockHeader);
-    for (unsigned i = 0; i < 20; i++) {
+    for (i = 0; i < 20; i++) {
         std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
         if (transaction) {
             CINFO << "Package transaction to current block(" << block->getNumber() << ")";
             block->addTransaction(*transaction);
         }
     }
+
+    // set receipts
+    {
+        //size_t transactionCount = block.getTransactionsSize();
+        //for (i = 0; i < transactionCount; i++) {
+        //
+        //}
+    }
+
+    // set merkle root
+    block->setRoots();
+
+    // signature
+    {
+
+    }
+
 
     CINFO << "Try to genereate block(number = " << block->getNumber() << ") success -> time(" << m_prevTimestamp << ")";
     // do broadcast opeartion
