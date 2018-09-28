@@ -118,13 +118,15 @@ INCLUDE_DIRECTORIES(
     "${PROJECT_SOURCE_DIR}/net/include"
     "${PROJECT_SOURCE_DIR}/producer/include"
     "${PROJECT_SOURCE_DIR}/rpc/include"
-    "${PROJECT_SOURCE_DIR}/utils/include")
+    "${PROJECT_SOURCE_DIR}/utils/include"
+    "${PROJECT_SOURCE_DIR}/trie/include")
 
 ADD_SUBDIRECTORY(libs)
 ADD_SUBDIRECTORY(config)
 ADD_SUBDIRECTORY(utils)
 ADD_SUBDIRECTORY(core)
 ADD_SUBDIRECTORY(crypto)
+ADD_SUBDIRECTORY(trie)
 ADD_SUBDIRECTORY(database)
 ADD_SUBDIRECTORY(rpc)
 ADD_SUBDIRECTORY(net)
