@@ -1,6 +1,7 @@
 #pragma once
 
 #include <core/Common.h>
+#include <core/RLP.h>
 
 namespace trie {
 

@@ -2,7 +2,6 @@
 
 #include <crypto/Common.h>
 #include <core/FixedHash.h>
-#include <core/RLP.h>
 #include <trie/TrieBase.h>
 
 namespace trie {

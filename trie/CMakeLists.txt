@@ -1,4 +1,5 @@
 SET(trie_source
+    TrieBase.cpp
     Trie.cpp)
 
 ADD_LIBRARY(trie ${trie_source})
