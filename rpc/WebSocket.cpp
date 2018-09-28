@@ -19,10 +19,11 @@ enum URLCode {
 
 void WebSocket::registerUrlHandlers()
 {
-    // get
     addHandler("/get_version", [&](std::string, std::string body, URLRequestCallback urlRC) {
-        CINFO << "/get_version";
-        urlRC(URLCode::Default, m_face->getVersion() + "\n");
+        std::string ret;
+        CINFO << "get_version";
+        ret = toJson("version", m_face->getVersion()).toStyledString();
+        urlRC(URLCode::Default, ret);
     });
 
     addHandler("/get_block", [&](std::string, std::string body, URLRequestCallback urlRC) {

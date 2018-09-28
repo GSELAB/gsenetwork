@@ -137,7 +137,7 @@ Block Controller::getBlockByNumber(uint64_t number)
 
     }
 
-    BlockHeader header(5);
+    BlockHeader header(0);
     return Block(header);
 }
 
