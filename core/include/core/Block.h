@@ -19,6 +19,7 @@
 #include <core/RLP.h>
 #include <core/Object.h>
 #include <chain/Types.h>
+#include <trie/Trie.h>
 
 namespace core {
 
@@ -59,6 +60,8 @@ public:
 
     void setParentHash(h256 const& parentHash);
 
+    void setRoots(trie::TrieType const& mkl, trie::TrieType const& t, trie::TrieType const& r);
+
     void setNumber(uint64_t number);
 
     void setTimestamp(int64_t timestamp);
@@ -67,15 +70,15 @@ public:
 
     void setHash(h256 const& hash);
 
-    Address const& getProducer() const;
+    Address const& getProducer() const { return m_producer; }
 
-    h256 const& getParentHash() const;
+    h256 const& getParentHash() const { return m_parentHash; }
 
-    uint64_t getNumber() const;
+    uint64_t getNumber() const { return m_number; }
 
-    int64_t getTimestamp() const;
+    int64_t getTimestamp() const { return m_timestamp; }
 
-    bytes const& getExtra() const;
+    bytes const& getExtra() const { return m_extra; }
 
     h256 const& getHash() const;
 
@@ -94,9 +97,9 @@ private:
     chain::ChainID m_chainID;
     Address  m_producer;
     h256 m_parentHash;
-    h256 m_mklRoot;
-    h256 m_transactionsRoot;
-    h256 m_receiptRoot;
+    trie::TrieType m_mklRoot;
+    trie::TrieType m_transactionsRoot;
+    trie::TrieType m_receiptRoot;
     uint64_t m_number;
     int64_t m_timestamp;
     bytes m_extra;
@@ -134,13 +137,17 @@ public:
 
     void addTransactionReceipt(TransactionReceipt const& transactionReceipt);
 
-    Address getProducer() const;
+    void setRoots();
 
-    BlockHeader const& getBlockHeader() const;
+    Address const& getProducer() const { return m_blockHeader.getProducer(); }
 
-    Transactions const& getTransactions() const;
+    BlockHeader const& getBlockHeader() const { return m_blockHeader; }
 
-    TransactionReceipts const& getTransactionReceipts() const;
+    Transactions const& getTransactions() const { return m_transactions; }
+
+    size_t getTransactionsSize() const { return m_transactions.size(); }
+
+    TransactionReceipts const& getTransactionReceipts() const { return m_transactionReceipts; }
 
     uint64_t getNumber() const { return m_blockHeader.getNumber(); }
 

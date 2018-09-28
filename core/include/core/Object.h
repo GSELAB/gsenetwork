@@ -27,11 +27,14 @@ namespace core {
  */
 class Object {
 public:
+    virtual ~Object() {}
+
     virtual std::string getRLPData() = 0;
 
     virtual std::string getKey() = 0;
 
     virtual uint8_t getObjectType() const = 0;
+
 };
 
 } // end namespace

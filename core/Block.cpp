@@ -17,6 +17,7 @@
 using namespace core;
 using namespace crypto;
 using namespace runtime;
+using namespace trie;
 
 BlockHeader::BlockHeader()
 {
@@ -322,7 +323,11 @@ void Block::setRoots()
         receiptsMap.insert(std::make_pair(rlpIndex.out(), rlpReceipt.out()));
     }
 
-
+    trie::TrieType mklRoot;
+    {
+        // set mklRoot
+    }
+    m_blockHeader.setRoots(mklRoot, trieHash256(transactionsMap), trieHash256(receiptsMap));
 }
 
 h256 const& Block::getHash()

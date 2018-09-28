@@ -17,4 +17,4 @@ SET(core_source
 
 ADD_LIBRARY(core ${core_source})
 TARGET_LINK_LIBRARIES(core
-    utils crypto jsoncpp_lib_static ${GSE_BOOST_LIBS})
+    utils crypto trie jsoncpp_lib_static ${GSE_BOOST_LIBS})
