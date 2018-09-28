@@ -138,6 +138,13 @@ void BlockHeader::setParentHash(h256 const& parentHash)
     m_parentHash = parentHash;
 }
 
+void BlockHeader::setRoots(trie::TrieType const& mkl, trie::TrieType const& t, trie::TrieType const& r)
+{
+    m_mklRoot = mkl;
+    m_transactionsRoot = t;
+    m_receiptRoot = r;
+}
+
 void BlockHeader::setNumber(uint64_t number)
 {
     m_number = number;
@@ -156,31 +163,6 @@ void BlockHeader::setExtra(bytes const& extra)
 void BlockHeader::setHash(h256 const& hash)
 {
     m_hash = hash;
-}
-
-Address const& BlockHeader::getProducer() const
-{
-    return m_producer;
-}
-
-h256 const& BlockHeader::getParentHash() const
-{
-    return m_parentHash;
-}
-
-uint64_t BlockHeader::getNumber() const
-{
-    return m_number;
-}
-
-int64_t BlockHeader::getTimestamp() const
-{
-    return m_timestamp;
-}
-
-bytes const& BlockHeader::getExtra() const
-{
-    return m_extra;
 }
 
 h256 const& BlockHeader::getHash() const
@@ -319,26 +301,28 @@ void Block::addTransaction(Transaction const& transaction)
 void Block::addTransactionReceipt(TransactionReceipt const& transactionReceipt)
 {
     // TODO:
+    m_transactionReceipts.push_back(transactionReceipt);
 }
 
-Address Block::getProducer() const
+void Block::setRoots()
 {
-    return m_blockHeader.getProducer();
-}
+    BytesMap transactionsMap;
+    BytesMap receiptsMap;
 
-BlockHeader const& Block::getBlockHeader() const
-{
-    return m_blockHeader;
-}
+    for (unsigned i = 0; i < m_transactions.size(); i++) {
+        RLPStream rlpIndex;
+        rlpIndex << i;
 
-Transactions const& Block::getTransactions() const
-{
-    return m_transactions;
-}
+        RLPStream rlpTransaction;
+        m_transactions[i].streamRLP(rlpTransaction);
+        transactionsMap.insert(std::make_pair(rlpIndex.out(), rlpTransaction.out()));
 
-TransactionReceipts const& Block::getTransactionReceipts() const
-{
-    return m_transactionReceipts;
+        RLPStream rlpReceipt;
+        m_transactionReceipts[i].streamRLP(rlpReceipt);
+        receiptsMap.insert(std::make_pair(rlpIndex.out(), rlpReceipt.out()));
+    }
+
+
 }
 
 h256 const& Block::getHash()
