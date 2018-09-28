@@ -100,6 +100,14 @@ Json::Value toJson(Block& block)
 Json::Value toJson(Transaction& transaction)
 {
     Json::Value ret;
+    ret["ChainID"] = toJS(transaction.getChainID());
+    ret["type"] = toJS(transaction.getType());
+    ret["sender"] = toJS(transaction.getSender());
+    ret["recipient"] = toJS(transaction.getRecipient());
+    ret["data"] = toJS(transaction.getData());
+    ret["value"] = toJS(transaction.getValue());
+    // ret["signature"] = toJS(transaction.getSignature());
+    ret["hash"] = toJS(transaction.getHash());
     return ret;
 }
 
@@ -114,6 +122,13 @@ uint64_t jsToBlockNumber(std::string const& str)
 {
     uint64_t ret;
 
+    return ret;
+}
+
+Json::Value toJson(std::string const& key, std::string const& value)
+{
+    Json::Value ret;
+    ret[key] = value;
     return ret;
 }
 

@@ -116,6 +116,9 @@ Json::Value toJson(Block& block); // maybe changge hash
 Json::Value toJson(Transaction& transaction);
 Json::Value blockNumberToJson(uint64_t blockNumber);
 
+Json::Value toJson(std::string const& key, std::string const& value);
+
+
 
 // Json to String
 
