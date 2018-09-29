@@ -8,9 +8,9 @@ INCLUDE(GNUInstallDirs)
 
 IF(UNIX)
     MESSAGE(STATUS "Unix system")
-    SET(toolchain cxx14-pic)
+    SET(toolchain cxx11-pic)
 ELSE()
-    SET(toolchain cxx14)
+    SET(toolchain cxx11)
 ENDIF()
 cable_configure_toolchain(DEFAULT ${toolchain})
 
