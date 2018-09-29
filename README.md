@@ -31,7 +31,6 @@ $ cd gsenetwork
 ```
 
 ```
-$ ./compileproto.sh
 $ mkdir build
 $ cd build
 $ cmake ..
