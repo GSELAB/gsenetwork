@@ -92,8 +92,18 @@ Json::Value toJson(BlockHeader const& header)
 Json::Value toJson(Block& block)
 {
     Json::Value ret;
-    ret["blockNumber"] = toJS(block.getNumber());
+    ret["ChainID"] = toJS(block.getBlockHeader().getChainID());
+    ret["producer"] = toJS(block.getBlockHeader().getProducer());
+    ret["parentHash"] = toJS(block.getBlockHeader().getParentHash());
+    ret["merkle"] = toJS(block.getBlockHeader().getTrieRoot());
+    ret["txHash"] = toJS(block.getBlockHeader().getTxRoot());
+    ret["receiptHash"] = toJS(block.getBlockHeader().getReceiptRoot());
+    ret["blockNumber"] = toJS(block.getBlockHeader().getNumber());
+    ret["timestamp"] = toJS(block.getBlockHeader().getTimestamp());
+    ret["extra"] = toString(block.getBlockHeader().getExtra());
     ret["hash"] = toJS(block.getHash());
+    Signature sig = *(Signature*)&(block.getBlockHeader().getSignature());
+    ret["signature"] = toJS(sig);
     return ret;
 }
 

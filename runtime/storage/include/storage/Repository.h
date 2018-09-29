@@ -38,6 +38,8 @@ public:
 
     void putAccount(Account const& account);
 
+    Block getBlock() { return *m_block; }
+
 private:
     DatabaseController *m_db;
     std::shared_ptr<Repository> m_parent = nullptr;

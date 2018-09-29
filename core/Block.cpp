@@ -19,6 +19,9 @@ using namespace crypto;
 using namespace runtime;
 using namespace trie;
 
+namespace core {
+Block EmptyBlock(0xFFFFFFFFFFFFFFFF);
+
 BlockHeader::BlockHeader()
 {
     // TODO: DO NOTHING
@@ -55,26 +58,42 @@ BlockHeader::BlockHeader(bytesConstRef data, h256 const& hash)
 
 BlockHeader::BlockHeader(BlockHeader const& header)
 {
+    m_chainID = header.getChainID();
     m_producer = header.getProducer();
     m_parentHash = header.getParentHash();
+    m_mklRoot = header.getTrieRoot();
+    m_transactionsRoot = header.getTxRoot();
+    m_receiptRoot = header.getReceiptRoot();
     m_number = header.getNumber();
     m_timestamp = header.getTimestamp();
     m_extra = header.getExtra();
-    m_hash = header.getHash(); // sha3 of the blockheader
+    m_signature = header.getSignature();
+
+    RLPStream rlpStream;
+    streamRLP(rlpStream);
+    m_hash = sha3(&rlpStream.out()); // sha3 of the blockheader
 }
 
 BlockHeader& BlockHeader::operator=(BlockHeader const& header)
 {
-    if (&header  == this) {
+    if (&header == this) {
         return *this;
     }
 
+    m_chainID = header.getChainID();
     m_producer = header.getProducer();
     m_parentHash = header.getParentHash();
+    m_mklRoot = header.getTrieRoot();
+    m_transactionsRoot = header.getTxRoot();
+    m_receiptRoot = header.getReceiptRoot();
     m_number = header.getNumber();
     m_timestamp = header.getTimestamp();
     m_extra = header.getExtra();
-    m_hash = header.getHash();
+    m_signature = header.getSignature();
+
+    RLPStream rlpStream;
+    streamRLP(rlpStream);
+    m_hash = sha3(&rlpStream.out());
 
     return *this;
 }
@@ -161,13 +180,22 @@ void BlockHeader::setExtra(bytes const& extra)
     m_extra = extra;
 }
 
-void BlockHeader::setHash(h256 const& hash)
+void BlockHeader::sign(Secret const& priv)
 {
-    m_hash = hash;
+    Signature sig = crypto::sign(priv, getHash());
+    SignatureStruct _sig = *(SignatureStruct*)&sig;
+    if (_sig.isValid()) m_signature = _sig;
 }
 
-h256 const& BlockHeader::getHash() const
+h256& BlockHeader::getHash()
 {
+    if (m_hash) {
+        return m_hash;
+    }
+
+    RLPStream rlpStream;
+    streamRLP(rlpStream);
+    m_hash = sha3(&rlpStream.out());
     return m_hash;
 }
 
@@ -215,7 +243,9 @@ Block::Block(BlockHeader const&blockHeader)
 
 Block::Block(Block const& block)
 {
-
+    m_blockHeader = block.getBlockHeader();
+    m_transactions.assign(block.getTransactions().begin(), block.getTransactions().end());
+    m_transactionReceipts.assign(block.getTransactionReceipts().begin(), block.getTransactionReceipts().end()) ;
 }
 
 Block::Block(bytesConstRef data)
@@ -270,10 +300,10 @@ void Block::streamRLP(RLPStream& rlpStream) const
 
 Block& Block::operator=(Block const& block)
 {
-    // Incomplete compare
+    if (this == &block) return *this;
     m_blockHeader = block.getBlockHeader();
-
-    // add transactions & receipts
+    m_transactions.assign(block.getTransactions().begin(), block.getTransactions().end());
+    m_transactionReceipts.assign(block.getTransactionReceipts().begin(), block.getTransactionReceipts().end()) ;
     return *this;
 }
 
@@ -330,21 +360,11 @@ void Block::setRoots()
     m_blockHeader.setRoots(mklRoot, trieHash256(transactionsMap), trieHash256(receiptsMap));
 }
 
-h256 const& Block::getHash()
-{
-    if (m_hash) {
-        return m_hash;
-    }
-
-    RLPStream rlpStream;
-    streamRLP(rlpStream);
-    m_hash = sha3(&rlpStream.out());
-    return m_hash;
-}
-
 // @override
 std::string Block::getKey()
 {
+    return m_blockHeader.getHash().ref().toString();
+    /*
     if (m_hash) {
         return m_hash.ref().toString();
     }
@@ -353,6 +373,7 @@ std::string Block::getKey()
     streamRLP(rlpStream);
     m_hash = sha3(&rlpStream.out());
     return m_hash.ref().toString();
+    */
 }
 
 // @override
@@ -361,4 +382,6 @@ std::string Block::getRLPData()
     RLPStream rlpStream;
     streamRLP(rlpStream);
     return bytesConstRef(&rlpStream.out()).toString();
+}
+
 }

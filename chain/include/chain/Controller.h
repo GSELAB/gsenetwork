@@ -62,17 +62,22 @@ public:
 
     uint64_t getLastBlockNumber() const { return m_chain->getLastBlockNumber(); }
 
+    Block getLastBlock() const { return m_chain->getLastBlock(); }
+
     std::shared_ptr<core::Transaction> getTransactionFromCache() { return m_chain->getTransactionFromCache(); }
 
     std::shared_ptr<core::Block> getBlockFromCache() { return m_chain->getBlockFromCache(); }
 
-    // used by rpc
+    // @rpc-interface
     string const& getVersion() const { return ChainVersion; }
 
+    // @rpc-interface
     uint64_t getBlockNumberRef() const { return getLastBlockNumber(); }
 
+    // @rpc-interface
     void broadcast(core::Transaction const& transaction);
 
+    // @rpc-interface
     core::Block getBlockByNumber(uint64_t number);
 
 private:

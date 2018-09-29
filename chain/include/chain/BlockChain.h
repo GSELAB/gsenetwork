@@ -20,6 +20,7 @@
 #include <storage/Repository.h>
 #include <net/NetController.h>
 #include <crypto/GKey.h>
+#include <core/Queue.h>
 
 using namespace net;
 using namespace core;
@@ -64,6 +65,8 @@ public:
 
         uint64_t getBlockNumber() const { return m_blockNumber; }
 
+        Block getBlock() const { return m_repository->getBlock(); }
+
         void setBlockNumber(uint64_t blockNumber) { m_blockNumber = blockNumber; }
 
         bool isDone() const { return m_isDone; }
@@ -74,6 +77,8 @@ public:
         uint64_t m_blockNumber;
         std::shared_ptr<runtime::storage::Repository> m_repository;
     };
+
+    typedef core::Queue<MemoryItem*> Queue_t;
 
 public:
     BlockChain(crypto::GKey const& key);
@@ -106,6 +111,10 @@ public:
 
     uint64_t getLastBlockNumber() const;
 
+    Block getLastBlock() const;
+
+    Block getBlockByNumber(uint64_t number);
+
     std::shared_ptr<Transaction> getTransactionFromCache();
 
     std::shared_ptr<Block> getBlockFromCache();
@@ -120,7 +129,8 @@ private:
     DispatchFace* m_dispatcher;
 
     mutable Mutex x_memoryQueue;
-    std::queue<MemoryItem*> m_memoryQueue;
+    //std::queue<MemoryItem*> m_memoryQueue;
+    Queue_t m_memoryQueue;
     uint64_t m_solidifyIndex;
     BlockChainStatus m_blockChainStatus = NormalStatus;
 

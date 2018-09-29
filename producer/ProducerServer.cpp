@@ -12,8 +12,10 @@
 #include <producer/ProducerServer.h>
 #include <config/Constant.h>
 #include <utils/Utils.h>
+#include <core/JsonHelper.h>
 
 using namespace utils;
+using namespace core;
 
 extern Controller controller;
 
@@ -79,9 +81,14 @@ void ProducerServer::doWork()
         }
     }
 
+    Block prevBlock = m_eventHandle->getLastBlock();
     BlockHeader blockHeader(m_eventHandle->getLastBlockNumber() + 1);
     blockHeader.setProducer(m_key.getAddress());
-    // blockHeader.setParentHash();
+    if (prevBlock != EmptyBlock) {
+        CINFO << "prev:" << toJson(prevBlock).toStyledString();
+        blockHeader.setParentHash(prevBlock.getHash());
+    }
+
     blockHeader.setTimestamp(timestamp);
     //blockHeader.setExtra();
 
@@ -102,43 +109,11 @@ void ProducerServer::doWork()
         //}
     }
 
-    // set merkle root
     block->setRoots();
+    block->sign(m_key.getSecret());
 
-    // signature
-    {
-
-    }
-
-
-    CINFO << "Try to genereate block(number = " << block->getNumber() << ") success -> time(" << m_prevTimestamp << ")";
     // do broadcast opeartion
     m_eventHandle->broadcast(block);
-
-
-/*
-    BlockHeader blockHeader(m_eventHandle->getLastBlockNumber() + 1);
-    blockHeader.setProducer(m_key.getAddress());
-    // blockHeader.setParentHash();
-    blockHeader.setTimestamp(timestamp);
-    //blockHeader.setExtra();
-
-    Block block(blockHeader);
-    for (unsigned i = 0; i < 20; i++) {
-        std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
-        if (transaction) {
-            CINFO << "Package transaction to current block(" << block.getNumber() << ")";
-            block.addTransaction(*transaction);
-        }
-    }
-
-    CINFO << "Try to genereate block(number = " << block.getNumber() << ") success -> time(" << m_prevTimestamp << ")";
-    // do broadcast opeartion
-    {
-        m_eventHandle->broadcast(block);
-    }
-
-*/
 }
 
 

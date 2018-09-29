@@ -69,6 +69,7 @@ public:
     uint8_t getObjectType() const { return 0x04; }
 
 private:
+    Public m_public;
     Address m_address;
     bool m_alive = false;
     uint64_t m_balance;

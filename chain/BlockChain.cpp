@@ -11,6 +11,7 @@
 
 #include <chain/BlockChain.h>
 #include <runtime/Runtime.h>
+#include <core/JsonHelper.h>
 #include <core/Log.h>
 
 using namespace core;
@@ -55,7 +56,7 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
 
     }
 
-    CINFO << "Process block number(" << block->getNumber() << ") transactions amount(" << block->getTransactions().size() << ")";
+    CINFO << toJson(*block).toStyledString();
     MemoryItem* mItem = new MemoryItem();
     {
         Guard g(x_memoryQueue);
@@ -65,12 +66,13 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
         } else {
             repository = std::make_shared<runtime::storage::Repository>(block, m_memoryQueue.back()->getRepository());
         }
+
         mItem->setBlockNumber(block->getNumber());
         mItem->setRepository(repository);
         if (m_memoryQueue.size() > MAX_QUEUE_SIZE) {
             // CINFO << "m_memoryQueue.size() > MAX_QUEUE_SIZE";
             MemoryItem* delItem = m_memoryQueue.front();
-            m_memoryQueue.pop();
+            m_memoryQueue.pop_front();
             delete delItem;
         }
 
@@ -136,12 +138,53 @@ uint64_t BlockChain::getLastBlockNumber() const
         return 0;
     }
 
+
+
     return m_memoryQueue.back()->getBlockNumber();
+}
+
+Block BlockChain::getLastBlock() const
+{
+    Guard l(x_memoryQueue);
+    if (m_memoryQueue.empty()) {
+        // read from db
+
+        return EmptyBlock;
+    }
+
+    return m_memoryQueue.back()->getBlock();
 }
 
 void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
 {
     m_chain->processObject(interpretObject(from, msg));
+}
+
+Block BlockChain::getBlockByNumber(uint64_t number)
+{
+    Guard l(x_memoryQueue);
+    // CINFO << "m_memoryQueue size = " << m_memoryQueue.size();
+    if (!m_memoryQueue.empty()) {
+        auto itemS = m_memoryQueue.front();
+        auto itemE = m_memoryQueue.back();
+        // CINFO << "start: " << itemS->getBlockNumber() << " end:" << itemE->getBlockNumber();
+        if (number >= itemS->getBlockNumber() && number <= itemE->getBlockNumber()) {
+            for (Queue_t::iterator iter = m_memoryQueue.begin(); iter != m_memoryQueue.end(); iter++) {
+                if ((*iter)->getBlockNumber() == number) {
+                    // CINFO << "find " << (*iter)->getBlockNumber() << " --  " << (*iter)->getRepository()->getBlock().getNumber() << " block";
+                    return (*iter)->getRepository()->getBlock();
+                }
+            }
+        }
+    }
+
+    // search level db
+    {
+
+    }
+
+    BlockHeader header(0xFFFFFFFFFFFFFFFF);
+    return Block(header);
 }
 
 std::shared_ptr<core::Transaction> BlockChain::getTransactionFromCache()

@@ -127,18 +127,7 @@ void Controller::broadcast(Transaction const& transaction)
 
 Block Controller::getBlockByNumber(uint64_t number)
 {
-    // find block from cache
-    {
-
-    }
-
-    // not found , find block from leveldb
-    {
-
-    }
-
-    BlockHeader header(0);
-    return Block(header);
+    return m_chain->getBlockByNumber(number);
 }
 
 

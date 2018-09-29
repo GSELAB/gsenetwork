@@ -36,6 +36,8 @@ public:
 
     virtual uint64_t getLastBlockNumber() const = 0;
 
+    virtual Block getLastBlock() const = 0;
+
     virtual std::shared_ptr<Transaction> getTransactionFromCache() = 0;
 
     virtual std::shared_ptr<Block> getBlockFromCache() = 0;

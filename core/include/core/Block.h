@@ -25,6 +25,9 @@ namespace core {
 
 class Repository;
 
+class Block;
+extern Block EmptyBlock;
+
 #define BLOCK_HEADER_FIELDS (9)
 
 class BlockHeader: public Object {
@@ -68,11 +71,19 @@ public:
 
     void setExtra(bytes const& extra);
 
-    void setHash(h256 const& hash);
+    void sign(Secret const& priv);
+
+    chain::ChainID getChainID() const { return m_chainID; }
 
     Address const& getProducer() const { return m_producer; }
 
     h256 const& getParentHash() const { return m_parentHash; }
+
+    trie::TrieType const& getTrieRoot() const { return m_mklRoot; }
+
+    trie::TrieType const& getTxRoot() const { return m_transactionsRoot; }
+
+    trie::TrieType const& getReceiptRoot() const { return m_receiptRoot; }
 
     uint64_t getNumber() const { return m_number; }
 
@@ -80,7 +91,9 @@ public:
 
     bytes const& getExtra() const { return m_extra; }
 
-    h256 const& getHash() const;
+    h256& getHash();
+
+    SignatureStruct const& getSignature() const { return m_signature; }
 
     void clear();
 
@@ -94,7 +107,7 @@ public:
     uint8_t getObjectType() const { return 0x02; }
 
 private:
-    chain::ChainID m_chainID;
+    chain::ChainID m_chainID = chain::DEFAULT_GSE_NETWORK;
     Address  m_producer;
     h256 m_parentHash;
     trie::TrieType m_mklRoot;
@@ -103,6 +116,7 @@ private:
     uint64_t m_number;
     int64_t m_timestamp;
     bytes m_extra;
+    SignatureStruct m_signature;
 
     h256 m_hash; // sha3 of the blockheader
 };
@@ -139,6 +153,8 @@ public:
 
     void setRoots();
 
+    void sign(Secret const& priv) { m_blockHeader.sign(priv); }
+
     Address const& getProducer() const { return m_blockHeader.getProducer(); }
 
     BlockHeader const& getBlockHeader() const { return m_blockHeader; }
@@ -151,7 +167,7 @@ public:
 
     uint64_t getNumber() const { return m_blockHeader.getNumber(); }
 
-    h256 const& getHash();
+    h256& getHash() { return m_blockHeader.getHash(); }
 
     // @override
     std::string getKey();
@@ -167,7 +183,7 @@ private:
     Transactions m_transactions;
     TransactionReceipts m_transactionReceipts;
 
-    h256 m_hash;
+    //h256 m_hash;
 };
 
 }  /* namespace end */
