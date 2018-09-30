@@ -55,6 +55,10 @@ struct SignatureStruct {
 	    return *this;
 	}
 
+	bool operator==(SignatureStruct const& sig) const {
+	    return (r == sig.r) && (s == sig.s) && (v == sig.v);
+    }
+
 	core::h256 r;
 	core::h256 s;
 	byte v = 0;
