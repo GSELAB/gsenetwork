@@ -186,4 +186,6 @@ private:
     //h256 m_hash;
 };
 
+using BlockID = h256;
+
 }  /* namespace end */
