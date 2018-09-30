@@ -155,11 +155,6 @@ Block BlockChain::getLastBlock() const
     return m_memoryQueue.back()->getBlock();
 }
 
-void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
-{
-    m_chain->processObject(interpretObject(from, msg));
-}
-
 Block BlockChain::getBlockByNumber(uint64_t number)
 {
     Guard l(x_memoryQueue);
@@ -209,6 +204,11 @@ std::shared_ptr<core::Block> BlockChain::getBlockFromCache()
     }
 
     return ret;
+}
+
+void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
+{
+    m_chain->processObject(interpretObject(from, msg));
 }
 
 /*

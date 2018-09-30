@@ -1,5 +1,7 @@
 SET (chain_source
     Genesis.cpp
+    BlockState.cpp
+    RollbackState.cpp
     SubChainController.cpp
     BlockChain.cpp
     Controller.cpp)
