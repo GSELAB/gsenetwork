@@ -27,13 +27,15 @@ std::string ACCOUNT_DIR_FILE("./data/account");
 std::string TRANSACTION_DIR_FILE("./data/transaction");
 std::string BLOCK_DIR_FILE("./data/block");
 std::string SUBCHAIN_DIR_FILE("./data/subchain");
+std::string PRODUCER_DIR_FILE("./data/producer");
 
 DatabaseController::DatabaseController():
     m_attributesStore(std::unique_ptr<Database>(new Database(ATTRIBUTE_DIR_FILE))),
     m_accountStore(std::unique_ptr<Database>(new Database(ACCOUNT_DIR_FILE))),
     m_transactionStore(std::unique_ptr<Database>(new Database(TRANSACTION_DIR_FILE))),
     m_blockStore(std::unique_ptr<Database>(new Database(BLOCK_DIR_FILE))),
-    m_subChainStore(std::unique_ptr<Database>(new Database(SUBCHAIN_DIR_FILE)))
+    m_subChainStore(std::unique_ptr<Database>(new Database(SUBCHAIN_DIR_FILE))),
+    m_producerStore(std::unique_ptr<Database>(new Database(PRODUCER_DIR_FILE)))
 {
     CINFO << "Database environment initial success";
 }

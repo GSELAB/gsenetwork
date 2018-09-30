@@ -75,6 +75,7 @@ private:
     unique_ptr<Database> m_transactionStore;
     unique_ptr<Database> m_blockStore;
     unique_ptr<Database> m_subChainStore;
+    unique_ptr<Database> m_producerStore;
 
 };
 } // namespace end
