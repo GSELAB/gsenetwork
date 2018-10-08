@@ -36,6 +36,8 @@ public:
 
     bool transfer(Address const& from, Address const& to, uint64_t value);
 
+    bool burn(Address const& target, uint64_t value);
+
     void putAccount(Account const& account);
 
     Block getBlock() { return *m_block; }

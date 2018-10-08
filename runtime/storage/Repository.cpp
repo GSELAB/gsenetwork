@@ -46,5 +46,24 @@ bool Repository::transfer(Address const& from, Address const& to, uint64_t value
     putAccount(_to);
     return true;
 }
+
+bool burn(Address const& target, uint64_t value)
+{
+    Account _target = getAccount(target);
+    if (_target == EmptyAccount) {
+        CERROR << "Burn empty account";
+        return fase;
+    }
+
+    if (_target.getBalance() < value) {
+        CERROR << "Not enough token for burning";
+        return fase;
+    }
+
+    _target.setBalance(_target.getBalance() - value);
+    putAccount(_target);
+    return true;
+}
+
 } // end namespace storage
 } // end namespace runtime
