@@ -12,9 +12,10 @@ SET(runtime_source
     Runtime.cpp)
 
 ADD_SUBDIRECTORY(storage)
+ADD_SUBDIRECTORY(action)
 ADD_SUBDIRECTORY(vm)
 ADD_SUBDIRECTORY(jit)
 
 ADD_LIBRARY(runtime ${runtime_source})
 TARGET_LINK_LIBRARIES(runtime
-    utils runtime_storage database chain core crypto runtime_jit ${GSE_BOOST_LIBS})
+    utils runtime_storage runtime_action database chain core crypto runtime_jit ${GSE_BOOST_LIBS})

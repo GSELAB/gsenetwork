@@ -12,17 +12,22 @@
 #include <runtime/Runtime.h>
 #include <core/Address.h>
 #include <storage/Repository.h>
+#include <runtime/action/ActionFactory.h>
 
-using namespace runtime;
+namespace runtime {
 
-Runtime::Runtime(Transaction const& transaction, Block const& block): m_transaction(transaction)
+using namespace action;
+
+Runtime::Runtime(Transaction const& transaction, Block const& block, std::shared_ptr<storage::Repository> repo):
+    m_transaction(transaction), m_repo(repo), m_type(NormalType)
 {
-
+    m_block = (Block*)&block;
 }
 
-Runtime::Runtime(Transaction const& transaction)
+Runtime::Runtime(Transaction const& transaction, std::shared_ptr<storage::Repository> repo):
+    m_transaction(transaction), m_repo(repo), m_type(PreType)
 {
-
+    m_block = nullptr;
 }
 
 void Runtime::init()
@@ -32,22 +37,26 @@ void Runtime::init()
 
 void Runtime::excute()
 {
-    Address const& sender = m_transaction.getSender();
-    Address const& recipient = m_transaction.getRecipient();
-    bytes const& data = m_transaction.getData();
-    uint64_t value = m_transaction.getValue();
+    try {
+        ActionFactory factory(m_transaction, m_block, m_repo);
+        factory.init();
+        factory.execute();
+        factory.finalize();
+    } catch (Exception e) {
 
-    // transafer
-    m_repository->transfer(sender, recipient, value);
-
+    }
 }
 
 void Runtime::finished()
 {
-
+    if (m_type == NormalType) {
+        // commit data
+    }
 }
 
 uint64_t Runtime::getResult() const
 {
     return 0;
+}
+
 }

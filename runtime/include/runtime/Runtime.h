@@ -21,10 +21,15 @@ namespace runtime {
 
 class Runtime {
 public:
-    Runtime(Transaction const& transaction, Block const& block);
+    enum Type {
+        PreType = 0x0,
+        NormalType = 0x01,
+    };
+
+    Runtime(Transaction const& transaction, Block const& block, std::shared_ptr<storage::Repository> repo);
 
     // @just for pre execute
-    Runtime(Transaction const& transaction);
+    Runtime(Transaction const& transaction, std::shared_ptr<storage::Repository> repo);
 
     void init();
 
@@ -35,8 +40,13 @@ public:
     uint64_t getResult() const;
 
 private:
+    Type m_type;
+
     Transaction m_transaction;
-    std::shared_ptr<storage::Repository> m_repository;
+
+    Block *m_block;
+
+    std::shared_ptr<storage::Repository> m_repo;
 
 };
 } // end namespace
