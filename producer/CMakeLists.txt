@@ -1,4 +1,5 @@
 SET(producer_source
+    VoterList.cpp
     ProducerServer.cpp)
 
 ADD_LIBRARY(producer ${producer_source})
