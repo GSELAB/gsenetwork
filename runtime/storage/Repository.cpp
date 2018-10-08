@@ -47,22 +47,32 @@ bool Repository::transfer(Address const& from, Address const& to, uint64_t value
     return true;
 }
 
-bool burn(Address const& target, uint64_t value)
+bool Repository::burn(Address const& target, uint64_t value)
 {
     Account _target = getAccount(target);
     if (_target == EmptyAccount) {
-        CERROR << "Burn empty account";
-        return fase;
+        CERROR << "Burn token from empty account";
+        return false;
     }
 
     if (_target.getBalance() < value) {
         CERROR << "Not enough token for burning";
-        return fase;
+        return false;
     }
 
     _target.setBalance(_target.getBalance() - value);
     putAccount(_target);
     return true;
+}
+
+void Repository::addProducer(Producer const& producer)
+{
+    m_producerCache.insert(std::make_pair(producer.getAddress(), producer));
+}
+
+void Repository::commit()
+{
+    // commit to db?
 }
 
 } // end namespace storage

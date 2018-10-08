@@ -17,6 +17,7 @@
 #include <core/Block.h>
 #include <core/Account.h>
 #include <database/DatabaseController.h>
+#include <core/Producer.h>
 
 using namespace database;
 using namespace core;
@@ -42,12 +43,18 @@ public:
 
     Block getBlock() { return *m_block; }
 
+    void addProducer(Producer const& producer);
+
+    void commit();
+
 private:
     DatabaseController *m_db;
     std::shared_ptr<Repository> m_parent = nullptr;
 
     const Account EmptyAccount;
     mutable std::unordered_map<Address, Account> m_accountCache;
+
+    mutable std::unordered_map<Address, Producer> m_producerCache;
 
     std::shared_ptr<Block> m_block;
 };

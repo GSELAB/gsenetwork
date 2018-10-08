@@ -44,6 +44,8 @@ private:
 
     Transaction m_transaction;
 
+    Block *m_block;
+
     std::shared_ptr<storage::Repository> m_repo;
 
 };

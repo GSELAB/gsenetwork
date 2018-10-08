@@ -12,7 +12,7 @@ namespace action {
 
 class ActionFactory {
 public:
-    ActionFactory(Transaction const& transaction, std::shared_ptr<Repository> repo);
+    ActionFactory(Transaction const& transaction, Block* block, std::shared_ptr<Repository> repo);
 
     ~ActionFactory();
 

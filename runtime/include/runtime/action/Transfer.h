@@ -14,8 +14,8 @@ namespace action {
 
 class Transfer: public ActionHandler {
 public:
-    Transfer(Transaction const& transaction, std::shared_ptr<Repository> repo):
-        m_transaction(transaction), m_repo(repo) {}
+    Transfer(Transaction const& transaction, Block* block, std::shared_ptr<Repository> repo):
+        m_transaction(transaction), m_block(block), m_repo(repo) {}
 
     ~Transfer() {}
 
@@ -30,6 +30,7 @@ public:
 
 private:
     Transaction m_transaction;
+    Block* m_block;
     std::shared_ptr<Repository> m_repo;
 };
 }

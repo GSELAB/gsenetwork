@@ -1,6 +1,7 @@
 #pragma once
 
 #include <core/Common.h>
+#include <core/Block.h>
 
 namespace runtime {
 namespace action {

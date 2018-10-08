@@ -8,17 +8,17 @@ using namespace core;
 namespace runtime {
 namespace action {
 
-ActionFactory::ActionFactory(Transaction const& transaction, std::shared_ptr<Repository> repo)
+ActionFactory::ActionFactory(Transaction const& transaction, Block* block, std::shared_ptr<Repository> repo)
 {
     switch (transaction.getType()) {
         case Transaction::VoteType:
-            m_handler = new Vote(transaction, repo);
+            m_handler = new Vote(transaction, block, repo);
             break;
         case Transaction::TransferType:
-            m_handler = new Transfer(transaction, repo);
+            m_handler = new Transfer(transaction, block, repo);
             break;
         case Transaction::BeenProducerType:
-            m_handler = new BeenProducer(transaction, repo);
+            m_handler = new BeenProducer(transaction, block, repo);
             break;
         default:
             m_handler = nullptr;
