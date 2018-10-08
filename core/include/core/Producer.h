@@ -53,6 +53,7 @@ public:
 private:
     Address m_address;
     int64_t m_timestamp;
+    std::map<Address, uint64_t> m_votersMap;
     uint64_t m_votes;
 };
 

@@ -32,6 +32,13 @@ public:
     static const uint32_t ContractCreation;
     static const uint32_t ContractCall;
 
+    enum Type {
+        VoteType = 0x0,
+        TransferType = 0x01,
+        BeenProducerType = 0x02,
+        UnknownType = 0xFFFFFFFF,
+    };
+
     Transaction();
 
     Transaction(chain::ChainID chainID, uint32_t type, Address const& sender, Address const& recipient, bytes const& data, uint64_t value);
