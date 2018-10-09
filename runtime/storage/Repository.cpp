@@ -28,25 +28,20 @@ do {    \
 do {    \
     if (m_parent) { \
         ret = m_parent->get##name(arg); \
-        if (ret == Empty##name) {} else {   \
-            put##name(ret); return ret; \
-        }   \
+        if (ret == Empty##name) {} else { put##name(ret); return ret; }   \
     }   \
 } while(0)
 
 #define GET_FROM_DBC_RETURN(name, arg, ret)     \
 do {    \
     ret = m_dbc->get##name(arg);    \
-    if (ret == Empty##name) {} else {   \
-        put##name(ret); return ret; \
-    }   \Guard l{x_mutex##name};             \
+    if (ret == Empty##name) {} else { put##name(ret); return ret;}    \
 } while(0)
 
 #define COMMIT_REPO(name)   \
 do {    \
     Guard l{x_mutex##name}; \
-    if (m_parent) for (auto i : m_cache##name) m_parent->put##name(i.second);   \
-    else for (auto i : m_cache##name) m_dbc->put##name(i.second);   \
+    if (m_parent) { for (auto i : m_cache##name) m_parent->put##name(i.second); } else { for (auto i : m_cache##name) m_dbc->put##name(i.second); }  \
 } while (0)
 
 Account Repository::getAccount(Address const& address)
