@@ -20,6 +20,7 @@
 #include <core/Block.h>
 #include <core/SubChain.h>
 #include <config/Constant.h>
+#include <core/Producer.h>
 
 using namespace core;
 
@@ -40,6 +41,10 @@ public:
     Account getAccount(Address const& address) const;
 
     void putAccount(Account& account);
+
+    Producer getProducer(Address const& address) const;
+
+    void putProducer(Producer& producer);
 
     Transaction getTransaction(bytes const& key) const;
 

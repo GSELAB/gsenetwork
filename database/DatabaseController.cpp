@@ -119,6 +119,17 @@ void DatabaseController::putAccount(Account& account)
     m_accountStore->put(account);
 }
 
+Producer DatabaseController::getProducer(Address const& address) const
+{
+    bytes value = m_producerStore->get(address.asBytes());
+    return Producer(bytesConstRef(&value));
+}
+
+void DatabaseController::putProducer(Producer& producer)
+{
+    m_producerStore->put(producer);
+}
+
 Transaction DatabaseController::getTransaction(bytes const& key) const
 {
     return Transaction(m_transactionStore->get(key));
