@@ -11,6 +11,7 @@ SET(core_source
     Block.cpp
     Producer.cpp
     SubChain.cpp
+    Ballot.cpp
     Worker.cpp
     Task.cpp
     JsonHelper.cpp)
