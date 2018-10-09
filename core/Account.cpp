@@ -53,6 +53,22 @@ Account::~Account()
 
 }
 
+Account& Account::operator=(Account const& account)
+{
+
+    return *this;
+    /*
+    Public m_public;
+    Address m_address;
+    bool m_alive = false;
+    uint64_t m_balance;
+    int64_t m_timestamp;
+    Addresses m_contractAddresses;
+    std::map<Address, uint64_t> m_candidateMap;
+    uint64_t m_votes;
+    */
+}
+
 bool Account::operator==(Account const& account) const
 {
     return (m_address == account.getAddress()) &&
@@ -126,14 +142,7 @@ Addresses const& Account::getContractAddresses() const
 // @override
 bytes Account::getKey()
 {
-    if (m_hash) {
-        return m_hash.asBytes();
-    }
-
-    RLPStream rlpStream;
-    streamRLP(rlpStream);
-    m_hash = sha3(&rlpStream.out());
-    return m_hash.asBytes(); /// m_hash.ref().toString();
+    return m_address.asBytes(); // not sha3(content)
 }
 
 // @override

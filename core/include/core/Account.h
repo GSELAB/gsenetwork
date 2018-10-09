@@ -35,6 +35,8 @@ public:
 
     ~Account();
 
+    Account& operator=(Account const& account);
+
     bool operator==(Account const& account) const;
 
     bool equal(Account const& account) const;
@@ -75,6 +77,8 @@ private:
     uint64_t m_balance;
     int64_t m_timestamp;
     Addresses m_contractAddresses;
+    std::map<Address, uint64_t> m_candidateMap;
+    uint64_t m_votes;
 
     h256 m_hash;
 };
