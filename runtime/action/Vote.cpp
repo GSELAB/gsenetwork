@@ -24,9 +24,6 @@ void Vote::execute()
         CINFO << item.getAddress() << ":" << item.getValue();
         m_repo->voteIncrease(sender, item.getAddress(), item.getValue());
     }
-
-
-
 }
 
 // @override

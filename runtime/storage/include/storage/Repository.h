@@ -33,7 +33,7 @@ public:
 
     void setParentNULL() { m_parent.reset(); }
 
-    Account const& getAccount(Address const& address) const;
+    Account getAccount(Address const& address);
 
     bool transfer(Address const& from, Address const& to, uint64_t value);
 
@@ -43,9 +43,9 @@ public:
 
     Block getBlock() { return *m_block; }
 
-    Producer getProducer(Address const& address) const;
+    Producer getProducer(Address const& address);
 
-    void addProducer(Producer const& producer);
+    void putProducer(Producer const& producer);
 
     void voteIncrease(Address const& voter, Address const& candidate, uint64_t value);
 
@@ -54,14 +54,14 @@ public:
     void commit();
 
 private:
-    DatabaseController *m_db;
+    DatabaseController *m_dbc;
     std::shared_ptr<Repository> m_parent = nullptr;
 
-    mutable Mutex x_accountCache;
-    mutable std::unordered_map<Address, Account> m_accountCache;
+    mutable Mutex x_mutexAccount;
+    mutable std::unordered_map<Address, Account> m_cacheAccount;
 
-    mutable Mutex x_producerCache;
-    mutable std::unordered_map<Address, Producer> m_producerCache;
+    mutable Mutex x_mutexProducer;
+    mutable std::unordered_map<Address, Producer> m_cacheProducer;
 
     std::shared_ptr<Block> m_block;
 };

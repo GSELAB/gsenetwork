@@ -21,7 +21,7 @@ void BeenProducer::execute()
         return;
 
     Producer producer(sender, m_block->getBlockHeader().getTimestamp());
-    m_repo->addProducer(producer);
+    m_repo->putProducer(producer);
 }
 
 // @override
