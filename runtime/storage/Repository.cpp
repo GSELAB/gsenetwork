@@ -20,50 +20,33 @@ namespace storage {
 #define GET_FROM_CURRENT_RETURN(name, arg, ret) \
 do {    \
     Guard l(x_mutex##name); \
-    auto item = m_cache##name.find(arg);   \
-    if (item != m_cache##name.end()) {  \
-        return item->second;    \
-    }   \
+    auto item = m_cache##name.find(arg);    \
+    if (item != m_cache##name.end()) return item->second;   \
 } while(0)
 
-#define GET_FROM_PARENT_RETURN(name, arg, ret) \
+#define GET_FROM_PARENT_RETURN(name, arg, ret)  \
 do {    \
     if (m_parent) { \
-        ret = m_parent->get##name(arg);   \
-        if (ret == Empty##name) {   \
-                                    \
-        } else {    \
-            put##name(ret); \
-            return ret; \
+        ret = m_parent->get##name(arg); \
+        if (ret == Empty##name) {} else {   \
+            put##name(ret); return ret; \
         }   \
     }   \
 } while(0)
 
-#define GET_FROM_DBC_RETURN(name, arg, ret) \
+#define GET_FROM_DBC_RETURN(name, arg, ret)     \
 do {    \
     ret = m_dbc->get##name(arg);    \
-    if (ret == Empty##name) {   \
-                                \
-    } else {    \
-        put##name(ret); \
-        return ret; \
-    }   \
+    if (ret == Empty##name) {} else {   \
+        put##name(ret); return ret; \
+    }   \Guard l{x_mutex##name};             \
 } while(0)
 
-#define COMMIT_REPO(name) \
+#define COMMIT_REPO(name)   \
 do {    \
-    if (m_parent) { \
-        /* commit to parent */  \
-        Guard l{x_mutex##name}; \
-        for (auto i : m_cache##name) {  \
-            m_parent->put##name(i.second);  \
-        }   \
-    } else {    \
-        Guard l{x_mutex##name}; \
-        for (auto i : m_cache##name) {  \
-            m_dbc->put##name(i.second);  \
-        }   \
-    }   \
+    Guard l{x_mutex##name}; \
+    if (m_parent) for (auto i : m_cache##name) m_parent->put##name(i.second);   \
+    else for (auto i : m_cache##name) m_dbc->put##name(i.second);   \
 } while (0)
 
 Account Repository::getAccount(Address const& address)
