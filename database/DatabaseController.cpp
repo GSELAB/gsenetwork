@@ -48,7 +48,8 @@ DatabaseController::~DatabaseController()
 void DatabaseController::init()
 {
     if (checkGenesisExisted()) {
-        AttributeState<uint64_t> height = getAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getKey());
+        bytes key = ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getKey();
+        AttributeState<uint64_t> height = getAttribute<uint64_t>(key);
         CINFO << "Current block height : " << height.getValue();
     } else {
         initGenesis();
@@ -109,7 +110,8 @@ void DatabaseController::decrementBlockHeight(uint64_t decr)
 
 Account DatabaseController::getAccount(Address const& address) const
 {
-    return Account(m_accountStore->get(address.ref().toString()));
+    bytes value = m_accountStore->get(address.asBytes());
+    return Account(bytesConstRef(&value));
 }
 
 void DatabaseController::putAccount(Account& account)
@@ -117,7 +119,7 @@ void DatabaseController::putAccount(Account& account)
     m_accountStore->put(account);
 }
 
-Transaction DatabaseController::getTransaction(string const& key) const
+Transaction DatabaseController::getTransaction(bytes const& key) const
 {
     return Transaction(m_transactionStore->get(key));
 }
@@ -127,7 +129,7 @@ void DatabaseController::putTransaction(Transaction& transaction)
     m_transactionStore->put(transaction);
 }
 
-Block DatabaseController::getBlock(string const& key) const
+Block DatabaseController::getBlock(bytes const& key) const
 {
     return Block(m_blockStore->get(key));
 }
@@ -153,9 +155,10 @@ void DatabaseController::putSubChain(SubChain& subChain)
 }
 
 template<class T>
-AttributeState<T> DatabaseController::getAttribute(string const& key) const
+AttributeState<T> DatabaseController::getAttribute(bytes const& key) const
 {
-    return AttributeState<T>(key, m_attributesStore->get(key));
+    bytes value = m_attributesStore->get(key);
+    return AttributeState<T>(key, bytesConstRef(&value));
 }
 
 template<class T>

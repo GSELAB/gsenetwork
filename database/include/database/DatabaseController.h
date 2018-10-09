@@ -22,7 +22,6 @@
 #include <config/Constant.h>
 
 using namespace core;
-using namespace std;
 
 namespace database {
 
@@ -42,11 +41,11 @@ public:
 
     void putAccount(Account& account);
 
-    Transaction getTransaction(string const& key) const;
+    Transaction getTransaction(bytes const& key) const;
 
     void putTransaction(Transaction& transaction);
 
-    Block getBlock(string const& key) const;
+    Block getBlock(bytes const& key) const;
 
     Block getBlock(uint64_t blockNumber) const;
 
@@ -57,7 +56,7 @@ public:
     void putSubChain(SubChain& subChain);
 
     template<class T>
-    AttributeState<T> getAttribute(string const& key) const;
+    AttributeState<T> getAttribute(bytes const& key) const;
 
     template<class T>
     void putAttribute(AttributeState<T>& t);

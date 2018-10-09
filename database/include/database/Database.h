@@ -14,6 +14,8 @@
 #include <string>
 
 #include <core/Object.h>
+#include <core/CommonIO.h>
+#include <core/Common.h>
 
 namespace database {
 
@@ -29,9 +31,9 @@ public:
 
     void put(core::Object& object);
 
-    std::string get(std::string const& key) const;
+    core::bytes get(core::bytes const& key) const;
 
-    void del(std::string const& key);
+    void del(core::bytes const& key);
 
 private:
     DatabaseImpl* m_impl;
