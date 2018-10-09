@@ -82,7 +82,7 @@ using errinfo_target = boost::error_info<struct tag_target, h256>;
 using BadFieldError = boost::tuple<errinfo_field, errinfo_data>;
 
 
-struct GSException: virtual public std::exception {
+struct GSException: virtual public std::exception, virtual boost::exception {
 public:
     explicit GSException(std::string const& message, int number = 0): m_errorMessage(message), m_number(number) {}
 
@@ -98,5 +98,15 @@ private:
     do { \
         throw GSException(str); \
     } while(0)
+
+struct DeserializeException: virtual GSException {
+    explicit DeserializeException(std::string const& message, int number = 0):
+        GSException(message, number) {}
+};
+
+struct VoteNotExistProducerException: virtual GSException {
+    explicit VoteNotExistProducerException(std::string const& message, int number = 0):
+        GSException(message, number) {}
+};
 
 }
