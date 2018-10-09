@@ -31,24 +31,34 @@ public:
 
     ~Producer();
 
+    Producer& operator=(Producer const& producer);
+
+    bool operator==(Producer const& producer) const;
+
+    bool operator!=(Producer const& producer) const;
+
     void streamRLP(RLPStream& rlpStream) const;
 
     void setVotes(uint64_t votes);
 
-    Address const& getAddress() const;
+    void addVoter(Address const& voter, uint64_t value);
 
-    int64_t getTimestamp() const;
+    Address const& getAddress() const { return m_address; }
 
-    uint64_t getVotes() const;
+    int64_t getTimestamp() const { return m_timestamp; }
 
-    // @override
-    std::string getKey();
+    std::map<Address, uint64_t> const& getVotersMap() const { return m_votersMap; }
 
-    // @override
-    std::string getRLPData();
+    uint64_t getVotes() const { return m_votes; }
 
     // @override
-    uint8_t getObjectType() const { return 0x05; }
+    bytes getKey();
+
+    // @override
+    bytes getRLPData();
+
+    // @override
+    Object::ObjectType getObjectType() const { return Object::BlockType; }
 
 private:
     Address m_address;
@@ -56,5 +66,7 @@ private:
     std::map<Address, uint64_t> m_votersMap;
     uint64_t m_votes;
 };
+
+extern Producer EmptyProducer;
 
 } // end of namespace

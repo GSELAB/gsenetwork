@@ -210,24 +210,24 @@ void BlockHeader::clear()
 }
 
 // @override
-std::string BlockHeader::getKey()
+bytes BlockHeader::getKey()
 {
     if (m_hash) {
-        return m_hash.ref().toString();
+        return m_hash.asBytes();
     }
 
     RLPStream rlpStream;
     streamRLP(rlpStream);
     m_hash = sha3(&rlpStream.out());
-    return m_hash.ref().toString();
+    return m_hash.asBytes();
 }
 
 // @override
-std::string BlockHeader::getRLPData()
+bytes BlockHeader::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    return bytesConstRef(&rlpStream.out()).toString();
+    return rlpStream.out();
 }
 
 /* --- Block ---*/
@@ -361,9 +361,9 @@ void Block::setRoots()
 }
 
 // @override
-std::string Block::getKey()
+bytes Block::getKey()
 {
-    return m_blockHeader.getHash().ref().toString();
+    return m_blockHeader.getKey();
     /*
     if (m_hash) {
         return m_hash.ref().toString();
@@ -377,11 +377,11 @@ std::string Block::getKey()
 }
 
 // @override
-std::string Block::getRLPData()
+bytes Block::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    return bytesConstRef(&rlpStream.out()).toString();
+    return rlpStream.out();
 }
 
 }

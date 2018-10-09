@@ -98,13 +98,13 @@ public:
     void clear();
 
     // @override
-    std::string getKey();
+    bytes getKey();
 
     // @override
-    std::string getRLPData();
+    bytes getRLPData();
 
     // @override
-    uint8_t getObjectType() const { return 0x02; }
+    Object::ObjectType getObjectType() const { return Object::BlockHeaderType; }
 
 private:
     chain::ChainID m_chainID = chain::DEFAULT_GSE_NETWORK;
@@ -170,13 +170,13 @@ public:
     h256& getHash() { return m_blockHeader.getHash(); }
 
     // @override
-    std::string getKey();
+    bytes getKey();
 
     // @override
-    std::string getRLPData();
+    bytes getRLPData();
 
     // @override
-    uint8_t getObjectType() const { return 0x03; }
+    Object::ObjectType getObjectType() const { return Object::BlockType; }
 
 private:
     BlockHeader m_blockHeader;

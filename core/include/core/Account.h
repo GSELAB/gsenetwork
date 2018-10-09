@@ -60,13 +60,13 @@ public:
     Addresses const& getContractAddresses() const;
 
     // @override
-    std::string getKey();
+    bytes getKey();
 
     // @override
-    std::string getRLPData();
+    bytes getRLPData();
 
     // @override
-    uint8_t getObjectType() const { return 0x04; }
+    Object::ObjectType getObjectType() const { return Object::AccountType; }
 
 private:
     Public m_public;
@@ -78,5 +78,7 @@ private:
 
     h256 m_hash;
 };
+
+extern Account EmptyAccount;
 
 } /* namespace */

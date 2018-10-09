@@ -83,13 +83,13 @@ public:
     uint64_t getValue() const;
 
     // @override
-    std::string getKey();
+    bytes getKey();
 
     // @override
-    std::string getRLPData();
+    bytes getRLPData();
 
     // @override
-    uint8_t getObjectType() const { return 0x01; }
+    Object::ObjectType getObjectType() const { return Object::TransactionType; }
 
 private:
     chain::ChainID m_chainID;

@@ -12,7 +12,7 @@
 #include <core/TransactionReceipt.h>
 #include <core/RLP.h>
 
-using namespace core;
+namespace core {
 
 TransactionReceipt::TransactionReceipt(bytesConstRef data): m_isCode(true)
 {
@@ -74,4 +74,19 @@ uint32_t TransactionReceipt::getReceiptCode() const
 h256 const& TransactionReceipt::getStateRoot() const
 {
     return m_stateRoot;
+}
+
+// @override
+bytes TransactionReceipt::getKey()
+{
+    return bytes();
+}
+
+// @override
+bytes TransactionReceipt::getRLPData()
+{
+    core::RLPStream rlpStream;
+    streamRLP(rlpStream);
+    return rlpStream.out();
+}
 }

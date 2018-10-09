@@ -13,6 +13,8 @@
 
 namespace core {
 
+Producer EmptyProducer;
+
 Producer::Producer(Address const& address, int64_t timestamp): m_address(address), m_timestamp(timestamp)
 {
     // TODO: CREATE A NEW PRODUCER
@@ -42,6 +44,30 @@ Producer::~Producer()
 
 }
 
+Producer& Producer::operator=(Producer const& producer)
+{
+    if (this == &producer) return *this;
+    m_address = producer.getAddress();
+    m_timestamp = producer.getTimestamp();
+    m_votes = producer.getVotes();
+    for (auto const& i : producer.getVotersMap()) {
+        m_votersMap.insert(i);
+    }
+
+    return *this;
+}
+
+bool Producer::operator==(Producer const& producer) const
+{
+    return (m_address == producer.getAddress()) && (m_timestamp == producer.getTimestamp()) &&
+        (m_votes == producer.getVotes()) && (m_votersMap == producer.getVotersMap());
+}
+
+bool Producer::operator!=(Producer const& producer) const
+{
+    return !operator==(producer);
+}
+
 void Producer::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(PRODUCER_FIELDS);
@@ -55,33 +81,23 @@ void Producer::setVotes(uint64_t votes)
     m_votes = votes;
 }
 
-Address const& Producer::getAddress() const
+void Producer::addVoter(Address const& voter, uint64_t value)
 {
-    return m_address;
-}
-
-int64_t Producer::getTimestamp() const
-{
-    return m_timestamp;
-}
-
-uint64_t Producer::getVotes() const
-{
-    return m_votes;
+    // TODO: ADD
 }
 
 // @override
-std::string Producer::getKey()
+bytes Producer::getKey()
 {
-    return m_address.ref().toString();
+    return m_address.asBytes();
 }
 
 // @override
-std::string Producer::getRLPData()
+bytes Producer::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    return bytesConstRef(&rlpStream.out()).toString();
+    return rlpStream.out();
 }
 
 } // end of producer

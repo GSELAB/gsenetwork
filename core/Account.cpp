@@ -17,6 +17,8 @@ using namespace core;
 
 namespace core {
 
+Account EmptyAccount;
+
 Account::Account(int64_t timestamp): m_timestamp(timestamp), m_balance(0), m_alive(true)
 {
     // TODO: CREATE A NEW ACCOUNT
@@ -122,23 +124,23 @@ Addresses const& Account::getContractAddresses() const
 }
 
 // @override
-std::string Account::getKey()
+bytes Account::getKey()
 {
     if (m_hash) {
-        return m_hash.ref().toString();
+        return m_hash.asBytes();
     }
 
     RLPStream rlpStream;
     streamRLP(rlpStream);
     m_hash = sha3(&rlpStream.out());
-    return m_hash.ref().toString();
+    return m_hash.asBytes(); /// m_hash.ref().toString();
 }
 
 // @override
-std::string Account::getRLPData()
+bytes Account::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    return bytesConstRef(&rlpStream.out()).toString();
+    return rlpStream.out(); /// bytesConstRef(&rlpStream.out()).toString();
 }
 } // end namespace
