@@ -16,6 +16,7 @@
 
 #include <core/Block.h>
 #include <core/Account.h>
+#include <core/Guards.h>
 #include <database/DatabaseController.h>
 #include <core/Producer.h>
 
@@ -26,7 +27,6 @@ namespace runtime {
 namespace storage {
 class Repository { //: public std::enable_shared_from_this<Repository> {
 public:
-    // virtual std::shared_ptr<Account> getAccount() const = 0;
     Repository(std::shared_ptr<Block> block): m_block(block) {}
 
     Repository(std::shared_ptr<Block> block, std::shared_ptr<Repository> parent): m_block(block), m_parent(parent) {}
@@ -43,7 +43,13 @@ public:
 
     Block getBlock() { return *m_block; }
 
+    Producer getProducer(Address const& address) const;
+
     void addProducer(Producer const& producer);
+
+    void voteIncrease(Address const& voter, Address const& candidate, uint64_t value);
+
+    void voteDecrease(Address const& voter, Address const& candidate, uint64_t value);
 
     void commit();
 
@@ -51,9 +57,10 @@ private:
     DatabaseController *m_db;
     std::shared_ptr<Repository> m_parent = nullptr;
 
-    const Account EmptyAccount;
+    mutable Mutex x_accountCache;
     mutable std::unordered_map<Address, Account> m_accountCache;
 
+    mutable Mutex x_producerCache;
     mutable std::unordered_map<Address, Producer> m_producerCache;
 
     std::shared_ptr<Block> m_block;

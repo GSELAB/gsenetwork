@@ -65,9 +65,37 @@ bool Repository::burn(Address const& target, uint64_t value)
     return true;
 }
 
+Producer Repository::getProducer(Address const& address) const
+{
+    return Producer();
+}
+
 void Repository::addProducer(Producer const& producer)
 {
     m_producerCache.insert(std::make_pair(producer.getAddress(), producer));
+}
+
+void Repository::voteIncrease(Address const& voter, Address const& candidate, uint64_t value)
+{
+    Producer producer = getProducer(candidate);
+    if (producer == EmptyProducer) {
+        CERROR << "Vote not exist producer";
+        throw VoteNotExistProducerException("Vote not exist producer");
+    }
+
+    // TODO:
+    //producer
+}
+
+void Repository::voteDecrease(Address const& voter, Address const& candidate, uint64_t value)
+{
+    Producer producer = getProducer(candidate);
+    if (producer == EmptyProducer) {
+        CERROR << "Vote not exist producer";
+        throw VoteNotExistProducerException("Vote not exist producer");
+    }
+
+    // TODO
 }
 
 void Repository::commit()
