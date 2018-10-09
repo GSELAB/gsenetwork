@@ -99,14 +99,15 @@ private:
         throw GSException(str); \
     } while(0)
 
-struct DeserializeException: virtual GSException {
-    explicit DeserializeException(std::string const& message, int number = 0):
-        GSException(message, number) {}
-};
+#define CORE_TEMPLATE_EXCEPTION(name) \
+struct name##Exception: virtual GSException { \
+    explicit name##Exception(std::string const& message, int number = 0): \
+        GSException(message, number) {} \
+}
 
-struct VoteNotExistProducerException: virtual GSException {
-    explicit VoteNotExistProducerException(std::string const& message, int number = 0):
-        GSException(message, number) {}
-};
+CORE_TEMPLATE_EXCEPTION(Deserialize);
+CORE_TEMPLATE_EXCEPTION(Serialize);
+CORE_TEMPLATE_EXCEPTION(VoteNotExistProducer);
+CORE_TEMPLATE_EXCEPTION(VoteNotExistAccount);
 
 }
