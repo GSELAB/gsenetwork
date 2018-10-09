@@ -39,13 +39,15 @@ public:
 
     bool burn(Address const& target, uint64_t value);
 
-    void putAccount(Account const& account);
+    void put(Account const& account);
 
-    Block getBlock() { return *m_block; }
+    Block& getBlock() { return *m_block; }
+
+    void put(Block const& block);
 
     Producer getProducer(Address const& address);
 
-    void putProducer(Producer const& producer);
+    void put(Producer const& producer);
 
     void voteIncrease(Address const& voter, Address const& candidate, uint64_t value);
 

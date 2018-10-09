@@ -40,25 +40,25 @@ public:
 
     Account getAccount(Address const& address) const;
 
-    void putAccount(Account& account);
+    void put(Account& account);
 
     Producer getProducer(Address const& address) const;
 
-    void putProducer(Producer& producer);
+    void put(Producer& producer);
 
     Transaction getTransaction(bytes const& key) const;
 
-    void putTransaction(Transaction& transaction);
+    void put(Transaction& transaction);
 
     Block getBlock(bytes const& key) const;
 
     Block getBlock(uint64_t blockNumber) const;
 
-    void putBlock(Block& block);
+    void put(Block& block);
 
     SubChain getSubChain(chain::ChainID chainID) const;
 
-    void putSubChain(SubChain& subChain);
+    void put(SubChain& subChain);
 
     template<class T>
     AttributeState<T> getAttribute(bytes const& key) const;

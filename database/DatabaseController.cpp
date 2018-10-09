@@ -74,10 +74,10 @@ bool DatabaseController::initGenesis()
     Genesis const& genesis = getGenesis();
     for (auto const& item : genesis.genesisItems) {
         Account account(item.address, item.balance);
-        putAccount(account);
+        put(account);
     }
 
-    putBlock(ZeroBlock);
+    put(ZeroBlock);
     ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(ZERO_BLOCK_HEIGHT);
     putAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
 
@@ -114,7 +114,7 @@ Account DatabaseController::getAccount(Address const& address) const
     return Account(bytesConstRef(&value));
 }
 
-void DatabaseController::putAccount(Account& account)
+void DatabaseController::put(Account& account)
 {
     m_accountStore->put(account);
 }
@@ -125,7 +125,7 @@ Producer DatabaseController::getProducer(Address const& address) const
     return Producer(bytesConstRef(&value));
 }
 
-void DatabaseController::putProducer(Producer& producer)
+void DatabaseController::put(Producer& producer)
 {
     m_producerStore->put(producer);
 }
@@ -135,7 +135,7 @@ Transaction DatabaseController::getTransaction(bytes const& key) const
     return Transaction(m_transactionStore->get(key));
 }
 
-void DatabaseController::putTransaction(Transaction& transaction)
+void DatabaseController::put(Transaction& transaction)
 {
     m_transactionStore->put(transaction);
 }
@@ -150,7 +150,7 @@ Block DatabaseController::getBlock(uint64_t blockNumber) const
     return Block();
 }
 
-void DatabaseController::putBlock(Block& block)
+void DatabaseController::put(Block& block)
 {
     m_blockStore->put(block);
 }
@@ -160,7 +160,7 @@ SubChain DatabaseController::getSubChain(chain::ChainID chainID) const
     return SubChain();
 }
 
-void DatabaseController::putSubChain(SubChain& subChain)
+void DatabaseController::put(SubChain& subChain)
 {
     m_subChainStore->put(subChain);
 }

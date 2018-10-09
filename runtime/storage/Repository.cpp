@@ -28,20 +28,20 @@ do {    \
 do {    \
     if (m_parent) { \
         ret = m_parent->get##name(arg); \
-        if (ret == Empty##name) {} else { put##name(ret); return ret; }   \
+        if (ret == Empty##name) {} else { put(ret); return ret; }   \
     }   \
 } while(0)
 
 #define GET_FROM_DBC_RETURN(name, arg, ret)     \
 do {    \
     ret = m_dbc->get##name(arg);    \
-    if (ret == Empty##name) {} else { put##name(ret); return ret;}    \
+    if (ret == Empty##name) {} else { put(ret); return ret;}    \
 } while(0)
 
 #define COMMIT_REPO(name)   \
 do {    \
     Guard l{x_mutex##name}; \
-    if (m_parent) { for (auto i : m_cache##name) m_parent->put##name(i.second); } else { for (auto i : m_cache##name) m_dbc->put##name(i.second); }  \
+    if (m_parent) { for (auto i : m_cache##name) m_parent->put(i.second); } else { for (auto i : m_cache##name) m_dbc->put(i.second); }  \
 } while (0)
 
 Account Repository::getAccount(Address const& address)
@@ -53,7 +53,7 @@ Account Repository::getAccount(Address const& address)
     return EmptyAccount;
 }
 
-void Repository::putAccount(Account const& account)
+void Repository::put(Account const& account)
 {
     Guard l(x_mutexAccount);
     auto item = m_cacheAccount.find(account.getAddress());
@@ -79,8 +79,8 @@ bool Repository::transfer(Address const& from, Address const& to, uint64_t value
 
     _from.setBalance(_from.getBalance() - value);
     _to.setBalance(_to.getBalance() + value);
-    putAccount(_from);
-    putAccount(_to);
+    put(_from);
+    put(_to);
     return true;
 }
 
@@ -98,7 +98,7 @@ bool Repository::burn(Address const& target, uint64_t value)
     }
 
     _target.setBalance(_target.getBalance() - value);
-    putAccount(_target);
+    put(_target);
     return true;
 }
 
@@ -111,7 +111,7 @@ Producer Repository::getProducer(Address const& address)
     return EmptyProducer;
 }
 
-void Repository::putProducer(Producer const& producer)
+void Repository::put(Producer const& producer)
 {
     Guard l(x_mutexProducer);
     auto item = m_cacheProducer.find(producer.getAddress());
@@ -120,6 +120,11 @@ void Repository::putProducer(Producer const& producer)
     } else {
         m_cacheProducer.emplace(producer.getAddress(), producer);
     }
+}
+
+void Repository::put(Block const& block)
+{
+    // DO NOTHING
 }
 
 void Repository::voteIncrease(Address const& voter, Address const& candidate, uint64_t value)
@@ -156,7 +161,8 @@ void Repository::commit()
     // commit to db?
     COMMIT_REPO(Account);
     COMMIT_REPO(Producer);
-
+    if (!m_parent)
+        m_dbc->put(getBlock());
 }
 
 } // end namespace storage
