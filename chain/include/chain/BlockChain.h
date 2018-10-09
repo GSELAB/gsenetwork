@@ -99,9 +99,9 @@ public:
 
     bool processProducerBlock(std::shared_ptr<Block> block);
 
-    bool processTransaction(Block const& block, Transaction const& transaction);
+    bool processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem);
 
-    bool processTransaction(Transaction const& transaction);
+    bool processTransaction(Transaction const& transaction, MemoryItem* mItem);
 
     bool checkBifurcation();
 

@@ -28,6 +28,8 @@ public:
     BlockStatePtr getBlock(BlockID const& blockID) const;
     BlockStatePtr getBlock(uint64_t number) const;
 
+    void set(BlockStatePtr bsp);
+
     BlockStatePtr add(Block const& block, bool trust = false);
     BlockStatePtr add(BlockStatePtr nextBlock);
 
@@ -51,6 +53,7 @@ private:
 
     // std::unique_ptr<>
     BlockStatePtr m_head;
+    boost::multi_index::multi_index_container<BlockID> m_index;
 
 
 };

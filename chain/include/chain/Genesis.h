@@ -9,7 +9,7 @@
  *
  */
 
-#pragma
+#pragma once
 
 #include <core/Address.h>
 #include <core/Common.h>
