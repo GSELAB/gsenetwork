@@ -20,9 +20,9 @@
 #include <core/Block.h>
 #include <core/SubChain.h>
 #include <config/Constant.h>
+#include <core/Producer.h>
 
 using namespace core;
-using namespace std;
 
 namespace database {
 
@@ -40,24 +40,28 @@ public:
 
     Account getAccount(Address const& address) const;
 
-    void putAccount(Account& account);
+    void put(Account& account);
 
-    Transaction getTransaction(string const& key) const;
+    Producer getProducer(Address const& address) const;
 
-    void putTransaction(Transaction& transaction);
+    void put(Producer& producer);
 
-    Block getBlock(string const& key) const;
+    Transaction getTransaction(bytes const& key) const;
+
+    void put(Transaction& transaction);
+
+    Block getBlock(bytes const& key) const;
 
     Block getBlock(uint64_t blockNumber) const;
 
-    void putBlock(Block& block);
+    void put(Block& block);
 
     SubChain getSubChain(chain::ChainID chainID) const;
 
-    void putSubChain(SubChain& subChain);
+    void put(SubChain& subChain);
 
     template<class T>
-    AttributeState<T> getAttribute(string const& key) const;
+    AttributeState<T> getAttribute(bytes const& key) const;
 
     template<class T>
     void putAttribute(AttributeState<T>& t);

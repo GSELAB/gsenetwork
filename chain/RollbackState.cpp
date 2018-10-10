@@ -1,4 +1,7 @@
 #include <chain/RollbackState.h>
+#include <core/Log.h>
+
+using namespace core;
 
 namespace chain {
 
@@ -19,22 +22,35 @@ void RollbackState::close()
 
 BlockStatePtr RollbackState::getBlock(BlockID const& blockID) const
 {
-
+    return BlockStatePtr();
 }
 
 BlockStatePtr RollbackState::getBlock(uint64_t number) const
+{
+    return BlockStatePtr();
+}
+
+void RollbackState::set(BlockStatePtr bsp)
 {
 
 }
 
 BlockStatePtr RollbackState::add(Block const& block, bool trust)
 {
+    //if (!block) {
+    //    CERROR << "Add null block";
+    //}
 
+    if (!m_head) {
+        CERROR << "No head block";
+    }
+
+    return BlockStatePtr();
 }
 
 BlockStatePtr RollbackState::add(BlockStatePtr nextBlock)
 {
-
+    return BlockStatePtr();
 }
 
 void RollbackState::remove(BlockID const& blockID)

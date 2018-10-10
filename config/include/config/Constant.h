@@ -58,7 +58,7 @@ public:
         UnknownType,
     };
 
-    AttributeState(std::string const& key, T const& value):m_key(key) {
+    AttributeState(bytes const& key, T const& value):m_key(key) {
         if (typeid(value) == typeid(bool)) {
             m_type = BoolType;
             m_value = (uint64_t)value;
@@ -78,7 +78,7 @@ public:
 
 #define CONSTANT_STATE_FIELDS (2)
 
-    AttributeState(std::string const& key, bytesConstRef const& data):m_key(key) {
+    AttributeState(bytes const& key, bytesConstRef data):m_key(key) {
         try {
             core::RLP rlp(data);
             if (rlp.isList() && rlp.itemCount() == CONSTANT_STATE_FIELDS) {
@@ -144,7 +144,7 @@ public:
         }
     }
 
-    std::string const& getKeyWord() const { return m_key; }
+    bytes getKeyWord() const { return m_key; }
 
     Type getType() const { return m_type; }
 
@@ -159,15 +159,15 @@ public:
     void setValue(T const& value) { m_value = value; }
 
     // @ override
-    std::string getRLPData() { core::RLPStream rlpStream; streamRLP(rlpStream); return bytesConstRef(&rlpStream.out()).toString(); }
+    bytes getRLPData() { core::RLPStream rlpStream; streamRLP(rlpStream); return rlpStream.out(); /* return bytesConstRef(&rlpStream.out()).toString(); */  }
 
     // @ override
-    std::string getKey() { return m_key; }
+    bytes getKey() { return m_key; }
 
     //@override
-    uint8_t getObjectType() const { return 0x20; }
+    Object::ObjectType getObjectType() const { return Object::AttributeStateType; }
 private:
-    std::string m_key;
+    bytes m_key;
     Type m_type;
     uint64_t m_value = 0;
     bytes m_data;

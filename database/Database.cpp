@@ -17,6 +17,7 @@
 #include <utils/Utils.h>
 
 using namespace std;
+using namespace core;
 
 namespace database {
 
@@ -35,25 +36,25 @@ public:
         delete m_db;
     }
 
-    void put(std::string const& key, std::string const& value) {
-        leveldb::Status status = m_db->Put(leveldb::WriteOptions(), key, value);
+    void put(bytes const& key, bytes const& value) {
+        leveldb::Status status = m_db->Put(leveldb::WriteOptions(), toString(key), toString(value));
         assert(status.ok());
     }
 
-    std::string get(std::string const& key) const {
+    bytes get(bytes const& key) const {
         std::string value;
-        leveldb::Status status = m_db->Get(leveldb::ReadOptions(), key, &value);
+        leveldb::Status status = m_db->Get(leveldb::ReadOptions(), toString(key), &value);
         if (status.ok()) {
-            return value;
+            return toBytes(value);
         } else if (status.IsNotFound()) {
-            return std::string();
+            return EmptyBytes;
         }
 
         BOOST_THROW_EXCEPTION(std::range_error("Error to call db->get()"));
     }
 
-    void del(std::string const& key) {
-        leveldb::Status status = m_db->Delete(leveldb::WriteOptions(), key);
+    void del(bytes const& key) {
+        leveldb::Status status = m_db->Delete(leveldb::WriteOptions(), toString(key));
     }
 
 private:
@@ -81,15 +82,17 @@ Database::~Database()
 
 void Database::put(core::Object& object)
 {
-    m_impl->put(object.getKey(), object.getRLPData());
+    bytes key = object.getKey();
+    bytes value = object.getRLPData();
+    m_impl->put(key, value);
 }
 
-std::string Database::get(std::string const& key) const
+bytes Database::get(bytes const& key) const
 {
     return m_impl->get(key);
 }
 
-void Database::del(std::string const& key)
+void Database::del(bytes const& key)
 {
     m_impl->del(key);
 }

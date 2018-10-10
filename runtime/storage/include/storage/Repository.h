@@ -16,6 +16,7 @@
 
 #include <core/Block.h>
 #include <core/Account.h>
+#include <core/Guards.h>
 #include <database/DatabaseController.h>
 #include <core/Producer.h>
 
@@ -26,35 +27,43 @@ namespace runtime {
 namespace storage {
 class Repository { //: public std::enable_shared_from_this<Repository> {
 public:
-    // virtual std::shared_ptr<Account> getAccount() const = 0;
     Repository(std::shared_ptr<Block> block): m_block(block) {}
 
     Repository(std::shared_ptr<Block> block, std::shared_ptr<Repository> parent): m_block(block), m_parent(parent) {}
 
     void setParentNULL() { m_parent.reset(); }
 
-    Account const& getAccount(Address const& address) const;
+    Account getAccount(Address const& address);
 
     bool transfer(Address const& from, Address const& to, uint64_t value);
 
     bool burn(Address const& target, uint64_t value);
 
-    void putAccount(Account const& account);
+    void put(Account const& account);
 
-    Block getBlock() { return *m_block; }
+    Block& getBlock() { return *m_block; }
 
-    void addProducer(Producer const& producer);
+    void put(Block const& block);
+
+    Producer getProducer(Address const& address);
+
+    void put(Producer const& producer);
+
+    void voteIncrease(Address const& voter, Address const& candidate, uint64_t value);
+
+    void voteDecrease(Address const& voter, Address const& candidate, uint64_t value);
 
     void commit();
 
 private:
-    DatabaseController *m_db;
+    DatabaseController *m_dbc;
     std::shared_ptr<Repository> m_parent = nullptr;
 
-    const Account EmptyAccount;
-    mutable std::unordered_map<Address, Account> m_accountCache;
+    mutable Mutex x_mutexAccount;
+    mutable std::unordered_map<Address, Account> m_cacheAccount;
 
-    mutable std::unordered_map<Address, Producer> m_producerCache;
+    mutable Mutex x_mutexProducer;
+    mutable std::unordered_map<Address, Producer> m_cacheProducer;
 
     std::shared_ptr<Block> m_block;
 };

@@ -2,6 +2,8 @@
 
 #include <core/Block.h>
 
+using namespace core;
+
 namespace chain {
 
 #define HeaderConfirmationFields 5
@@ -40,13 +42,13 @@ public:
     core::h256 getHash();
 
     // @override
-    std::string getKey();
+    bytes getKey();
 
     // @override
-    std::string getRLPData();
+    bytes getRLPData();
 
     // @override
-    uint8_t getObjectType() const { return 0xFF; }
+    Object::ObjectType getObjectType() const { return Object::HeaderConfirmationType; }
 
 private:
     ChainID m_chainID;

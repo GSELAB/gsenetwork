@@ -78,18 +78,18 @@ h256 HeaderConfirmation::getHash()
 }
 
 // @override
-std::string HeaderConfirmation::getKey()
+bytes HeaderConfirmation::getKey()
 {
-    return std::string();
+    return EmptyBytes;
 }
 
 // @override
-std::string HeaderConfirmation::getRLPData()
+bytes HeaderConfirmation::getRLPData()
 {
     if (!m_hasSigned) CERROR << "Not signed!";
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    return bytesConstRef(&rlpStream.out()).toString();
+    return rlpStream.out();
 }
 
 

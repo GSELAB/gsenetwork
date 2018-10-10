@@ -90,23 +90,23 @@ int64_t SubChain::getTimestamp() const
 }
 
 // @override
-std::string SubChain::getKey()
+bytes SubChain::getKey()
 {
     if (m_hash) {
-        return m_hash.ref().toString();
+        return m_hash.asBytes();
     }
 
 
     RLPStream rlpStream;
     streamRLP(rlpStream);
     m_hash = sha3(&rlpStream.out());
-    return m_hash.ref().toString();
+    return m_hash.asBytes();
 }
 
 // @override
-std::string SubChain::getRLPData()
+bytes SubChain::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    return bytesConstRef(&rlpStream.out()).toString();
+    return rlpStream.out();
 }

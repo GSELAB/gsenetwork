@@ -14,6 +14,7 @@
 #include <core/Common.h>
 #include <core/FixedHash.h>
 #include <core/RLP.h>
+#include <core/Object.h>
 
 namespace core {
 
@@ -36,6 +37,15 @@ public:
     uint32_t getReceiptCode() const;
 
     h256 const& getStateRoot() const;
+
+    // @override
+    bytes getKey();
+
+    // @override
+    bytes getRLPData();
+
+    // @override
+    Object::ObjectType getObjectType() const { return Object::TransactionReceiptType; }
 
 private:
     uint32_t m_receiptCode;

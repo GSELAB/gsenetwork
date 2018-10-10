@@ -28,6 +28,7 @@ namespace core {
 char const* Version = "Common";//aleth_get_buildinfo()->project_version;
 bytes const NullBytes;
 std::string const EmptyString;
+bytes EmptyBytes;
 
 void InvariantChecker::checkInvariants(HasInvariants const* _this, char const* _fn, char const* _file, int _line, bool _pre)
 {
@@ -93,6 +94,11 @@ string inUnits(bigint const& _b, strings const& _units)
     }
     ret << b << " " << _units.front();
     return ret.str();
+}
+
+bytes toBytes(std::string str)
+{
+    return bytes(str.begin(), str.end());
 }
 
 }

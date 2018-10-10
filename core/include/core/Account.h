@@ -35,6 +35,8 @@ public:
 
     ~Account();
 
+    Account& operator=(Account const& account);
+
     bool operator==(Account const& account) const;
 
     bool equal(Account const& account) const;
@@ -60,13 +62,13 @@ public:
     Addresses const& getContractAddresses() const;
 
     // @override
-    std::string getKey();
+    bytes getKey();
 
     // @override
-    std::string getRLPData();
+    bytes getRLPData();
 
     // @override
-    uint8_t getObjectType() const { return 0x04; }
+    Object::ObjectType getObjectType() const { return Object::AccountType; }
 
 private:
     Public m_public;
@@ -75,8 +77,12 @@ private:
     uint64_t m_balance;
     int64_t m_timestamp;
     Addresses m_contractAddresses;
+    std::map<Address, uint64_t> m_candidateMap;
+    uint64_t m_votes;
 
     h256 m_hash;
 };
+
+extern Account EmptyAccount;
 
 } /* namespace */

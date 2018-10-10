@@ -27,13 +27,31 @@ namespace core {
  */
 class Object {
 public:
+    enum ObjectType: uint16_t {
+        AccountType             = 0x01,
+        TransactionType         = 0x02,
+        BlockHeaderType         = 0x03,
+        BlockType               = 0x04,
+        ProducerType            = 0x05,
+        TransactionReceiptType  = 0x06,
+        BallotType              = 0x07,
+        SubChainType            = 0x08,
+        CandidateType           = 0x09,
+        AttributeStateType      = 0x0A,
+        HeaderConfirmationType  = 0x0B,
+        /* Add new type */
+
+        UnknownType = 0xFFFF,
+
+    };
+
     virtual ~Object() {}
 
-    virtual std::string getRLPData() = 0;
+    virtual bytes getRLPData() = 0;
 
-    virtual std::string getKey() = 0;
+    virtual bytes getKey() = 0;
 
-    virtual uint8_t getObjectType() const = 0;
+    virtual ObjectType getObjectType() const = 0;
 
 };
 

@@ -188,15 +188,15 @@ uint64_t Transaction::getValue() const
 }
 
 // @override
-std::string Transaction::getKey()
+bytes Transaction::getKey()
 {
-    return getHash().ref().toString();
+    return getHash().asBytes();
 }
 
 // @override
-std::string Transaction::getRLPData()
+bytes Transaction::getRLPData()
 {
     core::RLPStream rlpStream;
     streamRLP(rlpStream);
-    return bytesConstRef(&rlpStream.out()).toString();
+    return rlpStream.out();
 }

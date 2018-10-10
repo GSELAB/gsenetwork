@@ -17,6 +17,8 @@ using namespace core;
 
 namespace core {
 
+Account EmptyAccount;
+
 Account::Account(int64_t timestamp): m_timestamp(timestamp), m_balance(0), m_alive(true)
 {
     // TODO: CREATE A NEW ACCOUNT
@@ -49,6 +51,22 @@ Account::Account(bytesConstRef data)
 Account::~Account()
 {
 
+}
+
+Account& Account::operator=(Account const& account)
+{
+
+    return *this;
+    /*
+    Public m_public;
+    Address m_address;
+    bool m_alive = false;
+    uint64_t m_balance;
+    int64_t m_timestamp;
+    Addresses m_contractAddresses;
+    std::map<Address, uint64_t> m_candidateMap;
+    uint64_t m_votes;
+    */
 }
 
 bool Account::operator==(Account const& account) const
@@ -122,23 +140,16 @@ Addresses const& Account::getContractAddresses() const
 }
 
 // @override
-std::string Account::getKey()
+bytes Account::getKey()
 {
-    if (m_hash) {
-        return m_hash.ref().toString();
-    }
-
-    RLPStream rlpStream;
-    streamRLP(rlpStream);
-    m_hash = sha3(&rlpStream.out());
-    return m_hash.ref().toString();
+    return m_address.asBytes(); // not sha3(content)
 }
 
 // @override
-std::string Account::getRLPData()
+bytes Account::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    return bytesConstRef(&rlpStream.out()).toString();
+    return rlpStream.out(); /// bytesConstRef(&rlpStream.out()).toString();
 }
 } // end namespace

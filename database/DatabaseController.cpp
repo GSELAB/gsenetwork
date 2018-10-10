@@ -48,7 +48,8 @@ DatabaseController::~DatabaseController()
 void DatabaseController::init()
 {
     if (checkGenesisExisted()) {
-        AttributeState<uint64_t> height = getAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getKey());
+        bytes key = ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getKey();
+        AttributeState<uint64_t> height = getAttribute<uint64_t>(key);
         CINFO << "Current block height : " << height.getValue();
     } else {
         initGenesis();
@@ -73,10 +74,10 @@ bool DatabaseController::initGenesis()
     Genesis const& genesis = getGenesis();
     for (auto const& item : genesis.genesisItems) {
         Account account(item.address, item.balance);
-        putAccount(account);
+        put(account);
     }
 
-    putBlock(ZeroBlock);
+    put(ZeroBlock);
     ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(ZERO_BLOCK_HEIGHT);
     putAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
 
@@ -109,25 +110,37 @@ void DatabaseController::decrementBlockHeight(uint64_t decr)
 
 Account DatabaseController::getAccount(Address const& address) const
 {
-    return Account(m_accountStore->get(address.ref().toString()));
+    bytes value = m_accountStore->get(address.asBytes());
+    return Account(bytesConstRef(&value));
 }
 
-void DatabaseController::putAccount(Account& account)
+void DatabaseController::put(Account& account)
 {
     m_accountStore->put(account);
 }
 
-Transaction DatabaseController::getTransaction(string const& key) const
+Producer DatabaseController::getProducer(Address const& address) const
+{
+    bytes value = m_producerStore->get(address.asBytes());
+    return Producer(bytesConstRef(&value));
+}
+
+void DatabaseController::put(Producer& producer)
+{
+    m_producerStore->put(producer);
+}
+
+Transaction DatabaseController::getTransaction(bytes const& key) const
 {
     return Transaction(m_transactionStore->get(key));
 }
 
-void DatabaseController::putTransaction(Transaction& transaction)
+void DatabaseController::put(Transaction& transaction)
 {
     m_transactionStore->put(transaction);
 }
 
-Block DatabaseController::getBlock(string const& key) const
+Block DatabaseController::getBlock(bytes const& key) const
 {
     return Block(m_blockStore->get(key));
 }
@@ -137,7 +150,7 @@ Block DatabaseController::getBlock(uint64_t blockNumber) const
     return Block();
 }
 
-void DatabaseController::putBlock(Block& block)
+void DatabaseController::put(Block& block)
 {
     m_blockStore->put(block);
 }
@@ -147,15 +160,16 @@ SubChain DatabaseController::getSubChain(chain::ChainID chainID) const
     return SubChain();
 }
 
-void DatabaseController::putSubChain(SubChain& subChain)
+void DatabaseController::put(SubChain& subChain)
 {
     m_subChainStore->put(subChain);
 }
 
 template<class T>
-AttributeState<T> DatabaseController::getAttribute(string const& key) const
+AttributeState<T> DatabaseController::getAttribute(bytes const& key) const
 {
-    return AttributeState<T>(key, m_attributesStore->get(key));
+    bytes value = m_attributesStore->get(key);
+    return AttributeState<T>(key, bytesConstRef(&value));
 }
 
 template<class T>

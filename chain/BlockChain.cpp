@@ -16,6 +16,7 @@
 
 using namespace core;
 using namespace runtime::storage;
+using namespace runtime;
 
 namespace chain {
 
@@ -83,7 +84,7 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
 
     try {
         for (auto const& item : block->getTransactions())
-            if (!processTransaction(*block, item)) {
+            if (!processTransaction(*block, item, mItem)) {
                 // Record the failed
             }
     } catch (std::exception const& e) {
@@ -105,14 +106,21 @@ bool BlockChain::processProducerBlock(std::shared_ptr<Block> block)
     return processBlock(block);
 }
 
-bool BlockChain::processTransaction(Block const& block, Transaction const& transaction)
+bool BlockChain::processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem)
 {
+    try {
+        Runtime runtime(transaction, block, mItem->getRepository());
+        runtime.init();
+        runtime.excute();
+        runtime.finished();
+    } catch (Exception e) {
 
-    //Runtime runtime()
+    }
+
     return true;
 }
 
-bool BlockChain::processTransaction(Transaction const& transaction)
+bool BlockChain::processTransaction(Transaction const& transaction, MemoryItem* mItem)
 {
     // Runtime runtime();
     return false;

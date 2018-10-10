@@ -302,4 +302,8 @@ enum class WithExisting: int
 /// Get the current time in seconds since the epoch in UTC
 int64_t utcTime();
 
+extern bytes EmptyBytes;
+
+extern bytes toBytes(std::string str);
+
 }

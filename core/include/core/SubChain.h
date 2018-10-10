@@ -47,13 +47,13 @@ public:
     int64_t getTimestamp() const;
 
     // @override
-    std::string getKey();
+    bytes getKey();
 
     // @override
-    std::string getRLPData();
+    bytes getRLPData();
 
     // @override
-    uint8_t getObjectType() const { return 0x06; }
+    Object::ObjectType getObjectType() const { return Object::SubChainType; }
 
 private:
     chain::ChainID m_chainID;
