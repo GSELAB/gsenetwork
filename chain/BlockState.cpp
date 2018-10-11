@@ -8,6 +8,8 @@ using namespace crypto;
 
 namespace chain {
 
+BlockStatePtr EmptyBlockStatePtr = BlockStatePtr();
+
 HeaderConfirmation::HeaderConfirmation(bytesConstRef data)
 {
     RLP rlp(data);
@@ -90,6 +92,19 @@ bytes HeaderConfirmation::getRLPData()
     RLPStream rlpStream;
     streamRLP(rlpStream);
     return rlpStream.out();
+}
+
+// #########################################################
+BlockState::BlockState(core::Block& block):
+    m_block(block)
+{
+    m_blockNumber = block.getNumber();
+    m_blockID = block.getHash();
+}
+
+void BlockState::addConfirmation(HeaderConfirmation const& confirmation)
+{
+
 }
 
 

@@ -62,12 +62,22 @@ private:
 
 class BlockState {
 public:
-    BlockState(core::Block const& block);
+    BlockState(core::Block& block);
+
+    BlockID const& getPrev() const { return m_block.getBlockHeader().getParentHash(); }
 
     void addConfirmation(HeaderConfirmation const& confirmation);
 
-private:
+public:
     core::Block m_block;
+    uint64_t m_blockNumber;
+    BlockID m_blockID;
+
+    uint64_t m_dposIrreversibleBlockNumber = 0;
+    uint64_t m_bftIrreversibleBlockNumber = 0;
+
+    bool m_validated = false;
+    bool m_inCurrentChain = false;
 
     std::vector<uint8_t> m_confirmCount;
     std::vector<HeaderConfirmation> m_confirmations;
@@ -76,5 +86,7 @@ private:
 };
 
 using BlockStatePtr = std::shared_ptr<BlockState>;
+
+extern BlockStatePtr EmptyBlockStatePtr;
 
 } // namespace chain
