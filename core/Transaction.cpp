@@ -103,7 +103,17 @@ h256 const& Transaction::getHash()
 
 void Transaction::sign(Secret const& secret)
 {
-    auto signature = crypto::sign(secret, getHash());
+    RLPStream rlpStream;
+    rlpStream.appendList(TRANSACTION_FIELDS);
+    rlpStream << m_chainID
+              << m_type
+              << m_sender
+              << m_recipient
+              << m_data
+              << m_value;
+
+
+    auto signature = crypto::sign(secret, sha3(&rlpStream.out()));
     SignatureStruct sig = *(SignatureStruct const*)&signature;
     if (sig.isValid()) {
         m_signature = sig;
