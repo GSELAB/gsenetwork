@@ -31,6 +31,8 @@ public:
 
     Repository(std::shared_ptr<Block> block, std::shared_ptr<Repository> parent): m_block(block), m_parent(parent) {}
 
+    ~Repository() { if (m_parent) m_parent.reset(); if (m_block) m_block.reset(); }
+
     void setParentNULL() { m_parent.reset(); }
 
     Account getAccount(Address const& address);
