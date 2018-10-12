@@ -43,20 +43,25 @@ BlockChain::~BlockChain()
     if (m_dispatcher) delete m_dispatcher;
 }
 
+void BlockChain::initializeRollbackState()
+{
+    // m_head = std::make_shared<BlockState>();
+}
+
 void BlockChain::init()
 {
     CINFO << "Block chain init";
+    m_rollbackState.m_irreversible.connect([&](auto bsp) {
+        onIrreversible(bsp);
+    });
+
+    if (!m_head) {
+        initializeRollbackState();
+    }
 }
 
-#define MAX_QUEUE_SIZE 10
-
-bool BlockChain::processBlock(std::shared_ptr<Block> block)
+BlockChain::MemoryItem* BlockChain::addMemoryItem(std::shared_ptr<Block> block)
 {
-    /* DO CHECK BLOCK HEADER and TRANSACTIONS (PARALLEL) */
-    {
-
-    }
-
     CINFO << toJson(*block).toStyledString();
     MemoryItem* mItem = new MemoryItem();
     {
@@ -70,32 +75,70 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
 
         mItem->setBlockNumber(block->getNumber());
         mItem->setRepository(repository);
-        if (m_memoryQueue.size() > MAX_QUEUE_SIZE) {
-            // CINFO << "m_memoryQueue.size() > MAX_QUEUE_SIZE";
-            MemoryItem* delItem = m_memoryQueue.front();
-            m_memoryQueue.pop_front();
-            delete delItem;
-        }
+        m_memoryQueue.push(mItem);
+    }
+    return mItem;
+}
 
-        if (!m_memoryQueue.empty()) {
-            m_memoryQueue.front()->getRepository()->setParentNULL();
-        }
+void BlockChain::cancelMemoryItem()
+{
+    Guard g(x_memoryQueue);
+    m_memoryQueue.pop_back();
+}
+
+uint64_t BlockChain::getLastIrreversibleBlockNumber() const
+{
+
+}
+
+void BlockChain::commitBlockState(std::shared_ptr<Block> block)
+{
+
+}
+
+void BlockChain::popBlockState()
+{
+
+}
+
+bool BlockChain::processBlock(std::shared_ptr<Block> block)
+{
+    bool needCancel;
+    MemoryItem* item;
+    /* DO CHECK BLOCK HEADER and TRANSACTIONS (PARALLEL) */
+    {
+
     }
 
     try {
-        for (auto const& item : block->getTransactions())
-            if (!processTransaction(*block, item, mItem)) {
-                // Record the failed
-            }
-    } catch (std::exception const& e) {
-        CWARN << "Error occur process the block " << block->getNumber();
-        return false;
+        // add block to rollback state
+
+    } catch (RollbackState& e) {
+
+    } catch (Exception& e) {
+
     }
 
-    mItem->setDone();
-    {
-        Guard g(x_memoryQueue);
-        m_memoryQueue.push(mItem);
+    try {
+        item = addMemoryItem(block);
+        needCancel = true;
+        for (auto const& i : block->getTransactions())
+            if (!processTransaction(*block, i, item)) {
+                // Record the failed
+            }
+
+        item->setDone();
+    } catch (RollbackStateException& e) {
+        if (needCancel) {
+            needCancel = false;
+            cancelMemoryItem();
+        }
+
+    } catch (GSException& e) {
+        if (needCancel) {
+            needCancel = false;
+            cancelMemoryItem();
+        }
     }
 
     return true;
@@ -212,6 +255,21 @@ std::shared_ptr<core::Block> BlockChain::getBlockFromCache()
     }
 
     return ret;
+}
+
+void BlockChain::onIrreversible(BlockStatePtr bsp)
+{
+    Guard l(x_memoryQueue);
+    MemoryItem* item = m_memoryQueue.front();
+    while (item && bsp->m_blockNumber >= item->getBlockNumber()) {
+        CINFO << "onIrreversible block number:" << bsp->m_blockNumber;
+        m_memoryQueue.pop_front();
+        item->commit();
+        delete item;
+        if (!m_memoryQueue.empty())
+            m_memoryQueue.front()->setParentEmpty();
+        item = m_memoryQueue.front();
+    }
 }
 
 void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)

@@ -21,6 +21,7 @@
 #include <net/NetController.h>
 #include <crypto/GKey.h>
 #include <core/Queue.h>
+#include <chain/RollbackState.h>
 
 using namespace net;
 using namespace core;
@@ -59,11 +60,15 @@ public:
 
         MemoryItem(uint64_t number, std::shared_ptr<runtime::storage::Repository> repository): m_isDone(false), m_blockNumber(number), m_repository(repository) {}
 
+        ~MemoryItem() { m_repository.reset(); }
+
         std::shared_ptr<runtime::storage::Repository> getRepository() const { return m_repository; }
 
         void setRepository(std::shared_ptr<runtime::storage::Repository> repository) { m_repository = repository; }
 
         uint64_t getBlockNumber() const { return m_blockNumber; }
+
+        BlockID const& getBlockID() const { return m_repository->getBlock().getHash(); }
 
         Block getBlock() const { return m_repository->getBlock(); }
 
@@ -72,6 +77,10 @@ public:
         bool isDone() const { return m_isDone; }
 
         void setDone() { m_isDone = true; }
+
+        void setParentEmpty() { m_repository->setParentNULL(); }
+
+        void commit() { m_repository->commit(); }
 
         bool m_isDone = false;
         uint64_t m_blockNumber;
@@ -88,6 +97,8 @@ public:
     virtual ~BlockChain();
 
     void init();
+
+    void initializeRollbackState();
 
     Controller* getController() const { return m_controller; }
 
@@ -111,6 +122,8 @@ public:
 
     uint64_t getLastBlockNumber() const;
 
+    uint64_t getLastIrreversibleBlockNumber() const;
+
     Block getLastBlock() const;
 
     Block getBlockByNumber(uint64_t number);
@@ -118,6 +131,15 @@ public:
     std::shared_ptr<Transaction> getTransactionFromCache();
 
     std::shared_ptr<Block> getBlockFromCache();
+
+    void onIrreversible(BlockStatePtr bsp);
+
+private:
+    MemoryItem* addMemoryItem(std::shared_ptr<Block> block);
+    void cancelMemoryItem();
+
+    void commitBlockState(std::shared_ptr<Block> block);
+    void popBlockState();
 
 private:
 
@@ -129,8 +151,11 @@ private:
     DispatchFace* m_dispatcher;
 
     mutable Mutex x_memoryQueue;
-    //std::queue<MemoryItem*> m_memoryQueue;
     Queue_t m_memoryQueue;
+
+    RollbackState m_rollbackState;
+    BlockStatePtr m_head;
+
     uint64_t m_solidifyIndex;
     BlockChainStatus m_blockChainStatus = NormalStatus;
 

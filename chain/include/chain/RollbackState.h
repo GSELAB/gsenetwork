@@ -8,6 +8,7 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 #include <boost/multi_index/composite_key.hpp>
+#include <boost/signals2/signal.hpp>
 
 #include <core/Block.h>
 #include <chain/BlockState.h>
@@ -70,6 +71,9 @@ public:
     void setValidity(BlockStatePtr const& blockState, bool valid);
     void markInCurrentChain(BlockStatePtr const& blockState, bool inCurrentChain);
     void prune(BlockStatePtr const& blockState);
+
+public:
+    boost::signals2::signal<void(BlockStatePtr)> m_irreversible;
 
 private:
     void setBFTIrreversible(BlockID blockID);
