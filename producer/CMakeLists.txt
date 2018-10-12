@@ -1,4 +1,5 @@
 SET(producer_source
+    Schedule.cpp
     VoterList.cpp
     ProducerServer.cpp)
 
