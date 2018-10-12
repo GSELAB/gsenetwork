@@ -1,9 +1,12 @@
 #include <string>
 #include <rpc/WebSocket.h>
 #include <core/Log.h>
+#include <core/Transaction.h>
+#include <chain/Types.h>
 
 using namespace std;
 using namespace core;
+using namespace chain;
 
 namespace rpc {
 
@@ -43,17 +46,6 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/create_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
-        CINFO << "/create_transaction";
-        // TODO: Add content here
-        std::string ret("Undefined\n");
-        {
-            // body to json
-        }
-
-        urlRC(URLCode::Default, ret);
-    });
-
     addHandler("/push_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
         CINFO << "/push_transaction";
         // TODO: Add content here
@@ -62,6 +54,94 @@ void WebSocket::registerUrlHandlers()
             // body to rlp transaction
         }
         urlRC(URLCode::Default, ret);
+    });
+
+    addHandler("/create_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        CINFO << "/create_transaction";
+        // TODO: Add content here
+        Json::Reader reader(Json::Features::strictMode());
+        Json::Value root;
+        std::string ret;
+        if(reader.parse(body, root))
+        {
+            // body to json
+            std::string str_sender = root["sender"].asString();
+            std::string str_recipient = root["recipient"].asString();
+            uint64_t value = root["value"].asInt();
+
+            Transaction transaction;
+            transaction.setChainID(DEFAULT_GSE_NETWORK);
+            transaction.setType(Transaction::TransferType);
+            transaction.setSender(Address(str_sender));
+            transaction.setRecipient(Address(str_recipient));
+            transaction.setValue(value);
+
+            bytes tem = transaction.getRLPData();
+            ret.insert(ret.begin(), tem.begin(),tem.end());
+
+            ret = toJson("transfer", ret).toStyledString();
+        }else{
+            ret = "Parse body failed, invalid format.\n";
+            CINFO << ret;
+        }
+
+        urlRC(URLCode::Default, ret);
+    });
+
+
+    addHandler("/create_producer", [&](std::string, std::string body, URLRequestCallback urlRC){
+        CINFO << "/create_producer";
+        Json::Reader reader(Json::Features::strictMode());
+        Json::Value root;
+        std::string ret;
+        if(reader.parse(body, root))
+        {
+            // to do
+            std::string str_sender = root["sender"].asString();
+
+            Transaction transaction;
+            transaction.setChainID(DEFAULT_GSE_NETWORK);
+            transaction.setType(Transaction::BeenProducerType);
+            transaction.setSender(Address(str_sender));
+
+            bytes tem = transaction.getRLPData();
+            ret.insert(ret.begin(), tem.begin(), tem.end());
+
+            ret = toJson("producer", ret).toStyledString();
+        }else{
+            ret = "Parse body failed, invalid format.\n";
+            CINFO << ret;
+        }
+        urlRC(URLCode::Default, ret);
+    });
+    addHandler("/create_vote", [&](std::string, std::string body, URLRequestCallback urlRC){
+    CINFO << "/create_vote";
+
+    Json::Reader reader(Json::Features::strictMode());
+    Json::Value root;
+    std::string ret;
+    if(reader.parse(body, root))
+    {
+        // to do
+        std::string str_sender = root["sender"].asString();
+        std::string str_data = root["data"].asString();
+        bytes data;
+        data.insert(data.begin(), str_data.begin(), str_data.end());
+
+        Transaction transaction;
+        transaction.setChainID(DEFAULT_GSE_NETWORK);
+        transaction.setType(Transaction::VoteType);
+        transaction.setSender(Address(str_sender));
+        transaction.setData(data);
+
+        bytes tem = transaction.getRLPData();
+        ret.insert(ret.begin(), tem.begin(), tem.end());
+        ret = toJson("producer", ret).toStyledString();
+    }else{
+        ret = "Parse body failed, invalid format.\n";
+        CINFO << ret;
+    }
+    urlRC(URLCode::Default, ret);
     });
 }
 
