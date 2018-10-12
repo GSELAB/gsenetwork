@@ -24,18 +24,22 @@ using namespace core;
 
 namespace config {
 
-#define GENESIS_TIMESTAMP (0x00)
+// Genesis block time stamp is 2018-10-01 UTC 00:00:00 (1538352000)
+#define GENESIS_TIMESTAMP (0x5BB16380)
 
 //
 #define MAX_TRANSACTION_QUEUE_SIZE  (1024 * 128)
 
 #define MAX_BLOCK_QUEUE_SIZE (1024 * 2)
 
-// Transaction size 1 KB()
-#define MAX_TRANSACTION_SIZE 1024
+// Max transaction size 512 Bytes (0.5 KB)
+#define MAX_TRANSACTION_SIZE (512)
+
+// Maximum 750 transactions per block
+#define MAX_TRANSACTIONS_PER_BLOCK (750)
 
 // Max block size 1024 KB (1 M)
-#define MAX_BLOCK_SIZE (1024 * 1024 * 1204)
+#define MAX_BLOCK_SIZE (1024 * 1024)
 
 // 0.1 second = 100 ms
 #define PRODUCER_SLEEP_INTERVAL  (100)
