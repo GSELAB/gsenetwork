@@ -130,7 +130,16 @@ void RollbackState::remove(uint64_t number)
 
 void RollbackState::add(HeaderConfirmation const& confirmation)
 {
+    BlockStatePtr bsp = getBlock(confirmation.getBlockID());
+    if (!bsp) {
+        CERROR << "Confirmation block id:" << confirmation.getBlockID() << " not found!";
+        throw RollbackStateException("Confirmation block id not found!");
+    }
 
+    bsp->addConfirmation(confirmation);
+    if (bsp->m_bftIrreversibleBlockNumber < bsp->m_blockNumber && bsp->getConfirmationsSize() >= ((bsp->m_activeProucers.size() * 2) / 3)) {
+        setBFTIrreversible(bsp->m_blockID);
+    }
 }
 
 BlockStatePtr const& RollbackState::head() const
@@ -141,7 +150,44 @@ BlockStatePtr const& RollbackState::head() const
 // Given two head blocks, return two branchs of the fork graph that end with a common ancestor(same prior block)
 std::pair<BranchType, BranchType> RollbackState::fetchBranchFrom(BlockID const& first, BlockID const& second) const
 {
-    //return std::make_pair();
+    std::pair<BranchType, BranchType> ret;
+    BlockStatePtr firstItem = getBlock(first);
+    BlockStatePtr secondItem = getBlock(second);
+    while (firstItem->m_blockNumber > secondItem->m_blockNumber) {
+        ret.first.push_back(firstItem);
+        firstItem = getBlock(firstItem->getPrev());
+        if (!firstItem) {
+            CERROR << "Block ID:" << firstItem->getPrev() << " not exist!";
+            throw RollbackStateException("Block ID not exist!");
+        }
+    }
+
+    while (secondItem->m_blockNumber > firstItem->m_blockNumber) {
+        ret.second.push_back(secondItem);
+        secondItem = getBlock(secondItem->getPrev());
+        if (!secondItem) {
+            CERROR << "Block ID:" << secondItem->getPrev() << " not exist!";
+            throw RollbackStateException("Block ID not exist!");
+        }
+    }
+
+    while (firstItem->getPrev() != secondItem->getPrev()) {
+        ret.first.push_back(firstItem);
+        ret.second.push_back(secondItem);
+        firstItem = getBlock(firstItem->getPrev());
+        secondItem = getBlock(secondItem->getPrev());
+        if (!firstItem || !secondItem) {
+            CERROR << "First or second block not exist!";
+            RollbackStateException("First or second block not exist!");
+        }
+    }
+
+    if (firstItem && secondItem) {
+        ret.first.push_back(firstItem);
+        ret.second.push_back(secondItem);
+    }
+
+    return ret;
 }
 
 // The invalid block would be removed,
@@ -191,7 +237,6 @@ void RollbackState::prune(BlockStatePtr const& blockState)
         ++numItr;
         remove((*removeItem)->m_blockID);
     }
-
 }
 
 void RollbackState::setBFTIrreversible(BlockID blockID)
