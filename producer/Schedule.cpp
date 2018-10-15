@@ -28,13 +28,10 @@ Schedule::~Schedule()
 
 }
 
+//@not thread safe
 std::vector<Producer> const& Schedule::getActiceProducers() const
 {
-    std::vector<Producer> ret;
-    Guard l(x_activeProducers);
-    for (auto& i : m_activeProducers)
-        ret.emplace_back(i);
-    return ret;
+    return m_activeProducers;
 }
 
 void Schedule::schedule()

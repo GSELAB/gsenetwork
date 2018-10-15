@@ -30,7 +30,7 @@ public:
 
     ~Schedule();
 
-    std::vector<Producer> const& getActiceProducers() const { Guard l(x_activeProducers); return m_activeProducers; }
+    std::vector<Producer> const& getActiceProducers() const;
 
     void schedule();
 
