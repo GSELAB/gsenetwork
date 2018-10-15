@@ -13,6 +13,7 @@
 #include <runtime/Runtime.h>
 #include <core/JsonHelper.h>
 #include <core/Log.h>
+#include <core/Exceptions.h>
 
 using namespace core;
 using namespace runtime::storage;
@@ -88,37 +89,31 @@ void BlockChain::cancelMemoryItem()
 
 uint64_t BlockChain::getLastIrreversibleBlockNumber() const
 {
-
+    // return m_rollbackState.m_bftIrreversibleBlockNumber;
+    return 0;
 }
 
 void BlockChain::commitBlockState(std::shared_ptr<Block> block)
 {
-
+    // block->commit();
 }
 
 void BlockChain::popBlockState()
 {
+    auto prev = m_rollbackState.getBlock(m_head->getPrev());
+    if (!prev) {
+        CERROR << "popBlockState - no prev block exist in rollbackState!";
+        throw BlockChainException("popBlockState - no prev block exist in rollbackState!");
+    }
 
+    m_head = prev;
+    cancelMemoryItem();
 }
 
-bool BlockChain::processBlock(std::shared_ptr<Block> block)
+void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
 {
     bool needCancel;
     MemoryItem* item;
-    /* DO CHECK BLOCK HEADER and TRANSACTIONS (PARALLEL) */
-    {
-
-    }
-
-    try {
-        // add block to rollback state
-
-    } catch (RollbackState& e) {
-
-    } catch (Exception& e) {
-
-    }
-
     try {
         item = addMemoryItem(block);
         needCancel = true;
@@ -140,7 +135,54 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
             cancelMemoryItem();
         }
     }
+}
 
+bool BlockChain::processBlock(std::shared_ptr<Block> block)
+{
+
+    /* DO CHECK BLOCK HEADER and TRANSACTIONS (PARALLEL) */
+    {
+
+    }
+
+    try {
+        // add block to rollback state
+        m_rollbackState.add(*block);
+        m_head = m_rollbackState.head();
+
+    } catch (RollbackStateException& e) {
+        CERROR << "RollbackState:" << e.what();
+    } catch (Exception& e) {
+
+    }
+
+    doProcessBlock(block);
+
+    /*
+    bool needCancel;
+    MemoryItem* item;
+    try {
+        item = addMemoryItem(block);
+        needCancel = true;
+        for (auto const& i : block->getTransactions())
+            if (!processTransaction(*block, i, item)) {
+                // Record the failed
+            }
+
+        item->setDone();
+    } catch (RollbackStateException& e) {
+        if (needCancel) {
+            needCancel = false;
+            cancelMemoryItem();
+        }
+
+    } catch (GSException& e) {
+        if (needCancel) {
+            needCancel = false;
+            cancelMemoryItem();
+        }
+    }
+    */
     return true;
 }
 
@@ -171,6 +213,55 @@ bool BlockChain::processTransaction(Transaction const& transaction, MemoryItem* 
 
 bool BlockChain::checkBifurcation()
 {
+    auto newItem = m_rollbackState.head();
+    if (newItem->getPrev() == m_head->m_blockID) {
+
+    } else if (newItem->getPrev() != m_head->m_blockID) {
+        CINFO << "Switch branch : prevHead(" << m_head->m_blockNumber << ")" << " newHead(" << newItem->m_blockNumber << ")";
+        auto branches = m_rollbackState.fetchBranchFrom(newItem->m_blockID, m_head->m_blockID);
+        for (auto itr = branches.second.begin(); itr != branches.second.end(); itr++) {
+            m_rollbackState.markInCurrentChain(*itr, false);
+            popBlockState();
+        }
+
+        if (m_head->m_blockID != branches.second.back()->getPrev()) {
+            CERROR << "checkBifurcation - error occur when check switch!";
+            throw BlockChainException("checkBifurcation - error occur when check switch!");
+        }
+
+        for (auto nItr = branches.first.rbegin(); nItr != branches.first.rend(); nItr++) {
+            try {
+                std::shared_ptr<Block> _block = std::make_shared<Block>((*nItr)->m_block);
+                doProcessBlock(_block);
+                m_head = *nItr;
+                m_rollbackState.markInCurrentChain(m_head, true);
+                (*nItr)->m_validated = true;
+            } catch (Exception& e) {
+                CERROR << "checkBifurcation - error occur when switch!";
+                m_rollbackState.setValidity(*nItr, false);
+                for (auto _nItr = nItr.base(); _nItr != branches.first.end(); _nItr++) {
+                    m_rollbackState.markInCurrentChain(*_nItr, false);
+                    popBlockState();
+                }
+
+                if (m_head->m_blockID != branches.second.back()->getPrev()) {
+                    CERROR << "checkBifurcation - error occur when check switch first!";
+                    throw BlockChainException("checkBifurcation - error occur when check switch first!");
+                }
+
+                // re-process orginal blocks;
+                for (auto rItr = branches.second.rbegin(); rItr != branches.second.rend(); rItr++) {
+                    std::shared_ptr<Block> _b = std::make_shared<Block>((*rItr)->m_block);
+                    doProcessBlock(_b);
+                    m_head = *rItr;
+                    m_rollbackState.markInCurrentChain(*rItr, true);
+                }
+
+                throw e;
+            }
+            CINFO << "Switch to new head!";
+        }
+    }
 
     return true;
 }

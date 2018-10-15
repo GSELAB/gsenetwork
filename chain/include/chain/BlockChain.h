@@ -141,6 +141,8 @@ private:
     void commitBlockState(std::shared_ptr<Block> block);
     void popBlockState();
 
+    void doProcessBlock(std::shared_ptr<Block> block);
+
 private:
 
     Controller* m_controller = nullptr;

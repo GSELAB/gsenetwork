@@ -85,7 +85,7 @@ public:
     bool m_inCurrentChain = false;
 
     producer::ProducerScheduleType m_activeProucers;
-    std::vector<uint8_t> m_confirmCount;
+    uint8_t m_confirmCount;
     std::vector<HeaderConfirmation> m_confirmations;
 
 
