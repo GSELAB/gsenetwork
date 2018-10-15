@@ -71,6 +71,8 @@ public:
 
     size_t getConfirmationsSize() const { return m_confirmations.size(); }
 
+    bool isExistInActiveProducers(Address const& address) { return m_activeProucers.isExist(address); }
+
 public:
     core::Block m_block;
     uint64_t m_blockNumber;

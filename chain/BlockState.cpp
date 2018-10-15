@@ -104,7 +104,10 @@ BlockState::BlockState(core::Block& block):
 
 void BlockState::addConfirmation(HeaderConfirmation const& confirmation)
 {
+    if (confirmation.getNumber() != m_blockNumber ||
+        confirmation.getBlockID() != m_blockID) {
 
+    }
 }
 
 
