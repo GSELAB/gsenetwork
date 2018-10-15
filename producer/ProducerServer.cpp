@@ -93,9 +93,11 @@ void ProducerServer::doWork()
     //blockHeader.setExtra();
 
     std::shared_ptr<Block> block = std::make_shared<Block>(blockHeader);
-    for (i = 0; i < 20; i++) {
+    for (i = 0; i < MAX_TRANSACTIONS_PER_BLOCK; i++) {
         std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
         if (transaction) {
+            if (sizeof(*transaction) > MAX_TRANSACTION_SIZE)
+                continue;
             CINFO << "Package transaction to current block(" << block->getNumber() << ")";
             block->addTransaction(*transaction);
         }
