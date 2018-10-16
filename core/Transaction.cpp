@@ -24,12 +24,26 @@ Transaction::Transaction()
     // TODO: DO NOTHING
 }
 
-Transaction::Transaction(chain::ChainID chainID, uint32_t type, Address const& sender, Address const& recipient, bytes const& data, uint64_t value)
+Transaction::Transaction(Transaction const& transaction)
+{
+    m_chainID = transaction.getChainID();
+    m_type = transaction.getType();
+    m_sender = transaction.getSender();
+    m_recipient = transaction.getRecipient();
+    m_timestamp = transaction.getTimestamp();
+    m_data = transaction.getData();
+    m_value = transaction.getValue();
+    m_signature = transaction.getSig();
+}
+
+Transaction::Transaction(chain::ChainID chainID, uint32_t type, Address const& sender, Address const& recipient,
+    uint64_t timestamp, bytes const& data, uint64_t value)
 {
     m_chainID = chainID;
     m_type = type;
     m_sender = sender;
     m_recipient = recipient;
+    m_timestamp = timestamp;
     m_data = data;
     m_value = value;
 }
@@ -48,12 +62,13 @@ Transaction::Transaction(bytesConstRef data)
         m_type = rlp[index = 1].toInt<uint32_t>();
         m_sender = rlp[index = 2].toHash<Address>(RLP::VeryStrict) ;
         m_recipient = rlp[index = 3].toHash<Address>(RLP::VeryStrict);
-        m_data = rlp[index = 4].toBytes();
-        m_value = rlp[index = 5].toInt<uint64_t>();
+        m_timestamp = rlp[index = 4].toInt<uint64_t>();
+        m_data = rlp[index = 5].toBytes();
+        m_value = rlp[index = 6].toInt<uint64_t>();
 
-        int v = rlp[index = 6].toInt<int>();
-        h256 r = rlp[index = 7].toInt<u256>();
-        h256 s = rlp[index = 8].toInt<u256>();
+        int v = rlp[index = 7].toInt<int>();
+        h256 r = rlp[index = 8].toInt<u256>();
+        h256 s = rlp[index = 9].toInt<u256>();
         m_signature = SignatureStruct(r, s, v);
     } catch (Exception& e) {
         //e << errinfo_name("Invalid transaction format") << BadFieldError(index, toHex(rlp[index].data().toBytes()));
@@ -75,11 +90,12 @@ void Transaction::streamRLP(RLPStream& rlpStream) const
     }
     */
 
-    rlpStream.appendList(TRANSACTION_FIELDS);
+    rlpStream.appendList(TRANSACTION_FIELDS_ALL);
     rlpStream << m_chainID
               << m_type
               << m_sender
               << m_recipient
+              << m_timestamp
               << m_data
               << m_value;
 
@@ -88,7 +104,19 @@ void Transaction::streamRLP(RLPStream& rlpStream) const
               << (u256)m_signature.s;
 }
 
-// the sha3 of the transaction include signature
+void Transaction::streamRLPContent(RLPStream& rlpStream) const
+{
+    rlpStream.appendList(TRANSACTION_FIELDS_WITHOUT_SIG);
+    rlpStream << m_chainID
+              << m_type
+              << m_sender
+              << m_recipient
+              << m_timestamp
+              << m_data
+              << m_value;
+}
+
+// the sha3 of the transaction not include signature
 h256 const& Transaction::getHash()
 {
     if (m_hash) {
@@ -96,7 +124,7 @@ h256 const& Transaction::getHash()
     }
 
     RLPStream rlpStream;
-    streamRLP(rlpStream);
+    streamRLPContent(rlpStream);
     m_hash = sha3(&rlpStream.out());
     return m_hash;
 }
@@ -104,20 +132,26 @@ h256 const& Transaction::getHash()
 void Transaction::sign(Secret const& secret)
 {
     RLPStream rlpStream;
-    rlpStream.appendList(TRANSACTION_FIELDS);
-    rlpStream << m_chainID
-              << m_type
-              << m_sender
-              << m_recipient
-              << m_data
-              << m_value;
-
-
+    streamRLPContent(rlpStream);
     auto signature = crypto::sign(secret, sha3(&rlpStream.out()));
     SignatureStruct sig = *(SignatureStruct const*)&signature;
     if (sig.isValid()) {
         m_signature = sig;
     }
+}
+
+Transaction& Transaction::operator=(Transaction const& transaction)
+{
+    if (&transaction == this) return *this;
+    m_chainID = transaction.getChainID();
+    m_type = transaction.getType();
+    m_sender = transaction.getSender();
+    m_recipient = transaction.getRecipient();
+    m_timestamp = transaction.getTimestamp();
+    m_data = transaction.getData();
+    m_value = transaction.getValue();
+    m_signature = transaction.getSig();
+    return *this;
 }
 
 bool Transaction::operator==(Transaction const& transaction) const
@@ -127,6 +161,7 @@ bool Transaction::operator==(Transaction const& transaction) const
         (m_sender == transaction.getSender()) &&
         (m_recipient == transaction.getRecipient()) &&
         (m_data == transaction.getData()) &&
+        (m_timestamp == transaction.getTimestamp()) &&
         (m_value == transaction.getValue());
 
         // ???????? <should the signature compare ?> boost::optional<SignatureStruct> m_signature;
@@ -135,66 +170,6 @@ bool Transaction::operator==(Transaction const& transaction) const
 bool Transaction::operator!=(Transaction const& transaction) const
 {
     return !operator==(transaction);
-}
-
-void Transaction::setChainID(chain::ChainID chainID)
-{
-    m_chainID = chainID;
-}
-
-void Transaction::setType(uint32_t type)
-{
-    m_type = type;
-}
-
-void Transaction::setSender(Address const& sender)
-{
-    m_sender = sender;
-}
-
-void Transaction::setRecipient(Address const& recipient)
-{
-    m_recipient = recipient;
-}
-
-void Transaction::setData(bytes const& data)
-{
-    m_data = data;
-}
-
-void Transaction::setValue(uint64_t value)
-{
-    m_value = value;
-}
-
-chain::ChainID Transaction::getChainID() const
-{
-    return m_chainID;
-}
-
-uint32_t Transaction::getType() const
-{
-    return m_type;
-}
-
-Address const& Transaction::getSender() const
-{
-    return m_sender;
-}
-
-Address const& Transaction::getRecipient() const
-{
-    return m_recipient;
-}
-
-bytes const& Transaction::getData() const
-{
-    return m_data;
-}
-
-uint64_t Transaction::getValue() const
-{
-    return m_value;
 }
 
 // @override
