@@ -33,7 +33,7 @@ Transaction::Transaction(Transaction const& transaction)
     m_timestamp = transaction.getTimestamp();
     m_data = transaction.getData();
     m_value = transaction.getValue();
-    m_signature = transaction.getSig();
+    m_signature = transaction.getSignature();
 }
 
 Transaction::Transaction(chain::ChainID chainID, uint32_t type, Address const& sender, Address const& recipient,
@@ -53,7 +53,7 @@ Transaction::Transaction(bytesConstRef data)
     unsigned index = 0;
     RLP const rlp(data);
     try {
-        if (!rlp.isList()) {
+        if (!rlp.isList() || rlp.itemCount() != TRANSACTION_FIELDS_ALL) {
             BOOST_THROW_EXCEPTION(std::range_error("transaction RLP must be a list"));
             // BOOST_THROW_EXCEPTION(errinfo_comment("transaction RLP must be a list"));
         }
@@ -119,9 +119,10 @@ void Transaction::streamRLPContent(RLPStream& rlpStream) const
 // the sha3 of the transaction not include signature
 h256 const& Transaction::getHash()
 {
-    if (m_hash) {
+    /*
+    if (m_hash)
         return m_hash;
-    }
+    */
 
     RLPStream rlpStream;
     streamRLPContent(rlpStream);
@@ -136,6 +137,7 @@ void Transaction::sign(Secret const& secret)
     auto signature = crypto::sign(secret, sha3(&rlpStream.out()));
     SignatureStruct sig = *(SignatureStruct const*)&signature;
     if (sig.isValid()) {
+        CINFO << "Transaction sing sucess!";
         m_signature = sig;
     }
 }
@@ -150,7 +152,7 @@ Transaction& Transaction::operator=(Transaction const& transaction)
     m_timestamp = transaction.getTimestamp();
     m_data = transaction.getData();
     m_value = transaction.getValue();
-    m_signature = transaction.getSig();
+    m_signature = transaction.getSignature();
     return *this;
 }
 

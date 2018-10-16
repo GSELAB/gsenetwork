@@ -14,15 +14,23 @@ HeaderConfirmation::HeaderConfirmation(bytesConstRef data)
 {
     RLP rlp(data);
     try {
-        m_chainID = rlp[0].toInt<ChainID>();
-        m_number = rlp[1].toInt<uint64_t>();
-        m_blockID = rlp[2].toHash<BlockID>(RLP::VeryStrict);
-        m_producer = rlp[3].toHash<Address>(RLP::VeryStrict);
-        Signature sig = rlp[4].toHash<Signature>(RLP::VeryStrict);
-        m_signature = *(SignatureStruct*)&sig;
-        m_hasSigned = true;
-    } catch (Exception e) {
+        if (rlp.isList() && rlp.itemCount() == HEADER_CONFIRMATION_FIELDS_ALL) {
+            m_chainID = rlp[0].toInt<ChainID>();
+            m_number = rlp[1].toInt<uint64_t>();
+            m_blockID = rlp[2].toHash<BlockID>(RLP::VeryStrict);
+            m_timestamp = rlp[3].toInt<uint64_t>();
+            m_producer = rlp[4].toHash<Address>(RLP::VeryStrict);
+            Signature sig = rlp[5].toHash<Signature>(RLP::VeryStrict);
+            m_signature = *(SignatureStruct*)&sig;
+            m_hasSigned = true;
+        } else {
+            throw DeserializeException("Deserialize HeaderConfirmation failed!");
+        }
+    } catch (DeserializeException& e) {
+        throw e;
+    } catch (GSException& e) {
         CERROR << "Error interpret HeaderConfirmation!";
+        throw e;
     }
 }
 
@@ -32,6 +40,7 @@ HeaderConfirmation& HeaderConfirmation::operator=(HeaderConfirmation const& conf
     m_chainID = confirmation.getChainID();
     m_number = confirmation.getNumber();
     m_blockID = confirmation.getBlockID();
+    m_timestamp = confirmation.getTimestamp();
     m_producer = confirmation.getProducer();
     m_signature = confirmation.getSignature();
     m_hasSigned = true;
@@ -40,9 +49,11 @@ HeaderConfirmation& HeaderConfirmation::operator=(HeaderConfirmation const& conf
 
 bool HeaderConfirmation::operator==(HeaderConfirmation const& confirmation) const
 {
-    return (m_chainID == confirmation.getChainID()) && (m_number == confirmation.getNumber()) &&
-        (m_blockID == confirmation.getBlockID()) && (m_producer == confirmation.getProducer()) &&
-        (m_signature == confirmation.getSignature());
+    return (m_chainID == confirmation.getChainID()) &&
+            (m_number == confirmation.getNumber()) &&
+            (m_blockID == confirmation.getBlockID()) &&
+            (m_timestamp == confirmation.getTimestamp()) &&
+            (m_producer == confirmation.getProducer()) ;
 }
 
 bool HeaderConfirmation::operator!=(HeaderConfirmation const& confirmation) const
@@ -52,13 +63,24 @@ bool HeaderConfirmation::operator!=(HeaderConfirmation const& confirmation) cons
 
 void HeaderConfirmation::streamRLP(RLPStream& rlpStream) const
 {
-    rlpStream.appendList(HeaderConfirmationFields);
+    rlpStream.appendList(HEADER_CONFIRMATION_FIELDS_ALL);
     rlpStream << m_chainID
               << m_number
               << m_blockID
+              << m_timestamp
               << m_producer;
-    Signature sig = *(Signature*)&m_signature;
-    rlpStream << sig;
+
+    rlpStream << *(Signature*)&m_signature;
+}
+
+void HeaderConfirmation::streamRLPContent(core::RLPStream& rlpStream) const
+{
+    rlpStream.appendList(HEADER_CONFIRMATION_FIELDS_WITHOUT_SIG);
+    rlpStream << m_chainID
+              << m_number
+              << m_blockID
+              << m_timestamp
+              << m_producer;
 }
 
 void HeaderConfirmation::sign(Secret const& privKey)
@@ -75,14 +97,14 @@ void HeaderConfirmation::sign(Secret const& privKey)
 h256 HeaderConfirmation::getHash()
 {
     RLPStream rlpStream;
-    streamRLP(rlpStream);
+    streamRLPContent(rlpStream);
     return sha3(rlpStream.out());
 }
 
 // @override
 bytes HeaderConfirmation::getKey()
 {
-    return EmptyBytes;
+    return getHash().asBytes();
 }
 
 // @override
