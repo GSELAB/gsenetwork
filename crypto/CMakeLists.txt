@@ -7,7 +7,8 @@ SET(crypto_source
      AES.cpp
      SHA3.cpp
      GKey.cpp
-     Hash.cpp)
+     Hash.cpp
+     Valid.cpp)
 
 ADD_LIBRARY(crypto ${crypto_source})
 TARGET_LINK_LIBRARIES(crypto
