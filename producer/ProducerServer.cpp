@@ -71,7 +71,7 @@ void ProducerServer::doWork()
 
     int64_t timestamp = currentTimestamp();
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) % 
-             (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS * 1000)) / (PRODUCER_INTERVAL * 1000);
+             (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
 
     const std::vector<Producer> activeProducers = m_schedule.getActiveProducers();
     if (m_key.getAddress() != activeProducers[producerPosition].getAddress()) {
