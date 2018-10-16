@@ -94,7 +94,7 @@ public:
 
     uint64_t getValue() const { return m_value; }
 
-    SignatureStruct const& getSig() const { return m_signature; }
+    SignatureStruct const& getSignature() const { return m_signature; }
 
     // @override
     bytes getKey();
