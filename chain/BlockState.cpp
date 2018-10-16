@@ -104,7 +104,14 @@ BlockState::BlockState(core::Block& block):
 
 void BlockState::addConfirmation(HeaderConfirmation const& confirmation)
 {
+    if (confirmation.getNumber() != m_blockNumber || confirmation.getBlockID() != m_blockID)
+        return;
 
+    if (!m_activeProucers.isExist(confirmation.getProducer()))
+        return;
+
+    m_confirmCount++;
+    m_confirmations.emplace_back(confirmation);
 }
 
 

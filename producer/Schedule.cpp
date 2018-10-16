@@ -10,4 +10,53 @@ ProducerScheduleType& ProducerScheduleType::operator=(ProducerScheduleType const
     return *this;
 }
 
+bool ProducerScheduleType::isExist(Address const& address)
+{
+    auto itr = std::find(m_producers.begin(), m_producers.end(), address);
+    if (itr != m_producers.end()) return true;
+    return false;
+}
+
+// ------------------------
+Schedule::Schedule()
+{
+
+}
+
+Schedule::~Schedule()
+{
+
+}
+
+//@not thread safe
+std::vector<Producer> const& Schedule::getActiceProducers() const
+{
+    return m_activeProducers;
+}
+
+void Schedule::schedule()
+{
+
+}
+
+void Schedule::addActiveProducer(Producer const& producer)
+{
+
+}
+
+void Schedule::addActiveProducer(Address const& address)
+{
+
+}
+
+void Schedule::removeActiveProducer(Producer const& producer)
+{
+
+}
+
+void Schedule::removeActiveProducer(Address const& producer)
+{
+
+}
+
 }
