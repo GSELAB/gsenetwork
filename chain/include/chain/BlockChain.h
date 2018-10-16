@@ -114,7 +114,7 @@ public:
 
     bool processTransaction(Transaction const& transaction, MemoryItem* mItem);
 
-    bool checkBifurcation();
+    bool checkBifurcation(std::shared_ptr<Block> block);
 
     DispatchFace* getDispatcher() const { return m_dispatcher; }
 
