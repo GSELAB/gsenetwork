@@ -139,6 +139,7 @@ std::shared_ptr<NodeEntry> NodeTable::nodeEntry(NodeID nID)
 
 void NodeTable::doDiscover(NodeID target, unsigned round, std::shared_ptr<std::set<std::shared_ptr<NodeEntry>>> tried)
 {
+    CINFO << "round " << round;
     // note : only called by doDiscovery
     if (!m_socketPointer->isOpen()) return;
     if (round == s_maxSteps) {
@@ -516,21 +517,18 @@ void NodeTable::doDiscovery()
     {
         if (_ec) {
             // we can't use m_logger here, because captured this might be already destroyed
-            //clog(VerbosityDebug, "discov")
-            //    << "Discovery timer was probably cancelled: " << _ec.value() << " "
-            //    << _ec.message();
+            CERROR << "Discovery timer was probably cancelled: " << _ec.value() << " "  << _ec.message();
         }
 
         if (_ec.value() == boost::asio::error::operation_aborted || m_timers.isStopped())
             return;
 
-        LOG(m_logger) << "performing random discovery";
+        CINFO << "performing random discovery";
         NodeID randNodeId;
 
-        /* remark by Jorge
+
         crypto::Nonce::get().ref().copyTo(randNodeId.ref().cropped(0, h256::size));
         crypto::Nonce::get().ref().copyTo(randNodeId.ref().cropped(h256::size, h256::size));
-        */
         doDiscover(randNodeId);
     });
 }

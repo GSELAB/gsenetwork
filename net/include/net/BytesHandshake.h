@@ -11,6 +11,8 @@
 
 namespace net {
 
+static const unsigned c_rlpxVersion = 4;
+
 class BytesHandshake : public std::enable_shared_from_this<BytesHandshake> {
     friend class BytesFrameCoder;
 
