@@ -77,7 +77,7 @@ void ProducerServer::doWork()
     if (m_key.getAddress() == activeProducers[producerPosition].getAddress()) {
         if (((timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL > m_prevTimestamp) ||
             ((1 + timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= m_prevTimestamp)) {
-            if (m_eventHandle->getBlockchainStatus() == chain::ProducerStatus) {
+            if (m_eventHandle->getBlockChainStatus() == chain::ProducerStatus) {
                 m_prevTimestamp = timestamp;
             }
         }
