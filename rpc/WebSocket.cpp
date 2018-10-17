@@ -1,9 +1,12 @@
 #include <string>
 #include <rpc/WebSocket.h>
 #include <core/Log.h>
+#include <chain/Types.h>
+#include <utils/Utils.h>
 
 using namespace std;
 using namespace core;
+using namespace utils;
 
 namespace rpc {
 
@@ -44,13 +47,29 @@ void WebSocket::registerUrlHandlers()
     });
 
     addHandler("/create_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
-        CINFO << "/create_transaction";
-        // TODO: Add content here
+        // CINFO << "/create_transaction";
         std::string ret("Undefined\n");
-        {
-            // body to json
-        }
 
+        // Just for test
+        Secret sec("4077db9374f9498aff4b4ae6eb1400755655b50457930193948d2dc6cf70bf0f");
+        //GKey key(sec);
+
+        Json::Reader reader(Json::Features::strictMode());
+        Json::Value root;
+        if (reader.parse(body, root))
+        {
+            std::string s = root["sender"].asString();
+            std::string r = root["recipient"].asString();
+            uint64_t value = root["value"].asInt();
+            Address sender(s);
+            Address recipient(r);
+            Transaction tx(chain::DEFAULT_GSE_NETWORK, Transaction::TransferType, sender, recipient, currentTimestamp(), {}, value);
+            tx.sign(sec);
+            m_face->broadcast(tx);
+            ret = toJson(tx).toStyledString();
+        } else {
+            ret = "Invalid body - create transaction!";
+        }
         urlRC(URLCode::Default, ret);
     });
 
