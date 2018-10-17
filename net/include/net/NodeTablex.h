@@ -10,6 +10,8 @@
 #include <crypto/SHA3.h>
 #include <chain/Types.h>
 #include <net/UDPx.h>
+#include <core/RLP.h>
+#include <core/Log.h>
 
 using namespace core;
 
@@ -268,184 +270,174 @@ enum DataType : uint8_t {
     NeighboursType,
 };
 
-struct DiscoveryDatagram : public BytesDatagramFace {
-    // using for sending msg
-    DiscoveryDatagram(boost::asio::ip::udp::endpoint const& to) :
-        BytesDatagramFace(to), ts(futureFromEpoch(std::chrono::seconds(60))) {}
+struct DiscoveryDatagram: public BytesDatagramFace
+{
+    /// Constructor used for sending.
+    DiscoveryDatagram(bi::udp::endpoint const& _to): BytesDatagramFace(_to), ts(futureFromEpoch(std::chrono::seconds(60))) {}
 
-    // using for incoming packets
-    DiscoveryDatagram(boost::asio::ip::udp::endpoint const& from, NodeID const& nID, h256 const& h) :
-        BytesDatagramFace(from), sourceid(nID), echo(h) {}
+    /// Constructor used for parsing inbound packets.
+    DiscoveryDatagram(bi::udp::endpoint const& _from, NodeID const& _fromid, h256 const& _echo): BytesDatagramFace(_from), sourceid(_fromid), echo(_echo) {}
 
-    // used for incoming packet only
-    NodeID sourceid;
-    h256 echo;
+    // These two are set for inbound packets only.
+    NodeID sourceid; // sender public key (from signature)
+    h256 echo;       // hash of encoded packet, for reply tracking
 
-    chain::ChainID chainID = chain::GSE_ROOT_NETWORK;
-    chain::ChainID getChainID() const {
-        return chainID;
-    }
-
-    // the packet's timestamp must be greater than current time, prevents replay attacks.
+    // All discovery packets carry a timestamp, which must be greater
+    // than the current local time. This prevents replay attacks.
     uint32_t ts = 0;
-    bool isExpired() const {
-        return secondsSinceEpoch() > ts;
-    }
+    bool isExpired() const { return secondsSinceEpoch() > ts; }
 
-    static std::unique_ptr<DiscoveryDatagram> interpretUDP(boost::asio::ip::udp::endpoint const& from, bytesConstRef packet);
+    /// Decodes UDP packets.
+    static std::unique_ptr<DiscoveryDatagram> interpretUDP(bi::udp::endpoint const& _from, bytesConstRef _packet);
 };
 
-struct PingNode : DiscoveryDatagram {
-    PingNode(NodeIPEndpoint const& src, NodeIPEndpoint const& dest) :
-        DiscoveryDatagram(dest), source(src), destination(dest) {}
+/**
+ * Ping packet: Sent to check if node is alive.
+ * PingNode is cached and regenerated after ts + t, where t is timeout.
+ *
+ * Ping is used to implement evict. When a new node is seen for
+ * a given bucket which is full, the least-responsive node is pinged.
+ * If the pinged node doesn't respond, then it is removed and the new
+ * node is inserted.
+ */
+struct PingNode: DiscoveryDatagram
+{
+    using DiscoveryDatagram::DiscoveryDatagram;
+    PingNode(NodeIPEndpoint const& _src, NodeIPEndpoint const& _dest): DiscoveryDatagram(_dest), source(_src), destination(_dest) {}
+    PingNode(bi::udp::endpoint const& _from, NodeID const& _fromid, h256 const& _echo): DiscoveryDatagram(_from, _fromid, _echo) {}
 
-    PingNode(boost::asio::ip::udp::endpoint const& from, NodeID const fromID, h256 const& h) :
-        DiscoveryDatagram(from, fromID, h) {}
-
-    static const uint8_t type = PingNodeType; // 1
-    uint8_t packetType() const {
-        return type;
-    }
+    static const uint8_t type = PingNodeType;
+    uint8_t packetType() const { return type; }
 
     unsigned version = 0;
     NodeIPEndpoint source;
     NodeIPEndpoint destination;
 
-    void streamRLP(core::RLPStream& io) const {
-        io.appendList(5);
-        io << chainID;
-        io << net::c_protocolVersion;
-        source.streamRLP(io);
-        destination.streamRLP(io);
-        io << ts;
+    void streamRLP(core::RLPStream& _s) const
+    {
+        _s.appendList(4);
+        _s << net::c_protocolVersion;
+        source.streamRLP(_s);
+        destination.streamRLP(_s);
+        _s << ts;
     }
-
-    void interpretRLP(bytesConstRef data) {
-        core::RLP rlp(data, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
-        chainID = rlp[0].toInt<chain::ChainID>();
-        version = rlp[1].toInt<unsigned>();
-        source.interpretRLP(rlp[2]);
-        destination.interpretRLP(rlp[3]);
-        ts = rlp[4].toInt<uint32_t>();
+    void interpretRLP(bytesConstRef _bytes)
+    {
+        core::RLP r(_bytes, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
+        version = r[0].toInt<unsigned>();
+        source.interpretRLP(r[1]);
+        destination.interpretRLP(r[2]);
+        ts = r[3].toInt<uint32_t>();
     }
 };
 
-struct Pong : DiscoveryDatagram {
-    Pong(NodeIPEndpoint const& dest) : DiscoveryDatagram((boost::asio::ip::udp::endpoint)dest), destination(dest) {}
-    Pong(boost::asio::ip::udp::endpoint const&from, NodeID const& fromID, h256 const& h) :
-        DiscoveryDatagram(from, fromID, h) {}
+/**
+ * Pong packet: Sent in response to ping
+ */
+struct Pong: DiscoveryDatagram
+{
+    Pong(NodeIPEndpoint const& _dest): DiscoveryDatagram((bi::udp::endpoint)_dest), destination(_dest) {}
+    Pong(bi::udp::endpoint const& _from, NodeID const& _fromid, h256 const& _echo): DiscoveryDatagram(_from, _fromid, _echo) {}
 
     static const uint8_t type = PongType;
-    uint8_t packetType() const {
-        return type;
-    }
+    uint8_t packetType() const { return type; }
 
     NodeIPEndpoint destination;
 
-    void streamRLP(core::RLPStream& io) const {
-        io.appendList(4);
-        io << chainID;
-        destination.streamRLP(io);
-        io << echo;
-        io << ts;
+    void streamRLP(core::RLPStream& _s) const
+    {
+        _s.appendList(3);
+        destination.streamRLP(_s);
+        _s << echo;
+        _s << ts;
     }
-
-    void interpretRLP(bytesConstRef data) {
-        core::RLP rlp(data, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
-        chainID = rlp[0].toInt<chain::ChainID>();
-        destination.interpretRLP(rlp[1]);
-        echo = (h256)rlp[2];
-        ts = rlp[3].toInt<uint32_t>();
+    void interpretRLP(bytesConstRef _bytes)
+    {
+        core::RLP r(_bytes, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
+        destination.interpretRLP(r[0]);
+        echo = (h256)r[1];
+        ts = r[2].toInt<uint32_t>();
     }
 };
 
-struct FindNode : DiscoveryDatagram {
-    FindNode(boost::asio::ip::udp::endpoint const& to, h512 h) :
-        DiscoveryDatagram(to), target(h) {}
-
-    FindNode(boost::asio::ip::udp::endpoint const& from, NodeID const& fromID, h256 const& h) :
-        DiscoveryDatagram(from, fromID, h) {}
+/**
+ * FindNode Packet: Request k-nodes, closest to the target.
+ * FindNode is cached and regenerated after ts + t, where t is timeout.
+ * FindNode implicitly results in finding neighbours of a given node.
+ *
+ * RLP Encoded Items: 2
+ * Minimum Encoded Size: 21 bytes
+ * Maximum Encoded Size: 30 bytes
+ *
+ * target: NodeID of node. The responding node will send back nodes closest to the target.
+ *
+ */
+struct FindNode: DiscoveryDatagram
+{
+    FindNode(bi::udp::endpoint _to, h512 _target): DiscoveryDatagram(_to), target(_target) {}
+    FindNode(bi::udp::endpoint const& _from, NodeID const& _fromid, h256 const& _echo): DiscoveryDatagram(_from, _fromid, _echo) {}
 
     static const uint8_t type = FindNodeType;
-    uint8_t packetType() const {
-        return type;
-    }
+    uint8_t packetType() const { return type; }
 
     h512 target;
 
-    void streamRLP(core::RLPStream& io) const {
-        io.appendList(3);
-        io << chainID;
-        io << target;
-        io << ts;
+    void streamRLP(core::RLPStream& _s) const
+    {
+        _s.appendList(2); _s << target << ts;
     }
-
-    void interpretRLP(bytesConstRef data) {
-        core::RLP rlp(data, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
-        chainID = rlp[0].toInt<chain::ChainID>();
-        target = rlp[1].toHash<h512>();
-        ts = rlp[2].toInt<uint32_t>();
+    void interpretRLP(bytesConstRef _bytes)
+    {
+        core::RLP r(_bytes, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
+        target = r[0].toHash<h512>();
+        ts = r[1].toInt<uint32_t>();
     }
 };
 
-struct Neighbours : DiscoveryDatagram {
-    Neighbours(boost::asio::ip::udp::endpoint const& to, std::vector<std::shared_ptr<NodeEntry>> const& nearest,
-        unsigned offset = 0, unsigned limit = 0) : DiscoveryDatagram(to) {
-        auto lim = limit ? std::min(nearest.size(), (size_t)(offset + limit)) : nearest.size();
-        for (auto i = offset; i < lim; i++) {
-            neighbours.push_back(Item(*nearest[i]));
-        }
+/**
+ * Node Packet: One or more node packets are sent in response to FindNode.
+ */
+struct Neighbours: DiscoveryDatagram
+{
+    Neighbours(bi::udp::endpoint _to, std::vector<std::shared_ptr<NodeEntry>> const& _nearest, unsigned _offset = 0, unsigned _limit = 0): DiscoveryDatagram(_to)
+    {
+        auto limit = _limit ? std::min(_nearest.size(), (size_t)(_offset + _limit)) : _nearest.size();
+        for (auto i = _offset; i < limit; i++)
+            neighbours.push_back(Neighbour(*_nearest[i]));
     }
+    Neighbours(bi::udp::endpoint const& _to): DiscoveryDatagram(_to) {}
+    Neighbours(bi::udp::endpoint const& _from, NodeID const& _fromid, h256 const& _echo): DiscoveryDatagram(_from, _fromid, _echo) {}
 
-    Neighbours(boost::asio::ip::udp::endpoint const& to) : DiscoveryDatagram(to) {}
-    Neighbours(boost::asio::ip::udp::endpoint const& from, NodeID const& fromID, h256 const& h) :
-        DiscoveryDatagram(from, fromID, h) {}
-
-    struct Item {
-        Item(Node const& node) : endpoint(node.endpoint), nID(node.id) {}
-        Item(core::RLP const& rlp) : endpoint(rlp) {
-            nID = h512(rlp[3].toBytes());
-        }
-
+    struct Neighbour
+    {
+        Neighbour(Node const& _node): endpoint(_node.endpoint), node(_node.id) {}
+        Neighbour(core::RLP const& _r): endpoint(_r) { node = h512(_r[3].toBytes()); }
         NodeIPEndpoint endpoint;
-        NodeID nID;
-        chain::ChainID chainID = chain::GSE_UNKNOWN_NETWORK;
-        void streamRLP(core::RLPStream& io) const {
-            io.appendList(5);
-            io << chainID;
-            endpoint.streamRLP(io, NodeIPEndpoint::StreamInline);
-            io << nID;
-        }
+        NodeID node;
+        void streamRLP(core::RLPStream& _s) const { _s.appendList(4); endpoint.streamRLP(_s, NodeIPEndpoint::StreamInline); _s << node; }
     };
 
     static const uint8_t type = NeighboursType;
-    uint8_t packetType() const {
-        return type;
+    uint8_t packetType() const { return type; }
+
+    std::vector<Neighbour> neighbours;
+
+    void streamRLP(core::RLPStream& _s) const
+    {
+        _s.appendList(2);
+        _s.appendList(neighbours.size());
+        for (auto const& n: neighbours)
+            n.streamRLP(_s);
+        _s << ts;
     }
-
-    std::vector<Item> neighbours;
-    void streamRLP(core::RLPStream& io) const {
-        io.appendList(3);
-        io << chainID;
-        io.appendList(neighbours.size());
-        for (auto const& n : neighbours) {
-            n.streamRLP(io);
-        }
-
-        io << ts;
-    }
-
-    void interpretRLP(bytesConstRef data) {
-        core::RLP rlp(data, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
-        chainID = rlp[0].toInt<chain::ChainID>();
-        for (auto const& item : rlp[1]) {
-            neighbours.emplace_back(item);
-        }
-
-        ts = rlp[2].toInt<uint32_t>();
+    void interpretRLP(bytesConstRef _bytes)
+    {
+        core::RLP r(_bytes, core::RLP::AllowNonCanon | core::RLP::ThrowOnFail);
+        for (auto const& n: r[0])
+            neighbours.emplace_back(n);
+        ts = r[1].toInt<uint32_t>();
     }
 };
-
 
 
 } // end namespace

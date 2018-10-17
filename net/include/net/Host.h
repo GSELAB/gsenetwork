@@ -142,7 +142,7 @@ public:
     virtual ~Host();
 
     /// Default hosts for current version of client.
-    static std::unordered_map<Public, std::string> pocHosts();
+    /// static std::unordered_map<Public, std::string> pocHosts();
 
     /// Register a host capability; all new peer connections will see this capability.
     void registerCapability(std::shared_ptr<HostCapabilityFace> const& _cap);

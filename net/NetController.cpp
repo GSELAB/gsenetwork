@@ -35,19 +35,6 @@ NetController::~NetController()
         delete m_host;
 }
 
-void NetController::broadcast(char *msg)
-{
-
-}
-
-void NetController::broadcast(std::shared_ptr<core::Transaction> tMsg)
-{
-    Peers ps = m_host->getPeers();
-    for (auto i : ps) {
-
-    }
-}
-
 void NetController::init()
 {
     if (!m_inited) {
@@ -56,6 +43,10 @@ void NetController::init()
         if (m_dispatcher)
             m_host->addDispatcher(m_dispatcher);
 
+        m_host->start();
+        CINFO << "NetController::init listen port:" << m_host->listenPort();
+        m_inited = true;
+
         bi::tcp::endpoint ep = Network::resolveHost(DEFAULT_LOCAL_IP_PORT);
         m_nodeIPEndpoint = NodeIPEndpoint(ep.address(), ep.port(), ep.port());
         {
@@ -63,16 +54,36 @@ void NetController::init()
             addNode("127.0.0.1:60607");
         }
 
+    }
+}
 
-        m_host->start();
-        CINFO << "NetController::init listen port:" << m_host->listenPort();
-        m_inited = true;
+void NetController::broadcast(char *msg)
+{
+
+}
+
+void NetController::broadcast(std::shared_ptr<core::Transaction> tMsg)
+{
+    Peers ps = m_host->getPeers();
+    CINFO << "NetController::broadcast tx, peers:" << ps.size();
+    for (auto i : ps) {
+
+    }
+}
+
+void NetController::broadcast(core::Transaction const& tMsg)
+{
+    Peers ps = m_host->getPeers();
+    CINFO << "NetController::broadcast tx, peers:" << ps.size();
+    for (auto i : ps) {
+
     }
 }
 
 void NetController::broadcast(std::shared_ptr<core::Block> bMsg)
 {
     CINFO << "Net broadcast block(" << bMsg->getNumber() << ")";
+
 
 }
 
