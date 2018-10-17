@@ -10,6 +10,7 @@
  */
 
 #include <producer/ProducerServer.h>
+#include <producer/Schedule.h>
 #include <config/Constant.h>
 #include <utils/Utils.h>
 #include <core/JsonHelper.h>
@@ -69,6 +70,15 @@ void ProducerServer::doWork()
     unsigned i;
 
     int64_t timestamp = currentTimestamp();
+    unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) % 
+             (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
+
+    const std::vector<Producer> activeProducers = m_schedule.getActiveProducers();
+    if (m_key.getAddress() != activeProducers[producerPosition].getAddress()) {
+        sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
+        return;
+    }
+
     if (m_prevTimestamp < 0) {
         m_prevTimestamp = timestamp;
     } else {
