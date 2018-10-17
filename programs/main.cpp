@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     signal(SIGTERM, &exitHandler);
     signal(SIGINT, &exitHandler);
 
-    Secret sec01("4077db9374f9498aff4b4ae6eb1400755655b50457930193948d2dc6cf70bf00");
+    //Secret sec("4077db9374f9498aff4b4ae6eb1400755655b50457930193948d2dc6cf70bf00");
 
     Secret sec("4077db9374f9498aff4b4ae6eb1400755655b50457930193948d2dc6cf70bf0f");
     GKey key(sec);
