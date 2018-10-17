@@ -15,11 +15,6 @@ using namespace net;
 
 BytesSocket::BytesSocket(boost::asio::io_service& ioService) : m_socket(ioService) {}
 
-BytesSocket::BytesSocket(boost::asio::io_service& ioService, chain::ChainID id) : m_socket(ioService)
-{
-    m_chainId = id;
-}
-
 BytesSocket::~BytesSocket()
 {
 
@@ -52,14 +47,4 @@ boost::asio::ip::tcp::endpoint BytesSocket::remoteEndpoint()
 boost::asio::ip::tcp::socket& BytesSocket::ref()
 {
     return m_socket;
-}
-
-void BytesSocket::setChainId(chain::ChainID id)
-{
-    m_chainId = id;
-}
-
-chain::ChainID BytesSocket::getChainId() const
-{
-    return m_chainId;
 }

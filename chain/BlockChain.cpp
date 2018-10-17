@@ -352,7 +352,7 @@ void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
 std::unique_ptr<core::Object> Dispatch::interpretObject(bi::tcp::endpoint const& from, BytesPacket const& msg)
 {
     unique_ptr<Object> object;
-    switch (msg.getObjectType()) {
+    switch (msg.cap()) {
         case 0x01: // Transaction
             object.reset(new Transaction(bytesConstRef(&msg.data())));
             break;

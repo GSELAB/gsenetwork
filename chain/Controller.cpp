@@ -123,6 +123,7 @@ void Controller::broadcast(Transaction const& transaction)
     // send to current transactions cache
 
     // send to p2p network
+    m_net->broadcast(transaction);
 }
 
 Block Controller::getBlockByNumber(uint64_t number)

@@ -45,6 +45,8 @@ public:
 
     void broadcast(std::shared_ptr<core::Transaction> tMsg);
 
+    void broadcast(core::Transaction const& tMsg);
+
     void broadcast(std::shared_ptr<core::Block> bMsg);
 
     // std::queue<TransactionBundle> getTransactionCache();

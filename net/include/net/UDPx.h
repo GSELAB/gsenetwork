@@ -25,7 +25,6 @@ public:
     bytes data;
 protected:
     boost::asio::ip::udp::endpoint locus;
-    chain::ChainID chainID;  /* ? move to another place? */
 };
 
 // BytesDatagramFace could be signed
@@ -189,11 +188,11 @@ void UDPSocket<Handler, MaxDatagramSize>::doRead()
             return disconnectWithError(_ec);
         }
 
-        CINFO << "UDPSocket recv data from " << m_recvEndpoint;
         if (_ec != boost::system::errc::success) {
             cnetlog << "Receiving UDP message failed. " << _ec.value() << " : " << _ec.message();
         }
 
+        // CINFO << "UDPSocket recv data from " << m_recvEndpoint << " - len:" << _len;
         if (_len) {
             m_host.onReceived(this, m_recvEndpoint, bytesConstRef(m_recvData.data(), _len));
         }

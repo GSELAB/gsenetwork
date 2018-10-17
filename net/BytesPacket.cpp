@@ -11,47 +11,35 @@
 
 #include <net/BytesPacket.h>
 
-using namespace net;
+using namespace core;
 
-BytesPacket::BytesPacket(uint8_t cap)
+namespace net {
+
+static bytesConstRef nextRLP(bytesConstRef _b)
 {
-
+    try {
+        RLP r(_b, RLP::AllowNonCanon);
+        return _b.cropped(0, std::min((size_t)r.actualSize(), _b.size()));
+    } catch(...) {}
+    return bytesConstRef();
 }
 
-BytesPacket::BytesPacket()
-{
 
+
+BytesPacket::BytesPacket(uint8_t cap, bytesConstRef data):
+    m_cap(cap), m_type(nextRLP(data).toBytes())
+{
+    if (data.size() > m_type.size()) {
+        m_data.resize(data.size() - m_type.size());
+        data.cropped(m_type.size()).copyTo(&m_data);
+    }
 }
 
-bytes const& BytesPacket::type() const
-{
-    return m_type;
-}
-
-bytes const& BytesPacket::data() const
-{
-    return m_data;
-}
-
-uint8_t BytesPacket::cap() const
-{
-    return m_cap;
-}
 
 size_t BytesPacket::size() const
 {
     // return sizeof ()
     return 0;
-}
-
-void BytesPacket::setChainId(chain::ChainID id)
-{
-    m_chainId = id;
-}
-
-chain::ChainID BytesPacket::getChainId() const
-{
-    return m_chainId;
 }
 
 bool BytesPacket::append(bytesConstRef in)
@@ -66,3 +54,10 @@ bool BytesPacket::isValid() const
 {
     return true;
 }
+} // namespace net
+
+
+
+
+
+

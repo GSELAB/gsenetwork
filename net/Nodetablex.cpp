@@ -139,6 +139,7 @@ std::shared_ptr<NodeEntry> NodeTable::nodeEntry(NodeID nID)
 
 void NodeTable::doDiscover(NodeID target, unsigned round, std::shared_ptr<std::set<std::shared_ptr<NodeEntry>>> tried)
 {
+    CINFO << "round " << round;
     // note : only called by doDiscovery
     if (!m_socketPointer->isOpen()) return;
     if (round == s_maxSteps) {
@@ -280,8 +281,11 @@ void NodeTable::evict(std::shared_ptr<NodeEntry> leastSeen, std::shared_ptr<Node
 
 void NodeTable::noteActiveNode(Public const& pubK, boost::asio::ip::udp::endpoint const& ep)
 {
-    if (pubK == m_node.address() || !NodeIPEndpoint(ep.address(), ep.port(), ep.port()).isAllowed())
+    if (pubK == m_node.address() || !NodeIPEndpoint(ep.address(), ep.port(), ep.port()).isAllowed()) {
+        CINFO << "NodeTable::noteActiveNode -- " << ep << " not allow or oubK equal m_node.address()";
         return;
+    }
+
 
     shared_ptr<NodeEntry> newNode = nodeEntry(pubK);
     if (newNode && !newNode->pending) {
@@ -353,8 +357,10 @@ void NodeTable::onReceived(UDPSocketFace*, boost::asio::ip::udp::endpoint const&
 {
     try {
         unique_ptr<DiscoveryDatagram> datagram = DiscoveryDatagram::interpretUDP(from, packet);
-        if (!datagram)
+        if (!datagram) {
+            CERROR << "Invalid datagram - NodeTable::onReceived from " << from.address().to_string() << ":" << from.port();
             return;
+        }
 
         if (datagram->isExpired()) {
             CINFO << "Invalid packet (timestamp in the past) from " << from.address().to_string() << ":" << from.port();
@@ -372,6 +378,7 @@ void NodeTable::onReceived(UDPSocketFace*, boost::asio::ip::udp::endpoint const&
                 respone.echo = in.echo;
                 respone.sign(m_secret);
                 m_socketPointer->send(respone);
+                CINFO << "Ping from " << from.address().to_string() << ":" << from.port() << " " << in.sourceid;
                 break;
             }
             case PongType: {
@@ -423,7 +430,8 @@ void NodeTable::onReceived(UDPSocketFace*, boost::asio::ip::udp::endpoint const&
                     m_node.endpoint.setUdpPort(in.destination.udpPort());
                 }
 
-                LOG(m_logger) << "PONG from " << in.sourceid << " " << from;
+                CINFO << "PONG from " << from.address().to_string() << ":" << from.port() << " "  << in.sourceid;
+                // LOG(m_logger) << "PONG from " << in.sourceid << " " << from;
                 break;
             }
             case FindNodeType: {
@@ -462,11 +470,10 @@ void NodeTable::onReceived(UDPSocketFace*, boost::asio::ip::udp::endpoint const&
                 }
 
                 for (auto n: in.neighbours)
-                    addNode(Node(n.nID, n.endpoint));
+                    addNode(Node(n.node, n.endpoint));
                 break;
             }
         }
-
         noteActiveNode(datagram->sourceid, from);
     } catch(std::exception const&e) {
         CINFO << "Exception processing message from " << from.address().to_string() << ":" << from.port() << ": " << e.what();
@@ -516,21 +523,18 @@ void NodeTable::doDiscovery()
     {
         if (_ec) {
             // we can't use m_logger here, because captured this might be already destroyed
-            //clog(VerbosityDebug, "discov")
-            //    << "Discovery timer was probably cancelled: " << _ec.value() << " "
-            //    << _ec.message();
+            CERROR << "Discovery timer was probably cancelled: " << _ec.value() << " "  << _ec.message();
         }
 
         if (_ec.value() == boost::asio::error::operation_aborted || m_timers.isStopped())
             return;
 
-        LOG(m_logger) << "performing random discovery";
+        CINFO << "performing random discovery";
         NodeID randNodeId;
 
-        /* remark by Jorge
+
         crypto::Nonce::get().ref().copyTo(randNodeId.ref().cropped(0, h256::size));
         crypto::Nonce::get().ref().copyTo(randNodeId.ref().cropped(h256::size, h256::size));
-        */
         doDiscover(randNodeId);
     });
 }
@@ -538,11 +542,10 @@ void NodeTable::doDiscovery()
 unique_ptr<DiscoveryDatagram> DiscoveryDatagram::interpretUDP(boost::asio::ip::udp::endpoint const& from, bytesConstRef packet)
 {
     unique_ptr<DiscoveryDatagram> decoded;
-    // h256 + Signature + type + chainID + RLP ()
-    CINFO << "Hunter:------------------- interpretUDP";
-    if (packet.size() < h256::size + Signature::size + 1 + 3 + sizeof(chain::ChainID)) {
-        LOG(g_discoveryWarnLogger::get()) << "Invalid packet (too small) from "
-                                          << from.address().to_string() << ":" << from.port();
+    // h256 + Signature + type + RLP ()
+    if (packet.size() < h256::size + Signature::size + 1 + 3) {
+        CERROR << "Invalid packet (too small) from "
+               << from.address().to_string() << ":" << from.port();
         return decoded;
     }
 
@@ -553,14 +556,14 @@ unique_ptr<DiscoveryDatagram> DiscoveryDatagram::interpretUDP(boost::asio::ip::u
 
     h256 echo(sha3(hashedBytes));
     if (!packet.cropped(0, h256::size).contentsEqual(echo.asBytes())) {
-        LOG(g_discoveryWarnLogger::get()) << "Invalid packet (bad hash) from "
-                                          << from.address().to_string() << ":" << from.port();
+        CERROR << "Invalid packet (bad hash) from "
+               << from.address().to_string() << ":" << from.port();
         return decoded;
     }
 
     Public sourceid(crypto::recover(*(Signature const*)signatureBytes.data(), sha3(signedBytes)));
     if (!sourceid) {
-        LOG(g_discoveryWarnLogger::get()) << "Invalid packet (bad signature) from "
+        CERROR << "Invalid packet (bad signature) from "
                                           << from.address().to_string() << ":" << from.port();
         return decoded;
     }

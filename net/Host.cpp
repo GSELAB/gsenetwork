@@ -492,6 +492,7 @@ void Host::runAcceptor()
     }
 }
 
+/*
 std::unordered_map<Public, std::string> Host::pocHosts()
 {
     return {
@@ -506,6 +507,7 @@ std::unordered_map<Public, std::string> Host::pocHosts()
         { Public("20c9ad97c081d63397d7b685a412227a40e23c8bdc6688c6f37e97cfbc22d2b4d1db1510d8f61e6a8866ad7f0e17c02b14182d37ea7c3c8b9c2683aeb6b733a1"), "52.169.14.227:30303" },
     };
 }
+*/
 
 void Host::registerCapability(std::shared_ptr<HostCapabilityFace> const& _cap)
 {
@@ -1001,6 +1003,7 @@ bool Host::addNodeToNodeTable(Node const& _node, NodeTable::NodeRelation _relati
     if (!nodeTable)
         return false;
 
+    CINFO << "Host::addNodeToNodeTable" << _node;
     nodeTable->addNode(_node, _relation);
     return true;
 }
