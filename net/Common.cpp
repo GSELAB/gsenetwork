@@ -35,7 +35,7 @@ static_assert(net::c_protocolVersion == 4, "Replace v3 compatbility with v4 comp
 const net::NodeIPEndpoint net::UnspecifiedNodeIPEndpoint = NodeIPEndpoint(bi::address(), 0, 0);
 const net::Node net::UnspecifiedNode = net::Node(NodeID(), UnspecifiedNodeIPEndpoint);
 
-bool net::NodeIPEndpoint::test_allowLocal = false;
+bool net::NodeIPEndpoint::test_allowLocal = true;
 
 bool net::isPublicAddress(std::string const& _addressToCheck)
 {

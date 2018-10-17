@@ -24,8 +24,9 @@ using namespace crypto;
 
 namespace core {
 
-// include signature
-#define TRANSACTION_FIELDS (6 + 3)
+
+#define TRANSACTION_FIELDS_WITHOUT_SIG (7)
+#define TRANSACTION_FIELDS_ALL (TRANSACTION_FIELDS_WITHOUT_SIG + 3)
 
 class Transaction: public Object {
 public:
@@ -41,7 +42,10 @@ public:
 
     Transaction();
 
-    Transaction(chain::ChainID chainID, uint32_t type, Address const& sender, Address const& recipient, bytes const& data, uint64_t value);
+    Transaction(Transaction const& transaction);
+
+    Transaction(chain::ChainID chainID, uint32_t type, Address const& sender, Address const& recipient,
+        uint64_t timestamp, bytes const& data, uint64_t value);
 
     Transaction(bytesConstRef data);
 
@@ -49,8 +53,12 @@ public:
 
     void streamRLP(RLPStream& rlpStream) const;
 
-    // @return the sha3 of the transaction include signature
+    void streamRLPContent(RLPStream& rlpStream) const;
+
+    // @return the sha3 of the transaction not include signature
     h256 const& getHash();
+
+    Transaction& operator=(Transaction const& transaction);
 
     void sign(Secret const& secret);
 
@@ -58,29 +66,35 @@ public:
 
     bool operator!=(Transaction const& transaction) const;
 
-    void setChainID(chain::ChainID chainID);
+    void setChainID(chain::ChainID chainID) { m_chainID = chainID; }
 
-    void setType(uint32_t type);
+    void setType(uint32_t type) { m_type = type; }
 
-    void setSender(Address const& sender);
+    void setSender(Address const& sender) { m_sender = sender; }
 
-    void setRecipient(Address const& recipient);
+    void setRecipient(Address const& recipient) { m_recipient = recipient; }
 
-    void setData(bytes const& data);
+    void setTimestamp(uint64_t timestamp) { m_timestamp = timestamp; }
 
-    void setValue(uint64_t value);
+    void setData(bytes const& data) { m_data = data; }
 
-    chain::ChainID getChainID() const;
+    void setValue(uint64_t value) { m_value = value; }
 
-    uint32_t getType() const;
+    chain::ChainID getChainID() const { return m_chainID; }
 
-    Address const& getSender() const;
+    uint32_t getType() const { return m_type; }
 
-    Address const& getRecipient() const;
+    Address const& getSender() const { return m_sender; }
 
-    bytes const& getData() const;
+    Address const& getRecipient() const { return m_recipient; }
 
-    uint64_t getValue() const;
+    uint64_t getTimestamp() const { return m_timestamp; }
+
+    bytes const& getData() const { return m_data; }
+
+    uint64_t getValue() const { return m_value; }
+
+    SignatureStruct const& getSignature() const { return m_signature; }
 
     // @override
     bytes getKey();
@@ -96,6 +110,7 @@ private:
     uint32_t m_type;
     Address m_sender;
     Address m_recipient;
+    uint64_t m_timestamp;
     bytes m_data;
     uint64_t m_value;
     SignatureStruct m_signature;

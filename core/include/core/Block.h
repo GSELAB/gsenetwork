@@ -28,7 +28,8 @@ class Repository;
 class Block;
 extern Block EmptyBlock;
 
-#define BLOCK_HEADER_FIELDS (9)
+#define BLOCK_HEADER_FIELDS_WITHOUT_SIG (9)
+#define BLOCK_HEADER_FIELDS_ALL (9 + 3)
 
 class BlockHeader: public Object {
     friend class Repository;
@@ -39,11 +40,7 @@ public:
 
     BlockHeader(bytes const& data);
 
-    BlockHeader(bytes const& data, h256 const& hash);
-
     BlockHeader(bytesConstRef data);
-
-    BlockHeader(bytesConstRef data, h256 const& hash);
 
     BlockHeader(BlockHeader const& header);
 
@@ -55,21 +52,21 @@ public:
 
     void streamRLP(RLPStream& rlpStream) const;
 
-    void populate(RLP const& rlp);
+    void streamRLPContent(RLPStream& rlpStream) const;
 
-    void populateFromParent(BlockHeader const& header);
+    void populate(bytesConstRef data);
 
-    void setProducer(Address const& producer);
+    void setProducer(Address const& producer) { m_producer = producer; }
 
-    void setParentHash(h256 const& parentHash);
+    void setParentHash(h256 const& parentHash) { m_parentHash = parentHash; }
 
     void setRoots(trie::TrieType const& mkl, trie::TrieType const& t, trie::TrieType const& r);
 
-    void setNumber(uint64_t number);
+    void setNumber(uint64_t number) { m_number = number; }
 
-    void setTimestamp(int64_t timestamp);
+    void setTimestamp(int64_t timestamp) { m_timestamp = timestamp; }
 
-    void setExtra(bytes const& extra);
+    void setExtra(bytes const& extra) { m_extra = extra; }
 
     void sign(Secret const& priv);
 
@@ -168,6 +165,8 @@ public:
     uint64_t getNumber() const { return m_blockHeader.getNumber(); }
 
     h256& getHash() { return m_blockHeader.getHash(); }
+
+    SignatureStruct const& getSignature() const { return m_blockHeader.getSignature(); }
 
     // @override
     bytes getKey();

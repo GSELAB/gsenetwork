@@ -1,43 +1,33 @@
 #pragma once
 
-#include <chain/Types.h>
 #include <core/Common.h>
+#include <core/RLP.h>
 
-using namespace core;
 namespace net {
 
 class BytesPacket {
 public:
-    BytesPacket(uint8_t cap);
+    BytesPacket(uint8_t cap, core::RLPStream& type, core::RLPStream& data): m_cap(cap), m_type(type.out()), m_data(data.out()) {}
+    BytesPacket(uint8_t cap, core::bytesConstRef data);
+    BytesPacket(BytesPacket const& p) = delete;
+    BytesPacket(BytesPacket&& p): m_cap(p.m_cap), m_type(p.m_type), m_data(p.m_data) {}
 
-    BytesPacket();
+    core::bytes const& type() const { return m_type; }
 
-    bytes const& type() const;
+    core::bytes const& data() const { return m_data; }
 
-    bytes const& data() const;
-
-    uint8_t cap() const;
+    uint8_t cap() const { return m_cap; }
 
     size_t size() const;
 
-    void setChainId(chain::ChainID id);
-
-    chain::ChainID getChainId() const;
-
-    bool append(bytesConstRef in);
+    bool append(core::bytesConstRef in);
 
     virtual bool isValid() const; //  noexecept;
 
-    uint8_t getObjectType() const { return m_object; }
-
-    void setObjectType(uint8_t object) { m_object = object; }
-
-private:
-    chain::ChainID m_chainId;
-    uint8_t m_object;
+protected:
     uint8_t m_cap;
-    bytes m_type;
-    bytes m_data;
+    core::bytes m_type;
+    core::bytes m_data;
 };
 
 } // end namespace

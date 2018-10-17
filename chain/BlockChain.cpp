@@ -149,40 +149,12 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
         // add block to rollback state
         m_rollbackState.add(*block);
         m_head = m_rollbackState.head();
-
+        checkBifurcation(block);
     } catch (RollbackStateException& e) {
         CERROR << "RollbackState:" << e.what();
     } catch (Exception& e) {
 
     }
-
-    doProcessBlock(block);
-
-    /*
-    bool needCancel;
-    MemoryItem* item;
-    try {
-        item = addMemoryItem(block);
-        needCancel = true;
-        for (auto const& i : block->getTransactions())
-            if (!processTransaction(*block, i, item)) {
-                // Record the failed
-            }
-
-        item->setDone();
-    } catch (RollbackStateException& e) {
-        if (needCancel) {
-            needCancel = false;
-            cancelMemoryItem();
-        }
-
-    } catch (GSException& e) {
-        if (needCancel) {
-            needCancel = false;
-            cancelMemoryItem();
-        }
-    }
-    */
     return true;
 }
 
@@ -211,11 +183,11 @@ bool BlockChain::processTransaction(Transaction const& transaction, MemoryItem* 
     return false;
 }
 
-bool BlockChain::checkBifurcation()
+bool BlockChain::checkBifurcation(std::shared_ptr<Block> block)
 {
     auto newItem = m_rollbackState.head();
     if (newItem->getPrev() == m_head->m_blockID) {
-
+        doProcessBlock(block);
     } else if (newItem->getPrev() != m_head->m_blockID) {
         CINFO << "Switch branch : prevHead(" << m_head->m_blockNumber << ")" << " newHead(" << newItem->m_blockNumber << ")";
         auto branches = m_rollbackState.fetchBranchFrom(newItem->m_blockID, m_head->m_blockID);
@@ -380,7 +352,7 @@ void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
 std::unique_ptr<core::Object> Dispatch::interpretObject(bi::tcp::endpoint const& from, BytesPacket const& msg)
 {
     unique_ptr<Object> object;
-    switch (msg.getObjectType()) {
+    switch (msg.cap()) {
         case 0x01: // Transaction
             object.reset(new Transaction(bytesConstRef(&msg.data())));
             break;

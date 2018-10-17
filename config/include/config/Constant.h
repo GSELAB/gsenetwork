@@ -41,9 +41,6 @@ namespace config {
 // Max block size 1024 KB (1 M)
 #define MAX_BLOCK_SIZE (1024 * 1024)
 
-// 21 delegated blocks
-#define NUM_DELEGATED_BLOCKS (21)
-
 // 0.1 second = 100 ms
 #define PRODUCER_SLEEP_INTERVAL  (100)
 
