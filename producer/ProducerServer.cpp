@@ -70,24 +70,20 @@ void ProducerServer::doWork()
     unsigned i;
 
     int64_t timestamp = currentTimestamp();
-    unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) % 
-             (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
+    unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
+                (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
 
     const std::vector<Producer> activeProducers = m_schedule.getActiveProducers();
     if (m_key.getAddress() != activeProducers[producerPosition].getAddress()) {
         sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
         return;
-    }
-
-    if (m_prevTimestamp < 0) {
-        m_prevTimestamp = timestamp;
     } else {
-        if ((timestamp - m_prevTimestamp) >= (PRODUCER_INTERVAL - PRODUCER_SLEEP_INTERVAL / 5)) {
-            m_prevTimestamp = m_prevTimestamp + PRODUCER_INTERVAL;
-        } else {
-            // CINFO << "Try to sleep " << PRODUCER_SLEEP_INTERVAL;
+        if (((timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= m_prevTimestamp) &&
+            ((1 + timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL > m_prevTimestamp)) {
             sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
             return;
+        } else {
+            m_prevTimestamp = timestamp;
         }
     }
 
