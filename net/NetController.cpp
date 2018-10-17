@@ -11,6 +11,7 @@
 
 #include "net/NetController.h"
 #include <net/All.h>
+#include <net/Network.h>
 #include <core/Log.h>
 #include <chain/Types.h>
 #include <config/NetConfig.h>
@@ -41,7 +42,10 @@ void NetController::broadcast(char *msg)
 
 void NetController::broadcast(std::shared_ptr<core::Transaction> tMsg)
 {
+    Peers ps = m_host->getPeers();
+    for (auto i : ps) {
 
+    }
 }
 
 void NetController::init()
@@ -51,6 +55,15 @@ void NetController::init()
         m_host = new Host("GSE V1.0", m_key, conf, chain::DEFAULT_GSE_NETWORK);
         if (m_dispatcher)
             m_host->addDispatcher(m_dispatcher);
+
+        bi::tcp::endpoint ep = Network::resolveHost(DEFAULT_LOCAL_IP_PORT);
+        m_nodeIPEndpoint = NodeIPEndpoint(ep.address(), ep.port(), ep.port());
+        {
+            addNode("127.0.0.1:60606");
+            addNode("127.0.0.1:60607");
+        }
+
+
         m_host->start();
         CINFO << "NetController::init listen port:" << m_host->listenPort();
         m_inited = true;
@@ -85,6 +98,28 @@ std::shared_ptr<core::Block> NetController::getBlockFromCache()
     }
 
     return ret;
+}
+
+void NetController::addNode(std::string const& host)
+{
+
+    addNode(NodeID(), Network::resolveHost(host));
+}
+
+void NetController::addNode(bi::tcp::endpoint const& ep)
+{
+    addNode(NodeID(), ep);
+}
+
+void NetController::addNode(NodeID const& nodeID, bi::tcp::endpoint const& ep)
+{
+    NodeIPEndpoint nep(ep.address(), ep.port(), ep.port());
+    if (m_nodeIPEndpoint == nep) {
+        CINFO << "Add current node(" << nep << ") to NodeTable, reject it!";
+        return;
+    }
+
+    m_host->addNode(nodeID, nep);
 }
 
 } // end of namespace

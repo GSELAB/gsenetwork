@@ -535,7 +535,7 @@ void Host::addNode(NodeID const& _node, NodeIPEndpoint const& _endpoint)
         else
             return;
 
-    if (_endpoint.tcpPort() < 30300 || _endpoint.tcpPort() > 30305)
+    if (_endpoint.tcpPort() < 60606 || _endpoint.tcpPort() > 60615)
         cnetdetails << "Non-standard port being recorded: " << _endpoint.tcpPort();
 
     addNodeToNodeTable(Node(_node, _endpoint));

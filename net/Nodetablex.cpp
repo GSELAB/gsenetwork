@@ -539,6 +539,7 @@ unique_ptr<DiscoveryDatagram> DiscoveryDatagram::interpretUDP(boost::asio::ip::u
 {
     unique_ptr<DiscoveryDatagram> decoded;
     // h256 + Signature + type + chainID + RLP ()
+    CINFO << "Hunter:------------------- interpretUDP";
     if (packet.size() < h256::size + Signature::size + 1 + 3 + sizeof(chain::ChainID)) {
         LOG(g_discoveryWarnLogger::get()) << "Invalid packet (too small) from "
                                           << from.address().to_string() << ":" << from.port();
