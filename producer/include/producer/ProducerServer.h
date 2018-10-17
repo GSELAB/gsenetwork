@@ -19,7 +19,6 @@
 #include <core/Task.h>
 #include <crypto/GKey.h>
 #include <config/Constant.h>
-#include <producer/Schedule.h>
 
 using namespace core;
 
@@ -78,13 +77,11 @@ private:
     chain::ChainID m_chainID;
     crypto::GKey m_key;
 
-    //std::vector<std::shared_ptr<Producer>> m_producers;
+    std::vector<std::shared_ptr<Producer>> m_producers;
     ProducerState m_state;
     std::shared_ptr<Account> m_currentAccout;
 
     ProcuderEventHandleFace* m_eventHandle;
-
-    Schedule m_schedule;
 
     int64_t m_prevTimestamp = -1;
 };

@@ -29,7 +29,7 @@ Schedule::~Schedule()
 }
 
 //@not thread safe
-std::vector<Producer> const& Schedule::getActiveProducers() const
+std::vector<Producer> const& Schedule::getActiceProducers() const
 {
     return m_activeProducers;
 }
