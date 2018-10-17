@@ -104,6 +104,8 @@ public:
 
     ChainID const& getChainID() const { return m_chainID; }
 
+    BlockChainStatus getBlockChainStatus() const { return m_blockChainStatus; }
+
     void setChainID(ChainID const& chainID) { m_chainID = chainID; }
 
     bool processBlock(std::shared_ptr<Block> block);

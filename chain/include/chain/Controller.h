@@ -68,6 +68,8 @@ public:
 
     std::shared_ptr<core::Block> getBlockFromCache() { return m_chain->getBlockFromCache(); }
 
+    BlockChainStatus getBlockChainStatus() const { return m_chain->getBlockChainStatus(); };
+
     // @rpc-interface
     string const& getVersion() const { return ChainVersion; }
 
