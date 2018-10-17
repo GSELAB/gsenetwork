@@ -104,6 +104,8 @@ public:
 
     ChainID const& getChainID() const { return m_chainID; }
 
+    BlockChainStatus getBlockChainStatus() const { return m_blockChainStatus; }
+
     void setChainID(ChainID const& chainID) { m_chainID = chainID; }
 
     bool processBlock(std::shared_ptr<Block> block);
@@ -114,7 +116,7 @@ public:
 
     bool processTransaction(Transaction const& transaction, MemoryItem* mItem);
 
-    bool checkBifurcation();
+    bool checkBifurcation(std::shared_ptr<Block> block);
 
     DispatchFace* getDispatcher() const { return m_dispatcher; }
 
