@@ -53,18 +53,23 @@ public:
 
     std::shared_ptr<core::Block> getBlockFromCache();
 
+protected:
+    void addNode(std::string const& host);
+
+    void addNode(bi::tcp::endpoint const& ep);
+
+    void addNode(NodeID const& nodeID, bi::tcp::endpoint const& ep);
 
 private:
     bool m_inited;
-
     crypto::GKey m_key;
 
     DispatchFace* m_dispatcher;
 
+    NodeIPEndpoint m_nodeIPEndpoint;
     Host* m_host;
 
     std::queue<std::shared_ptr<core::Transaction>> transactionsQueue;
-
     std::queue<std::shared_ptr<core::Block>> blocksQueue;
 };
 

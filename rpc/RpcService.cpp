@@ -11,13 +11,14 @@
 
 #include <rpc/RpcService.h>
 #include <core/Log.h>
+#include <config/NetConfig.h>
 
 namespace rpc {
 
 RpcService::RpcService(WebSocketEventHandlerFace* face)
 {
     CINFO << "RpcService::RpcService";
-    m_server = new WebSocket(face, 65056);
+    m_server = new WebSocket(face, DEFAULT_LOCAL_RPC_PORT);
 }
 
 RpcService::~RpcService()
