@@ -19,6 +19,8 @@
 #include <core/Task.h>
 #include <crypto/GKey.h>
 #include <config/Constant.h>
+#include <producer/Schedule.h>
+#include <chain/BlockChain.h>
 
 using namespace core;
 
@@ -41,6 +43,8 @@ public:
     virtual std::shared_ptr<Transaction> getTransactionFromCache() = 0;
 
     virtual std::shared_ptr<Block> getBlockFromCache() = 0;
+
+    virtual chain::BlockChainStatus getBlockChainStatus() const = 0;
 };
 
 /* The producer's state. */
@@ -77,11 +81,13 @@ private:
     chain::ChainID m_chainID;
     crypto::GKey m_key;
 
-    std::vector<std::shared_ptr<Producer>> m_producers;
+    //std::vector<std::shared_ptr<Producer>> m_producers;
     ProducerState m_state;
     std::shared_ptr<Account> m_currentAccout;
 
     ProcuderEventHandleFace* m_eventHandle;
+
+    Schedule m_schedule;
 
     int64_t m_prevTimestamp = -1;
 };
