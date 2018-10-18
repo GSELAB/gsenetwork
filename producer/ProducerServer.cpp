@@ -10,6 +10,7 @@
  */
 
 #include <producer/ProducerServer.h>
+#include <producer/Schedule.h>
 #include <config/Constant.h>
 #include <utils/Utils.h>
 #include <core/JsonHelper.h>
@@ -69,7 +70,6 @@ void ProducerServer::doWork()
     unsigned i;
 
     int64_t timestamp = currentTimestamp();
-
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
 
