@@ -50,8 +50,8 @@ namespace ba = boost::asio;
 namespace bi = boost::asio::ip;
 
 
-class RLP;
-class RLPStream;
+//class RLP;
+//class RLPStream;
 
 namespace net {
 

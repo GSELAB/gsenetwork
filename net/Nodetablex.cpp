@@ -139,11 +139,10 @@ std::shared_ptr<NodeEntry> NodeTable::nodeEntry(NodeID nID)
 
 void NodeTable::doDiscover(NodeID target, unsigned round, std::shared_ptr<std::set<std::shared_ptr<NodeEntry>>> tried)
 {
-    CINFO << "round " << round;
     // note : only called by doDiscovery
     if (!m_socketPointer->isOpen()) return;
     if (round == s_maxSteps) {
-        CINFO << "Terminating after " << round << "rounds";
+        CINFO << "Terminating after " << round << " rounds";
         doDiscovery();
         return;
     } else if (!round && !tried) {

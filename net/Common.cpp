@@ -29,7 +29,7 @@ using namespace core;
 using namespace net;
 
 const unsigned net::c_protocolVersion = 4;
-const unsigned net::c_defaultIPPort = 30303;
+const unsigned net::c_defaultIPPort = 60606;
 static_assert(net::c_protocolVersion == 4, "Replace v3 compatbility with v4 compatibility before updating network version.");
 
 const net::NodeIPEndpoint net::UnspecifiedNodeIPEndpoint = NodeIPEndpoint(bi::address(), 0, 0);
