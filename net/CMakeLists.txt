@@ -8,8 +8,8 @@ SET(net_source
     Common.cpp
     Network.cpp
     UPnp.cpp
+    PeerCapability.cpp
     Peer.cpp
-    Capability.cpp
     Session.cpp
     Host.cpp
     NetController.cpp)

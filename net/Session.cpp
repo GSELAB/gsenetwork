@@ -27,7 +27,7 @@
 #include <core/CommonIO.h>
 #include <core/Exceptions.h>
 #include <net/Host.h>
-#include <net/Capability.h>
+#include <net/PeerCapability.h>
 
 using namespace std;
 using namespace core;
@@ -116,28 +116,27 @@ template <class T> vector<T> randomSelection(vector<T> const& _t, unsigned _n)
     return ret;
 }
 
-bool Session::readPacket(uint16_t _capId, PacketType _t, core::RLP const& _r)
+bool Session::readPacket(uint16_t _capId, PacketType _packetType, core::RLP const& _r)
 {
     m_lastReceived = chrono::steady_clock::now();
-    //clog(VerbosityTrace, "net") << "-> " << _t << " " << _r;
+    CINFO  << "-> " << _packetType << " " << _r;
     try // Generic try-catch block designed to capture RLP format errors - TODO: give decent diagnostics, make a bit more specific over what is caught.
     {
         // v4 frame headers are useless, offset packet type used
         // v5 protocol type is in header, packet type not offset
-        if (_capId == 0 && _t < UserPacket)
-            return interpret(_t, _r);
+        if (_capId == 0 && _packetType < UserPacket)
+            return interpret(_packetType, _r);
 
         for (auto const& i: m_capabilities)
-            if (_t >= (int)i.second->m_idOffset && _t - i.second->m_idOffset < i.second->hostCapability()->messageCount())
-                return i.second->enabled() ? i.second->interpret(_t - i.second->m_idOffset, _r) :
-                                             true;
+            if (i.second->canHandle(_packetType))
+                return i.second->enabled() ? i.second->interpret(_packetType, _r) : true;
 
         return false;
     }
     catch (std::exception const& _e)
     {
         cnetlog << "Exception caught in p2p::Session::interpret(): " << _e.what()
-                << ". PacketType: " << _t << ". RLP: " << _r;
+                << ". PacketType: " << _packetType << ". RLP: " << _r;
         disconnect(BadProtocol);
         return true;
     }
@@ -434,7 +433,7 @@ bool Session::checkRead(std::size_t _expected, boost::system::error_code _ec, st
     return true;
 }
 
-void Session::registerCapability(CapDesc const& _desc, std::shared_ptr<Capability> _p)
+void Session::registerCapability(CapDesc const& _desc, std::shared_ptr<PeerCapabilityFace> _p)
 {
     DEV_GUARDED(x_framing)
     {

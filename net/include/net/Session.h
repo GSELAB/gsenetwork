@@ -65,9 +65,13 @@ public:
 	virtual PeerSessionInfo info() const = 0;
 	virtual std::chrono::steady_clock::time_point connectionTime() = 0;
 
-	virtual void registerCapability(CapDesc const& _desc, std::shared_ptr<Capability> _p) = 0;
+	virtual void registerCapability(CapDesc const& _desc, std::shared_ptr<PeerCapabilityFace> _p) = 0;
 
-	virtual std::map<CapDesc, std::shared_ptr<Capability>> const&  capabilities() const = 0;
+    virtual std::map<CapDesc, std::shared_ptr<PeerCapabilityFace>> const& capabilities() const = 0;
+
+	//virtual void registerCapability(CapDesc const& _desc, std::shared_ptr<Capability> _p) = 0;
+
+	//virtual std::map<CapDesc, std::shared_ptr<Capability>> const&  capabilities() const = 0;
 
 	virtual std::shared_ptr<Peer> peer() const = 0;
 
@@ -105,9 +109,9 @@ public:
 	PeerSessionInfo info() const override { Guard l(x_info); return m_info; }
 	std::chrono::steady_clock::time_point connectionTime() override { return m_connect; }
 
-	void registerCapability(CapDesc const& _desc, std::shared_ptr<Capability> _p) override;
+	void registerCapability(CapDesc const& _desc, std::shared_ptr<PeerCapabilityFace> _p) override;
 
-	std::map<CapDesc, std::shared_ptr<Capability>> const& capabilities() const override { return m_capabilities; }
+    std::map<CapDesc, std::shared_ptr<PeerCapabilityFace>> const& capabilities() const override { return m_capabilities; }
 
 	std::shared_ptr<Peer> peer() const override { return m_peer; }
 
@@ -160,7 +164,7 @@ private:
 	std::chrono::steady_clock::time_point m_ping;			///< Time point of last ping.
 	std::chrono::steady_clock::time_point m_lastReceived;	///< Time point of last message.
 
-	std::map<CapDesc, std::shared_ptr<Capability>> m_capabilities;	///< The peer's capability set.
+	std::map<CapDesc, std::shared_ptr<PeerCapabilityFace>> m_capabilities;  ///< The peer's capability set.
 
     std::string const m_logContext;
 };
