@@ -3,7 +3,10 @@
 #include <net/Network.h>
 #include <core/Log.h>
 #include <chain/Types.h>
-#include <config/NetConfig.h>
+#include <crypto/Valid.h>
+#include <config/Argument.h>
+
+using namespace config;
 
 namespace net {
 
@@ -27,22 +30,31 @@ NetController::~NetController()
 void NetController::init()
 {
     if (!m_inited) {
-        NetworkConfig conf(DEFAULT_LOCAL_IP, DEFAULT_LISTEN_PORT, false);
+
+        CINFO << "ARGS:" << ARGs.m_local.m_address.to_string() << " port:" <<  ARGs.m_local.m_tcpPort;
+        NetworkConfig conf(ARGs.m_local.m_address.to_string(), ARGs.m_local.m_tcpPort, false);
         m_host = new Host("GSE V1.0", m_key, conf); /// , chain::DEFAULT_GSE_NETWORK
         if (m_dispatcher)
             m_host->addDispatcher(m_dispatcher);
 
         m_host->start();
-        CINFO << "NetController::init listen port:" << m_host->listenPort();
+        CINFO << "NetController listen port:" << m_host->listenPort();
         m_inited = true;
+        m_nodeIPEndpoint = NodeIPEndpoint(ARGs.m_local.m_address, ARGs.m_local.m_tcpPort, ARGs.m_local.m_udpPort);
 
-        bi::tcp::endpoint ep = Network::resolveHost(DEFAULT_LOCAL_IP_PORT);
-        m_nodeIPEndpoint = NodeIPEndpoint(ep.address(), ep.port(), ep.port());
-        {
-            addNode("127.0.0.1:60606");
-            addNode("127.0.0.1:60607");
+        if (ARGs.m_neighbors.size() > 0) {
+            for (auto i : ARGs.m_neighbors) {
+                NodeIPEndpoint ep(i.m_address, i.m_tcpPort, i.m_udpPort);
+                addNode(ep);
+            }
         }
 
+        if (ARGs.m_trustNeighbors.size() > 0) {
+            for (auto i : ARGs.m_trustNeighbors) {
+                NodeIPEndpoint ep(i.m_address, i.m_tcpPort, i.m_udpPort);
+                addNode(ep);
+            }
+        }
     }
 }
 
@@ -53,19 +65,38 @@ void NetController::broadcast(char *msg)
 
 void NetController::broadcast(std::shared_ptr<core::Transaction> tMsg)
 {
-    Peers ps = m_host->getPeers();
-    CINFO << "NetController::broadcast tx, peers:" << ps.size();
-    for (auto i : ps) {
+    {
 
+    }
+    Peers ps = m_host->getPeers();
+    for (auto i : ps) {
+        NodeID id = i.address();
+        std::shared_ptr<SessionFace> session = m_host->peerSession(id);
+        if (session) {
+            CINFO << "NetController::broadcast tx, find session";
+            core::RLPStream rlpStream;
+            tMsg->streamRLP(rlpStream);
+            session->sealAndSend(rlpStream);
+        } else {
+
+        }
     }
 }
 
 void NetController::broadcast(core::Transaction const& tMsg)
 {
     Peers ps = m_host->getPeers();
-    CINFO << "NetController::broadcast tx, peers:" << ps.size();
     for (auto i : ps) {
+        NodeID id = i.address();
+        std::shared_ptr<SessionFace> session = m_host->peerSession(id);
+        if (session) {
+            CINFO << "NetController::broadcast tx, find session";
+            core::RLPStream rlpStream;
+            tMsg.streamRLP(rlpStream);
+            session->sealAndSend(rlpStream);
+        } else {
 
+        }
     }
 }
 

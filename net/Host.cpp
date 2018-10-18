@@ -429,11 +429,8 @@ void Host::determinePublic()
 
 void Host::runAcceptor()
 {
-    CINFO << "Host::runAcceptor <>";
     assert(m_listenPort > 0);
     if (m_run && !m_accepting) {
-        CINFO << "Host::runAcceptor listening on local port:" << m_listenPort << " (public: " << m_tcpPublic
-                    << ")";
         m_accepting = true;
 
         auto socket = make_shared<BytesSocket>(m_ioService);
