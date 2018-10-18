@@ -14,55 +14,46 @@
     You should have received a copy of the GNU General Public License
     along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** @file Capability.cpp
- * @author Gav Wood <i@gavwood.com>
- * @date 2014
- */
 
-#include <net/Capability.h>
+#include <net/PeerCapability.h>
 
 #include <core/Log.h>
 #include <net/Session.h>
 #include <net/Host.h>
-using namespace std;
+
 using namespace core;
-using namespace net;
 
-Capability::Capability(std::shared_ptr<SessionFace> _s, HostCapabilityFace* _h, unsigned _idOffset):
-    m_session(_s), m_hostCap(_h), m_idOffset(_idOffset)
+namespace net {
+
+PeerCapability::PeerCapability(std::weak_ptr<SessionFace> _s, std::string const& _name,
+    unsigned _messageCount, unsigned _idOffset)
+  : m_session(move(_s)), m_name(_name), m_messageCount(_messageCount), m_idOffset(_idOffset)
 {
-    //cnetdetails << "New session for capability " << m_hostCap->name()
-    //            << "; idOffset: " << m_idOffset;
+    cnetdetails << "New session for capability " << m_name << "; idOffset: " << m_idOffset;
 }
 
-void Capability::disconnect()
+void PeerCapability::disable(std::string const& _problem)
 {
-    if (auto s = session())
-        s->disconnect(UserReason);
-}
-
-void Capability::disable(std::string const& _problem)
-{
-    //cnetdetails << "DISABLE: Disabling capability '" << m_hostCap->name()
-    //            << "'. Reason: " << _problem;
+    cnetdetails << "DISABLE: Disabling capability '" << m_name << "'. Reason: " << _problem;
     m_enabled = false;
 }
 
-core::RLPStream& Capability::prep(core::RLPStream& _s, unsigned _id, unsigned _args)
+core::RLPStream& PeerCapability::prep(core::RLPStream& _s, unsigned _id, unsigned _args)
 {
     return _s.appendRaw(bytes(1, _id + m_idOffset)).appendList(_args);
 }
 
-void Capability::sealAndSend(core::RLPStream& _s)
+void PeerCapability::sealAndSend(core::RLPStream& _s)
 {
-    shared_ptr<SessionFace> session = m_session.lock();
+    std::shared_ptr<SessionFace> session = m_session.lock();
     if (session)
         session->sealAndSend(_s);
 }
 
-void Capability::addRating(int _r)
+void PeerCapability::addRating(int _r)
 {
-    shared_ptr<SessionFace> session = m_session.lock();
+    std::shared_ptr<SessionFace> session = m_session.lock();
     if (session)
         session->addRating(_r);
 }
+} // namespace net
