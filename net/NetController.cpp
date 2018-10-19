@@ -1,60 +1,48 @@
 #include "net/NetController.h"
 #include <net/All.h>
-#include <net/Network.h>
 #include <core/Log.h>
 #include <chain/Types.h>
 #include <crypto/Valid.h>
 #include <config/Argument.h>
+#include <net/Client.h>
 
 using namespace config;
 
 namespace net {
 
-NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher): m_key(key), m_inited(false)
+NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher):
+    m_key(key), m_inited(false), m_dispatcher(dispatcher),
+    m_networkConfig(ARGs.m_local.m_address.to_string(), ARGs.m_local.m_tcpPort, false),
+    m_host(new Host("GSE V1.0", m_networkConfig))
 {
-    m_dispatcher = dispatcher;
+
 }
 
-NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher, config::NetConfig const& netConfig): m_key(key), m_inited(false)
+NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher, config::NetConfig const& netConfig): NetController(key, dispatcher)
 {
-    m_dispatcher = dispatcher;
 }
 
 NetController::~NetController()
 {
     CINFO << "NetController::~NetController";
-    if (!m_host)
-        delete m_host;
 }
 
 void NetController::init()
 {
     if (!m_inited) {
-
-        CINFO << "ARGS:" << ARGs.m_local.m_address.to_string() << " port:" <<  ARGs.m_local.m_tcpPort;
-        NetworkConfig conf(ARGs.m_local.m_address.to_string(), ARGs.m_local.m_tcpPort, false);
-        m_host = new Host("GSE V1.0", m_key, conf); /// , chain::DEFAULT_GSE_NETWORK
-        if (m_dispatcher)
-            m_host->addDispatcher(m_dispatcher);
-
+        if (m_dispatcher) m_host->addDispatcher(m_dispatcher);
+        auto hostCap = std::make_shared<Client>(*m_host);
+        m_host->registerCapability(hostCap);
         m_host->start();
-        CINFO << "NetController listen port:" << m_host->listenPort();
         m_inited = true;
         m_nodeIPEndpoint = NodeIPEndpoint(ARGs.m_local.m_address, ARGs.m_local.m_tcpPort, ARGs.m_local.m_udpPort);
+        if (ARGs.m_neighbors.size() > 0)
+            for (auto i : ARGs.m_neighbors)
+                addNode(NodeIPEndpoint(i.m_address, i.m_tcpPort, i.m_udpPort));
 
-        if (ARGs.m_neighbors.size() > 0) {
-            for (auto i : ARGs.m_neighbors) {
-                NodeIPEndpoint ep(i.m_address, i.m_tcpPort, i.m_udpPort);
-                addNode(ep);
-            }
-        }
-
-        if (ARGs.m_trustNeighbors.size() > 0) {
-            for (auto i : ARGs.m_trustNeighbors) {
-                NodeIPEndpoint ep(i.m_address, i.m_tcpPort, i.m_udpPort);
-                addNode(ep);
-            }
-        }
+        if (ARGs.m_trustNeighbors.size() > 0)
+            for (auto i : ARGs.m_trustNeighbors)
+                addNode(NodeIPEndpoint(i.m_address, i.m_tcpPort, i.m_udpPort));
     }
 }
 
@@ -95,7 +83,7 @@ void NetController::broadcast(core::Transaction const& tMsg)
             tMsg.streamRLP(rlpStream);
             session->sealAndSend(rlpStream);
         } else {
-
+            CINFO << "NetController::broadcast not find session ,size:" << m_host->getSessionSize();
         }
     }
 }

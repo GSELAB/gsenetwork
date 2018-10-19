@@ -60,11 +60,11 @@ public:
     std::shared_ptr<PeerCapabilityFace> newPeerCapability(
         std::shared_ptr<SessionFace> const& _s, unsigned _idOffset, CapDesc const& _cap) override
     {
-        auto p = std::make_shared<PeerCap>(_s, this, _idOffset, _cap);
+        auto p = std::make_shared<PeerCap>(
+            std::weak_ptr<SessionFace>{_s}, name(), messageCount(), _idOffset, _cap);
         _s->registerCapability(_cap, p);
         return p;
     }
-
     void onStarting() override {}
     void onStopping() override {}
 

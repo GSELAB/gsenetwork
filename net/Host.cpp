@@ -268,7 +268,7 @@ void Host::startPeerSession(Public const& _id, core::RLP const& _rlp, unique_ptr
 
     if (pub != _id)
     {
-        cdebug << "Wrong ID: " << pub << " vs. " << _id;
+        CDEBUG << "Wrong ID: " << pub << " vs. " << _id;
         return;
     }
 
@@ -290,20 +290,21 @@ void Host::startPeerSession(Public const& _id, core::RLP const& _rlp, unique_ptr
         PeerSessionInfo({_id, clientVersion, p->endpoint.address().to_string(), listenPort,
             chrono::steady_clock::duration(), _rlp[2].toSet<CapDesc>(), 0, map<string, string>(),
             protocolVersion}));
-    if (protocolVersion < net::c_protocolVersion - 1)
-    {
+    if (protocolVersion < net::c_protocolVersion - 1) {
+        CDEBUG << "Unexpected protocolVersion";
         ps->disconnect(IncompatibleProtocol);
         return;
     }
-    if (caps.empty())
-    {
+
+    if (caps.empty()) {
+        CDEBUG << "Unexpected empty caps";
         ps->disconnect(UselessPeer);
         return;
     }
 
     if (m_netConfig.pin && !isRequiredPeer(_id))
     {
-        cdebug << "Unexpected identity from peer (got" << _id << ", must be one of " << m_requiredPeers << ")";
+        CDEBUG << "Unexpected identity from peer (got" << _id << ", must be one of " << m_requiredPeers << ")";
         ps->disconnect(UnexpectedIdentity);
         return;
     }
