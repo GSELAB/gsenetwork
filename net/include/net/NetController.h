@@ -19,6 +19,7 @@
 #include <crypto/GKey.h>
 #include <net/BytesPacket.h>
 #include <net/Common.h>
+#include <net/Network.h>
 
 namespace net {
 
@@ -28,8 +29,6 @@ public:
 
     virtual void processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg) = 0;
 };
-
-class Host;
 
 class NetController {
 public:
@@ -67,7 +66,7 @@ private:
     crypto::GKey m_key;
 
     DispatchFace* m_dispatcher;
-
+    NetworkConfig m_networkConfig;
     NodeIPEndpoint m_nodeIPEndpoint;
     Host* m_host;
 

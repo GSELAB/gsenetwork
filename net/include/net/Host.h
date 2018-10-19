@@ -221,6 +221,8 @@ public:
         return m_sessions.count(_id) ? m_sessions[_id].lock() : std::shared_ptr<SessionFace>();
     }
 
+    size_t getSessionSize() const { RecursiveGuard l(x_sessions); return  m_sessions.size(); }
+
     /// Get our current node ID.
     NodeID id() const { return m_key.getPublic(); }
 

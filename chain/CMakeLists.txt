@@ -5,6 +5,7 @@ SET (chain_source
     SubChainController.cpp
     BlockChain.cpp
     Sync.cpp
+    GPeer.cpp
     Controller.cpp)
 
 ADD_LIBRARY (chain  ${chain_source})

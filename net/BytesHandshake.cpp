@@ -322,7 +322,7 @@ void BytesHandshake::transition(boost::system::error_code _ech)
     {
         m_nextState = ReadHello;
         LOG(m_logger) << (m_originated ? "p2p.connect.egress" : "p2p.connect.ingress")
-                      << " sending capabilities handshake";
+                      << " sending capabilities handshake,  caps size:" << m_host->caps().size();
 
         /// This pointer will be freed if there is an error otherwise
         /// it will be passed to Host which will take ownership.
