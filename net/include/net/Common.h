@@ -42,6 +42,7 @@
 #include <core/Exceptions.h>
 #include <core/RLP.h>
 #include <core/Guards.h>
+#include <chain/Common.h>
 
 using namespace core;
 using namespace crypto;
@@ -106,6 +107,8 @@ enum PacketType
     PeersPacket,
     UserPacket = 0x10
 };
+
+std::string ptToString(PacketType type);
 
 enum DisconnectReason
 {

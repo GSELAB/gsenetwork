@@ -40,7 +40,8 @@ void PeerCapability::disable(std::string const& _problem)
 
 core::RLPStream& PeerCapability::prep(core::RLPStream& _s, unsigned _id, unsigned _args)
 {
-    return _s.appendRaw(bytes(1, _id + m_idOffset)).appendList(_args);
+    /// return _s.appendRaw(bytes(1, _id + m_idOffset)).appendList(_args);
+    return _s.appendRaw(bytes(1, _id)).appendList(_args);
 }
 
 void PeerCapability::sealAndSend(core::RLPStream& _s)

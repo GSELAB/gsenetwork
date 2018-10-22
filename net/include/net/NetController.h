@@ -20,6 +20,7 @@
 #include <net/BytesPacket.h>
 #include <net/Common.h>
 #include <net/Network.h>
+#include <chain/Common.h>
 
 namespace net {
 
@@ -60,6 +61,10 @@ protected:
     void addNode(bi::tcp::endpoint const& ep);
 
     void addNode(NodeID const& nodeID, bi::tcp::endpoint const& ep);
+
+    void send(bytes const& data, chain::ProtocolPacketType packetType);
+
+    core::RLPStream& prepare(core::RLPStream& rlpStream, unsigned id, unsigned args);
 
 private:
     bool m_inited;

@@ -11,6 +11,7 @@ SET(net_source
     PeerCapability.cpp
     Peer.cpp
     Session.cpp
+    GSEPeer.cpp
     Client.cpp
     Host.cpp
     NetController.cpp)

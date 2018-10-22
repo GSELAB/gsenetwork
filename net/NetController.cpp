@@ -7,6 +7,7 @@
 #include <net/Client.h>
 
 using namespace config;
+using namespace chain;
 
 namespace net {
 
@@ -73,19 +74,11 @@ void NetController::broadcast(std::shared_ptr<core::Transaction> tMsg)
 
 void NetController::broadcast(core::Transaction const& tMsg)
 {
-    Peers ps = m_host->getPeers();
-    for (auto i : ps) {
-        NodeID id = i.address();
-        std::shared_ptr<SessionFace> session = m_host->peerSession(id);
-        if (session) {
-            CINFO << "NetController::broadcast tx, find session";
-            core::RLPStream rlpStream;
-            tMsg.streamRLP(rlpStream);
-            session->sealAndSend(rlpStream);
-        } else {
-            CINFO << "NetController::broadcast not find session ,size:" << m_host->getSessionSize();
-        }
-    }
+    core::RLPStream rlpStream;
+    tMsg.streamRLP(rlpStream);
+    bytes data = rlpStream.out();
+    CINFO << "NetController::broadcast tx";
+    send(data, TransactionPacket);
 }
 
 void NetController::broadcast(std::shared_ptr<core::Block> bMsg)
@@ -139,6 +132,29 @@ void NetController::addNode(NodeID const& nodeID, bi::tcp::endpoint const& ep)
     }
 
     m_host->addNode(nodeID, nep);
+}
+
+core::RLPStream& NetController::prepare(core::RLPStream& rlpStream, unsigned id, unsigned args)
+{
+    return rlpStream.appendRaw(bytes(1, id)).appendList(args);
+}
+
+void NetController::send(bytes const& data, ProtocolPacketType packetType)
+{
+    Peers ps = m_host->getPeers();
+    for (auto i : ps) {
+        NodeID id = i.address();
+        std::shared_ptr<SessionFace> session = m_host->peerSession(id);
+
+        if (session) {
+            CINFO << "NetController::send data, find session";
+            core::RLPStream rlpStream;
+            prepare(rlpStream, packetType, 1).appendRaw(data);
+            session->sealAndSend(rlpStream);
+        } else {
+            CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
+        }
+    }
 }
 
 } // end of namespace

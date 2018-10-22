@@ -53,12 +53,14 @@ public:
     bool enabled() const override { return m_enabled; }
     bool canHandle(unsigned _packetType) const override
     {
-        return _packetType >= m_idOffset && _packetType < m_messageCount + m_idOffset;
+        return chain::canHandle((chain::ProtocolPacketType)_packetType);
+        // return _packetType >= m_idOffset && _packetType < m_messageCount + m_idOffset;
     }
 
     bool interpret(unsigned _packetType, core::RLP const& _rlp) override
     {
-        return interpretCapabilityPacket(_packetType - m_idOffset, _rlp);
+        //return interpretCapabilityPacket(_packetType - m_idOffset, _rlp);
+        return interpretCapabilityPacket(_packetType, _rlp);
     }
 
     void onDisconnect() override {}
