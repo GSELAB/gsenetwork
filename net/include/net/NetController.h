@@ -20,16 +20,10 @@
 #include <net/BytesPacket.h>
 #include <net/Common.h>
 #include <net/Network.h>
+#include <net/Client.h>
 #include <chain/Common.h>
 
 namespace net {
-
-class DispatchFace {
-public:
-    virtual ~DispatchFace() {}
-
-    virtual void processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg) = 0;
-};
 
 class NetController {
 public:

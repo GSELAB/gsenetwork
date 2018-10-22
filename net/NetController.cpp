@@ -4,7 +4,6 @@
 #include <chain/Types.h>
 #include <crypto/Valid.h>
 #include <config/Argument.h>
-#include <net/Client.h>
 
 using namespace config;
 using namespace chain;
@@ -31,8 +30,8 @@ NetController::~NetController()
 void NetController::init()
 {
     if (!m_inited) {
-        if (m_dispatcher) m_host->addDispatcher(m_dispatcher);
-        auto hostCap = std::make_shared<Client>(*m_host);
+        if (m_dispatcher) m_host->setDispatcher(m_dispatcher);
+        auto hostCap = std::make_shared<Client>(*m_host, m_dispatcher);
         m_host->registerCapability(hostCap);
         m_host->start();
         m_inited = true;
@@ -54,22 +53,7 @@ void NetController::broadcast(char *msg)
 
 void NetController::broadcast(std::shared_ptr<core::Transaction> tMsg)
 {
-    {
-
-    }
-    Peers ps = m_host->getPeers();
-    for (auto i : ps) {
-        NodeID id = i.address();
-        std::shared_ptr<SessionFace> session = m_host->peerSession(id);
-        if (session) {
-            CINFO << "NetController::broadcast tx, find session";
-            core::RLPStream rlpStream;
-            tMsg->streamRLP(rlpStream);
-            session->sealAndSend(rlpStream);
-        } else {
-
-        }
-    }
+    broadcast(*tMsg);
 }
 
 void NetController::broadcast(core::Transaction const& tMsg)
@@ -77,15 +61,17 @@ void NetController::broadcast(core::Transaction const& tMsg)
     core::RLPStream rlpStream;
     tMsg.streamRLP(rlpStream);
     bytes data = rlpStream.out();
-    CINFO << "NetController::broadcast tx";
     send(data, TransactionPacket);
+    CINFO << "RPC broadcast tx success";
 }
 
 void NetController::broadcast(std::shared_ptr<core::Block> bMsg)
 {
-    CINFO << "Net broadcast block(" << bMsg->getNumber() << ")";
-
-
+    core::RLPStream rlpStream;
+    bMsg->streamRLP(rlpStream);
+    bytes data = rlpStream.out();
+    send(data, BlockPacket);
+    CINFO << "Broadcast block success. number(" << bMsg->getNumber() << ")";
 }
 
 std::shared_ptr<core::Transaction> NetController::getTransactionFromCache()
@@ -145,9 +131,7 @@ void NetController::send(bytes const& data, ProtocolPacketType packetType)
     for (auto i : ps) {
         NodeID id = i.address();
         std::shared_ptr<SessionFace> session = m_host->peerSession(id);
-
         if (session) {
-            CINFO << "NetController::send data, find session";
             core::RLPStream rlpStream;
             prepare(rlpStream, packetType, 1).appendRaw(data);
             session->sealAndSend(rlpStream);

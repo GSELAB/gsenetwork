@@ -147,7 +147,7 @@ bool Session::interpret(PacketType _t, core::RLP const& _r)
         break;
     }
     case PingPacket: {
-        CDEBUG << "Ping " << m_info.id;
+        // CDEBUG << "Ping " << m_info.id;
         core::RLPStream s;
         sealAndSend(prep(s, PongPacket));
         break;
@@ -156,9 +156,9 @@ bool Session::interpret(PacketType _t, core::RLP const& _r)
         DEV_GUARDED(x_info)
         {
             m_info.lastPing = std::chrono::steady_clock::now() - m_ping;
-            CDEBUG << "Latency: "
-                        << chrono::duration_cast<chrono::milliseconds>(m_info.lastPing).count()
-                        << " ms";
+            // CDEBUG << "Latency: "
+            //            << chrono::duration_cast<chrono::milliseconds>(m_info.lastPing).count()
+            //            << " ms";
         }
         break;
     case GetPeersPacket:
@@ -210,9 +210,7 @@ void Session::send(bytes&& _msg)
         return;
     }
 
-    if (!m_socket->ref().is_open())
-        return;
-
+    if (!m_socket->ref().is_open()) return;
     bool doWrite = false;
     DEV_GUARDED(x_framing)
     {
@@ -366,7 +364,7 @@ void Session::doRead()
                         return;
                     } else {
                         auto packetType = (PacketType)core::RLP(frame.cropped(0, 1)).toInt<unsigned>();
-                        core::RLP r(frame.cropped(1));
+                        core::RLP r(frame.cropped(1, hLength - 1));
                         bool ok = readPacket(hProtocolId, packetType, r);
                         if (!ok) {
                             CDEBUG << "Couldn't interpret packet. " << core::RLP(r);

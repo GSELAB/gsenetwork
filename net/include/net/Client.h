@@ -7,9 +7,9 @@
 
 namespace net {
 
-class Client: public HostCapability<GSEPeer>, core::Task{
+class Client: public HostCapability<GSEPeer>, core::Task {
 public:
-    Client(Host const& host);
+    Client(Host const& host, DispatchFace* dispatcher);
 
     virtual ~Client();
 
@@ -17,8 +17,11 @@ public:
 
     bool isSyncing() const;
 
+    DispatchFace* getDispatcher() const override { return m_dispatcher; }
+
 protected:
-    std::shared_ptr<PeerCapabilityFace> newPeerCapability(std::shared_ptr<SessionFace> const& _s, unsigned _idOffset,CapDesc const& _cap) override;
+    std::shared_ptr<PeerCapabilityFace> newPeerCapability(
+        DispatchFace* dispatcher, std::shared_ptr<SessionFace> const& _s, unsigned _idOffset,CapDesc const& _cap) override;
 
 private:
 
@@ -27,6 +30,7 @@ private:
 
 private:
     // member
+    DispatchFace* m_dispatcher;
     int64_t m_lastTimestamp = -1;
 
 };

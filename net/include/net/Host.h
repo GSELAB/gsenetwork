@@ -238,8 +238,9 @@ public:
     /// Get sessions by capability name and version
     std::vector<std::pair<std::shared_ptr<SessionFace>, std::shared_ptr<Peer>>> peerSessions(std::string const& _name, u256 const& _version) const;
 
-    void addDispatcher(DispatchFace* dispatcher) { m_dispatchers.push_back(dispatcher); }
+    void setDispatcher(DispatchFace* dispatcher) { m_dispatcher = dispatcher; }
 
+    DispatchFace* getDispatcher() const { return m_dispatcher; }
 protected:
     void onNodeTableEvent(NodeID const& _n, NodeTableEventType const& _e);
 
@@ -351,7 +352,7 @@ private:
 
     ReputationManager m_repMan;
 
-    std::vector<DispatchFace*> m_dispatchers;
+    DispatchFace* m_dispatcher;
 
     Logger m_logger{createLogger(VerbosityDebug, "net")};
 };
