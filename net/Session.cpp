@@ -14,11 +14,6 @@
     You should have received a copy of the GNU General Public License
     along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** @file Session.cpp
- * @author Gav Wood <i@gavwood.com>
- * @author Alex Leverington <nessence@gmail.com>
- * @date 2014
- */
 
 #include <net/Session.h>
 
@@ -27,7 +22,7 @@
 #include <core/CommonIO.h>
 #include <core/Exceptions.h>
 #include <net/Host.h>
-#include <net/Capability.h>
+#include <net/PeerCapability.h>
 
 using namespace std;
 using namespace core;
@@ -53,27 +48,23 @@ Session::~Session()
 {
     LOG_SCOPED_CONTEXT(m_logContext);
 
-    cnetlog << "Closing peer session :-(";
+    CINFO << "Closing peer session :-(";
     m_peer->m_lastConnected = m_peer->m_lastAttempted - chrono::seconds(1);
 
     // Read-chain finished for one reason or another.
-    for (auto& i : m_capabilities)
-    {
+    for (auto& i : m_capabilities) {
         i.second->onDisconnect();
         i.second.reset();
     }
 
-    try
-    {
+    try {
         bi::tcp::socket& socket = m_socket->ref();
-        if (socket.is_open())
-        {
+        if (socket.is_open()) {
             boost::system::error_code ec;
             socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
             socket.close();
         }
-    }
-    catch (...){}
+    } catch (...){}
 }
 
 ReputationManager& Session::repMan()
@@ -88,8 +79,7 @@ NodeID Session::id() const
 
 void Session::addRating(int _r)
 {
-    if (m_peer)
-    {
+    if (m_peer) {
         m_peer->m_rating += _r;
         m_peer->m_score += _r;
         if (_r >= 0)
@@ -107,8 +97,7 @@ template <class T> vector<T> randomSelection(vector<T> const& _t, unsigned _n)
     if (_t.size() <= _n)
         return _t;
     vector<T> ret = _t;
-    while (ret.size() > _n)
-    {
+    while (ret.size() > _n) {
         auto i = ret.begin();
         advance(i, rand() % ret.size());
         ret.erase(i);
@@ -116,28 +105,26 @@ template <class T> vector<T> randomSelection(vector<T> const& _t, unsigned _n)
     return ret;
 }
 
-bool Session::readPacket(uint16_t _capId, PacketType _t, core::RLP const& _r)
+bool Session::readPacket(uint16_t _capId, PacketType _packetType, core::RLP const& _r)
 {
     m_lastReceived = chrono::steady_clock::now();
-    //clog(VerbosityTrace, "net") << "-> " << _t << " " << _r;
-    try // Generic try-catch block designed to capture RLP format errors - TODO: give decent diagnostics, make a bit more specific over what is caught.
-    {
+    // CINFO  << "Session::readPacket " << _packetType << ":" << ptToString(_packetType); // << " - " << _r;
+    try {// Generic try-catch block designed to capture RLP format errors - TODO: give decent diagnostics, make a bit more specific over what is caught.
         // v4 frame headers are useless, offset packet type used
         // v5 protocol type is in header, packet type not offset
-        if (_capId == 0 && _t < UserPacket)
-            return interpret(_t, _r);
+        if (_capId == 0 && _packetType < UserPacket)
+            return interpret(_packetType, _r);
 
-        for (auto const& i: m_capabilities)
-            if (_t >= (int)i.second->m_idOffset && _t - i.second->m_idOffset < i.second->hostCapability()->messageCount())
-                return i.second->enabled() ? i.second->interpret(_t - i.second->m_idOffset, _r) :
-                                             true;
+        for (auto const& i: m_capabilities) {
+            // CINFO << "m_capabilities - " << m_capabilities.size();
+            if (i.second->canHandle(_packetType))
+                return i.second->enabled() ? i.second->interpret(_packetType, _r) : true;
+        }
 
         return false;
-    }
-    catch (std::exception const& _e)
-    {
-        cnetlog << "Exception caught in p2p::Session::interpret(): " << _e.what()
-                << ". PacketType: " << _t << ". RLP: " << _r;
+    } catch (std::exception const& _e) {
+        CDEBUG << "Exception caught in p2p::Session::interpret(): " << _e.what()
+                << ". PacketType: " << _packetType << ". RLP: " << _r;
         disconnect(BadProtocol);
         return true;
     }
@@ -146,25 +133,21 @@ bool Session::readPacket(uint16_t _capId, PacketType _t, core::RLP const& _r)
 
 bool Session::interpret(PacketType _t, core::RLP const& _r)
 {
-    switch (_t)
-    {
-    case DisconnectPacket:
-    {
+    switch (_t) {
+    case DisconnectPacket: {
         string reason = "Unspecified";
         auto r = (DisconnectReason)_r[0].toInt<int>();
         if (!_r[0].isInt())
             drop(BadProtocol);
-        else
-        {
+        else {
             reason = reasonOf(r);
-            //cnetlog << "Disconnect (reason: " << reason << ")";
+            CDEBUG << "Disconnect (reason: " << reason << ")";
             drop(DisconnectRequested);
         }
         break;
     }
-    case PingPacket:
-    {
-        //cnetdetails << "Ping " << m_info.id;
+    case PingPacket: {
+        // CDEBUG << "Ping " << m_info.id;
         core::RLPStream s;
         sealAndSend(prep(s, PongPacket));
         break;
@@ -173,7 +156,7 @@ bool Session::interpret(PacketType _t, core::RLP const& _r)
         DEV_GUARDED(x_info)
         {
             m_info.lastPing = std::chrono::steady_clock::now() - m_ping;
-            //cnetdetails << "Latency: "
+            // CDEBUG << "Latency: "
             //            << chrono::duration_cast<chrono::milliseconds>(m_info.lastPing).count()
             //            << " ms";
         }
@@ -208,24 +191,26 @@ void Session::sealAndSend(core::RLPStream& _s)
 
 bool Session::checkPacket(bytesConstRef _msg)
 {
-    if (_msg[0] > 0x7f || _msg.size() < 2)
+    if (_msg[0] > 0x7f || _msg.size() < 2) {
+        CINFO << "Session::checkPacket Invalid check!";
         return false;
+    }
+    /*
     if (core::RLP(_msg.cropped(1)).actualSize() + 1 != _msg.size())
         return false;
+    */
     return true;
 }
 
 void Session::send(bytes&& _msg)
 {
     bytesConstRef msg(&_msg);
-    //clog(VerbosityTrace, "net") << "<- " << core::RLP(msg.cropped(1));
     if (!checkPacket(msg)) {
-        //cnetlog << "INVALID PACKET CONSTRUCTED!";
+        CDEBUG << "INVALID PACKET CONSTRUCTED!";
+        return;
     }
 
-    if (!m_socket->ref().is_open())
-        return;
-
+    if (!m_socket->ref().is_open()) return;
     bool doWrite = false;
     DEV_GUARDED(x_framing)
     {
@@ -246,13 +231,11 @@ void Session::write()
         out = &m_writeQueue[0];
     }
     auto self(shared_from_this());
-    ba::async_write(m_socket->ref(), ba::buffer(*out),
-        [this, self](boost::system::error_code ec, std::size_t /*length*/) {
+    ba::async_write(m_socket->ref(), ba::buffer(*out), [this, self](boost::system::error_code ec, std::size_t /*length*/) {
             LOG_SCOPED_CONTEXT(m_logContext);
 
             // must check queue, as write callback can occur following dropped()
-            if (ec)
-            {
+            if (ec) {
                 // cnetlog << "Error sending: " << ec.message();
                 drop(TCPError);
                 return;
@@ -275,8 +258,7 @@ namespace
         // atomic<int> doesn't have /= operator, so we do it manually
         int oldInt = 0;
         int newInt = 0;
-        do
-        {
+        do {
             oldInt = i;
             newInt = oldInt / 2;
             // Current value could already change when we get to exchange,
@@ -291,19 +273,16 @@ void Session::drop(DisconnectReason _reason)
         return;
     bi::tcp::socket& socket = m_socket->ref();
     if (socket.is_open())
-        try
-        {
+        try {
             boost::system::error_code ec;
             //cnetdetails << "Closing " << socket.remote_endpoint(ec) << " (" << reasonOf(_reason)
             //            << ")";
             socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
             socket.close();
-        }
-        catch (...) {}
+        } catch (...) {}
 
     m_peer->m_lastDisconnect = _reason;
-    if (_reason == BadProtocol)
-    {
+    if (_reason == BadProtocol) {
         halveAtomicInt(m_peer->m_rating);
         halveAtomicInt(m_peer->m_score);
     }
@@ -314,8 +293,7 @@ void Session::disconnect(DisconnectReason _reason)
 {
     //cnetdetails << "Disconnecting (our reason: " << reasonOf(_reason) << ")";
 
-    if (m_socket->ref().is_open())
-    {
+    if (m_socket->ref().is_open()) {
         core::RLPStream s;
         prep(s, DisconnectPacket, 1) << (int)_reason;
         sealAndSend(s);
@@ -337,15 +315,13 @@ void Session::doRead()
 
     auto self(shared_from_this());
     m_data.resize(h256::size);
-    ba::async_read(m_socket->ref(), boost::asio::buffer(m_data, h256::size),
-        [this, self](boost::system::error_code ec, std::size_t length) {
+    ba::async_read(m_socket->ref(), boost::asio::buffer(m_data, h256::size), [this, self](boost::system::error_code ec, std::size_t length) {
             LOG_SCOPED_CONTEXT(m_logContext);
 
             if (!checkRead(h256::size, ec, length))
                 return;
-            else if (!m_io->authAndDecryptHeader(bytesRef(m_data.data(), length)))
-            {
-                //cnetlog << "header decrypt failed";
+            else if (!m_io->authAndDecryptHeader(bytesRef(m_data.data(), length))) {
+                CINFO << "Session::doRead header decrypt failed";
                 drop(BadProtocol);  // todo: better error
                 return;
             }
@@ -353,17 +329,14 @@ void Session::doRead()
             uint16_t hProtocolId;
             uint32_t hLength;
             uint8_t hPadding;
-            try
-            {
+            try {
                 BytesFrameInfo header(bytesConstRef(m_data.data(), length));
                 hProtocolId = header.protocolId;
                 hLength = header.length;
                 hPadding = header.padding;
-            }
-            catch (std::exception const& _e)
-            {
-                //cnetlog << "Exception decoding frame header RLP: " << _e.what() << " "
-                //        << bytesConstRef(m_data.data(), h128::size).cropped(3);
+            } catch (std::exception const& _e) {
+                CDEBUG << "Exception decoding frame header RLP: " << _e.what() << " ";
+                //       << bytesConstRef(m_data.data(), h128::size).cropped(3);
                 drop(BadProtocol);
                 return;
             }
@@ -372,34 +345,29 @@ void Session::doRead()
             auto tlen = hLength + hPadding + h128::size;
             m_data.resize(tlen);
             ba::async_read(m_socket->ref(), boost::asio::buffer(m_data, tlen),
-                [this, self, hLength, hProtocolId, tlen](
-                    boost::system::error_code ec, std::size_t length) {
+                [this, self, hLength, hProtocolId, tlen](boost::system::error_code ec, std::size_t length) {
                     LOG_SCOPED_CONTEXT(m_logContext);
 
                     if (!checkRead(tlen, ec, length))
                         return;
-                    else if (!m_io->authAndDecryptFrame(bytesRef(m_data.data(), tlen)))
-                    {
-                    //    cnetlog << "frame decrypt failed";
+                    else if (!m_io->authAndDecryptFrame(bytesRef(m_data.data(), tlen))) {
+                        CDEBUG << "frame decrypt failed";
                         drop(BadProtocol);  // todo: better error
                         return;
                     }
 
                     bytesConstRef frame(m_data.data(), hLength);
-                    if (!checkPacket(frame))
-                    {
-                    //    cerr << "Received " << frame.size() << ": " << toHex(frame) << endl;
-                    //    cnetlog << "INVALID MESSAGE RECEIVED";
+                    if (!checkPacket(frame)) {
+                        CERROR << "Received " << frame.size() << ": " << toHex(frame) << endl;
+                        cnetlog << "INVALID MESSAGE RECEIVED";
                         disconnect(BadProtocol);
                         return;
-                    }
-                    else
-                    {
+                    } else {
                         auto packetType = (PacketType)core::RLP(frame.cropped(0, 1)).toInt<unsigned>();
-                        core::RLP r(frame.cropped(1));
+                        core::RLP r(frame.cropped(1, hLength - 1));
                         bool ok = readPacket(hProtocolId, packetType, r);
                         if (!ok) {
-                            cnetlog << "Couldn't interpret packet. " << core::RLP(r);
+                            CDEBUG << "Couldn't interpret packet. " << core::RLP(r);
                         }
                     }
                     doRead();
@@ -409,21 +377,16 @@ void Session::doRead()
 
 bool Session::checkRead(std::size_t _expected, boost::system::error_code _ec, std::size_t _length)
 {
-    if (_ec && _ec.category() != boost::asio::error::get_misc_category() && _ec.value() != boost::asio::error::eof)
-    {
+    if (_ec && _ec.category() != boost::asio::error::get_misc_category() && _ec.value() != boost::asio::error::eof) {
         //cnetdetails << "Error reading: " << _ec.message();
         drop(TCPError);
         return false;
-    }
-    else if (_ec && _length < _expected)
-    {
+    } else if (_ec && _length < _expected) {
         //cnetlog << "Error reading - Abrupt peer disconnect: " << _ec.message();
         repMan().noteRude(*this);
         drop(TCPError);
         return false;
-    }
-    else if (_length != _expected)
-    {
+    } else if (_length != _expected) {
         // with static m_data-sized buffer this shouldn't happen unless there's a regression
         // sec recommends checking anyways (instead of assert)
         //cnetlog << "Error reading - TCP read buffer length differs from expected frame size.";
@@ -434,7 +397,7 @@ bool Session::checkRead(std::size_t _expected, boost::system::error_code _ec, st
     return true;
 }
 
-void Session::registerCapability(CapDesc const& _desc, std::shared_ptr<Capability> _p)
+void Session::registerCapability(CapDesc const& _desc, std::shared_ptr<PeerCapabilityFace> _p)
 {
     DEV_GUARDED(x_framing)
     {

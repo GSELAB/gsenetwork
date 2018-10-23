@@ -31,7 +31,8 @@ using namespace crypto;
 void BytesHandshake::writeAuth()
 {
     // send auth to the remote node
-    LOG(m_logger) << "p2p.connect.egress sending auth to " << m_socket->remoteEndpoint();
+    //LOG(m_logger) << "p2p.connect.egress sending auth to " << m_socket->remoteEndpoint();
+    CINFO << "p2p.connect.egress sending auth to " << m_socket->remoteEndpoint();
     m_auth.resize(Signature::size + h256::size + Public::size + h256::size + 1);
     bytesRef sig(&m_auth[0], Signature::size);
     bytesRef hepubk(&m_auth[Signature::size], h256::size);
@@ -58,7 +59,8 @@ void BytesHandshake::writeAuth()
 void BytesHandshake::writeAck()
 {
     // send ack to the remote node
-    LOG(m_logger) << "p2p.connect.ingress sending ack to " << m_socket->remoteEndpoint();
+    //LOG(m_logger) << "p2p.connect.ingress sending ack to " << m_socket->remoteEndpoint();
+    CINFO << "p2p.connect.ingress sending ack to " << m_socket->remoteEndpoint();
     m_ack.resize(Public::size + h256::size + 1);
     bytesRef epubk(&m_ack[0], Public::size);
     bytesRef nonce(&m_ack[Public::size], h256::size);
@@ -77,8 +79,8 @@ void BytesHandshake::writeAck()
 void BytesHandshake::writeAckEIP8()
 {
     // send EIP-8 format ack to remote node
-    LOG(m_logger) << "p2p.connect.ingress sending EIP-8 ack to " << m_socket->remoteEndpoint();
-
+    // LOG(m_logger) << "p2p.connect.ingress sending EIP-8 ack to " << m_socket->remoteEndpoint();
+    CINFO << "p2p.connect.ingress sending EIP-8 ack to " << m_socket->remoteEndpoint();
     core::RLPStream rlp;
     rlp.appendList(3)
         << m_ecdheLocal.getPublic()
@@ -115,7 +117,8 @@ void BytesHandshake::setAuthValues(Signature const& _sig, Public const& _remoteP
 void BytesHandshake::readAuth()
 {
     // receive auth from remote node
-    LOG(m_logger) << "p2p.connect.ingress receiving auth from " << m_socket->remoteEndpoint();
+    //LOG(m_logger) << "p2p.connect.ingress receiving auth from " << m_socket->remoteEndpoint();
+    CINFO << "p2p.connect.ingress receiving auth from " << m_socket->remoteEndpoint();
     m_authCipher.resize(307);
     auto self(shared_from_this());
     ba::async_read(m_socket->ref(), ba::buffer(m_authCipher, 307), [this, self](boost::system::error_code ec, std::size_t)
@@ -146,8 +149,10 @@ void BytesHandshake::readAuthEIP8()
     }
 
     uint16_t size(m_authCipher[0]<<8 | m_authCipher[1]);
-    LOG(m_logger) << "p2p.connect.ingress receiving " << size << " bytes EIP-8 auth from "
-                  << m_socket->remoteEndpoint();
+    //LOG(m_logger) << "p2p.connect.ingress receiving " << size << " bytes EIP-8 auth from "
+    //              << m_socket->remoteEndpoint();
+    CINFO << "p2p.connect.ingress receiving " << size << " bytes EIP-8 auth from "
+          << m_socket->remoteEndpoint();
     m_authCipher.resize((size_t)size + 2);
     auto rest = ba::buffer(ba::buffer(m_authCipher) + 307);
     auto self(shared_from_this());
@@ -181,7 +186,8 @@ void BytesHandshake::readAuthEIP8()
 void BytesHandshake::readAck()
 {
     // receive ack from remote node
-    LOG(m_logger) << "p2p.connect.egress receiving ack from " << m_socket->remoteEndpoint();
+    // LOG(m_logger) << "p2p.connect.egress receiving ack from " << m_socket->remoteEndpoint();
+    CINFO << "p2p.connect.egress receiving ack from " << m_socket->remoteEndpoint();
     m_ackCipher.resize(210);
     auto self(shared_from_this());
     ba::async_read(m_socket->ref(), ba::buffer(m_ackCipher, 210), [this, self](boost::system::error_code ec, std::size_t)
@@ -210,8 +216,8 @@ void BytesHandshake::readAckEIP8()
     }
 
     uint16_t size(m_ackCipher[0]<<8 | m_ackCipher[1]);
-    LOG(m_logger) << "p2p.connect.egress receiving " << size << " bytes EIP-8 ack from "
-                  << m_socket->remoteEndpoint();
+    // LOG(m_logger) << "p2p.connect.egress receiving " << size << " bytes EIP-8 ack from " << m_socket->remoteEndpoint();
+    CINFO << "p2p.connect.egress receiving " << size << " bytes EIP-8 ack from " << m_socket->remoteEndpoint();
     m_ackCipher.resize((size_t)size + 2);
     auto rest = ba::buffer(ba::buffer(m_ackCipher) + 210);
     auto self(shared_from_this());
@@ -316,7 +322,7 @@ void BytesHandshake::transition(boost::system::error_code _ech)
     {
         m_nextState = ReadHello;
         LOG(m_logger) << (m_originated ? "p2p.connect.egress" : "p2p.connect.ingress")
-                      << " sending capabilities handshake";
+                      << " sending capabilities handshake,  caps size:" << m_host->caps().size();
 
         /// This pointer will be freed if there is an error otherwise
         /// it will be passed to Host which will take ownership.

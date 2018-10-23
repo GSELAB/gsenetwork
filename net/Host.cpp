@@ -14,11 +14,6 @@
     You should have received a copy of the GNU General Public License
     along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** @file Host.cpp
- * @author Alex Leverington <nessence@gmail.com>
- * @author Gav Wood <i@gavwood.com>
- * @date 2014
- */
 
 #include <set>
 #include <chrono>
@@ -34,7 +29,7 @@
 //#include <libdevcore/FileSystem.h>
 #include <net/Session.h>
 #include <net/Common.h>
-#include <net/Capability.h>
+#include <net/PeerCapability.h>
 #include <net/UPnP.h>
 #include <net/BytesHandshake.h>
 #include <net/Host.h>
@@ -43,8 +38,8 @@
 
 using namespace std;
 using namespace core;
-using namespace net;
 
+namespace net {
 /// Interval at which Host::run will call keepAlivePeers to ping peers.
 std::chrono::seconds const c_keepAliveInterval = std::chrono::seconds(30);
 
@@ -99,20 +94,6 @@ bytes ReputationManager::data(SessionFace const& _s, std::string const& _sub) co
         return sit == nit->second.subs.end() ? bytes() : sit->second.data;
     }
     return bytes();
-}
-
-Host::Host(std::string const& version, GKey const& key, NetworkConfig const& netConfig, chain::ChainID chainID):
-    Task("GSE-P2P-NETWORK", 0),
-    m_clientVersion(version),
-    m_netConfig(netConfig),
-    m_ifAddresses(Network::getInterfaceAddresses()),
-    m_ioService(2),
-    m_tcp4Acceptor(m_ioService),
-    m_key(key),
-    m_lastPing(chrono::steady_clock::time_point::min()),
-    m_chainID(chainID)
-{
-    CINFO << "Host constructor";
 }
 
 Host::Host(string const& version, GKey const& key, NetworkConfig const& netConfig):
@@ -200,7 +181,7 @@ void Host::doneWorking()
     while (m_accepting)
         m_ioService.poll();
 
-    // stop capabilities (eth: stops syncing or block/tx broadcast)
+    // stop capabilities (stops syncing or block/tx broadcast)
     for (auto const& h: m_capabilities)
         h.second->onStopping();
 
@@ -287,7 +268,7 @@ void Host::startPeerSession(Public const& _id, core::RLP const& _rlp, unique_ptr
 
     if (pub != _id)
     {
-        cdebug << "Wrong ID: " << pub << " vs. " << _id;
+        CDEBUG << "Wrong ID: " << pub << " vs. " << _id;
         return;
     }
 
@@ -309,20 +290,21 @@ void Host::startPeerSession(Public const& _id, core::RLP const& _rlp, unique_ptr
         PeerSessionInfo({_id, clientVersion, p->endpoint.address().to_string(), listenPort,
             chrono::steady_clock::duration(), _rlp[2].toSet<CapDesc>(), 0, map<string, string>(),
             protocolVersion}));
-    if (protocolVersion < net::c_protocolVersion - 1)
-    {
+    if (protocolVersion < net::c_protocolVersion - 1) {
+        CDEBUG << "Unexpected protocolVersion";
         ps->disconnect(IncompatibleProtocol);
         return;
     }
-    if (caps.empty())
-    {
+
+    if (caps.empty()) {
+        CDEBUG << "Unexpected empty caps";
         ps->disconnect(UselessPeer);
         return;
     }
 
     if (m_netConfig.pin && !isRequiredPeer(_id))
     {
-        cdebug << "Unexpected identity from peer (got" << _id << ", must be one of " << m_requiredPeers << ")";
+        CDEBUG << "Unexpected identity from peer (got" << _id << ", must be one of " << m_requiredPeers << ")";
         ps->disconnect(UnexpectedIdentity);
         return;
     }
@@ -356,7 +338,7 @@ void Host::startPeerSession(Public const& _id, core::RLP const& _rlp, unique_ptr
             if (!pcap)
                 return ps->disconnect(IncompatibleProtocol);
 
-            pcap->newPeerCapability(ps, offset, i);
+            pcap->newPeerCapability(pcap->getDispatcher(), ps, offset, i);
             offset += pcap->messageCount();
         }
 
@@ -448,11 +430,8 @@ void Host::determinePublic()
 
 void Host::runAcceptor()
 {
-    CINFO << "Host::runAcceptor <>";
     assert(m_listenPort > 0);
     if (m_run && !m_accepting) {
-        CINFO << "Host::runAcceptor listening on local port:" << m_listenPort << " (public: " << m_tcpPublic
-                    << ")";
         m_accepting = true;
 
         auto socket = make_shared<BytesSocket>(m_ioService);
@@ -1018,4 +997,6 @@ std::vector<std::pair<std::shared_ptr<SessionFace>, std::shared_ptr<Peer>>> Host
             if (s->capabilities().count(std::make_pair(_name, _version)))
                 ret.push_back(make_pair(s, s->peer()));
     return ret;
+}
+
 }

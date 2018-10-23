@@ -41,6 +41,10 @@ public:
 
     void processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg);
 
+    bool processMsg(bi::tcp::endpoint const& from, unsigned type, RLP const& rlp);
+
+    bool processMsg(bi::tcp::endpoint const& from, unsigned type, bytes const& data);
+
     static std::unique_ptr<core::Object> interpretObject(bi::tcp::endpoint const& from, BytesPacket const& msg);
 
 private:

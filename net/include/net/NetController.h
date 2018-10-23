@@ -19,17 +19,11 @@
 #include <crypto/GKey.h>
 #include <net/BytesPacket.h>
 #include <net/Common.h>
+#include <net/Network.h>
+#include <net/Client.h>
+#include <chain/Common.h>
 
 namespace net {
-
-class DispatchFace {
-public:
-    virtual ~DispatchFace() {}
-
-    virtual void processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg) = 0;
-};
-
-class Host;
 
 class NetController {
 public:
@@ -62,12 +56,16 @@ protected:
 
     void addNode(NodeID const& nodeID, bi::tcp::endpoint const& ep);
 
+    void send(bytes const& data, chain::ProtocolPacketType packetType);
+
+    core::RLPStream& prepare(core::RLPStream& rlpStream, unsigned id, unsigned args);
+
 private:
     bool m_inited;
     crypto::GKey m_key;
 
     DispatchFace* m_dispatcher;
-
+    NetworkConfig m_networkConfig;
     NodeIPEndpoint m_nodeIPEndpoint;
     Host* m_host;
 

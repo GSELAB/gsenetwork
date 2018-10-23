@@ -129,9 +129,6 @@ class Host: public Task {
     friend class Session;
 
 public:
-    // @just for test
-    Host(std::string const& version, GKey const& key, NetworkConfig const& netConfig, chain::ChainID chainID);
-
     Host(std::string const& version, NetworkConfig const& netConfig = NetworkConfig{}, bytesConstRef restoreNetwork = bytesConstRef());
 
     /// Alternative constructor that allows providing the node key directly
@@ -224,6 +221,8 @@ public:
         return m_sessions.count(_id) ? m_sessions[_id].lock() : std::shared_ptr<SessionFace>();
     }
 
+    size_t getSessionSize() const { RecursiveGuard l(x_sessions); return  m_sessions.size(); }
+
     /// Get our current node ID.
     NodeID id() const { return m_key.getPublic(); }
 
@@ -239,8 +238,9 @@ public:
     /// Get sessions by capability name and version
     std::vector<std::pair<std::shared_ptr<SessionFace>, std::shared_ptr<Peer>>> peerSessions(std::string const& _name, u256 const& _version) const;
 
-    void addDispatcher(DispatchFace* dispatcher) { m_dispatchers.push_back(dispatcher); }
+    void setDispatcher(DispatchFace* dispatcher) { m_dispatcher = dispatcher; }
 
+    DispatchFace* getDispatcher() const { return m_dispatcher; }
 protected:
     void onNodeTableEvent(NodeID const& _n, NodeTableEventType const& _e);
 
@@ -291,8 +291,6 @@ private:
     bool nodeTableHasNode(Public const& _id) const;
     Node nodeFromNodeTable(Public const& _id) const;
     bool addNodeToNodeTable(Node const& _node, NodeTable::NodeRelation _relation = NodeTable::NodeRelation::Unknown);
-
-    chain::ChainID m_chainID;
 
     bytes m_restoreNetwork;										///< Set by constructor and used to set Host key and restore network peers & nodes.
 
@@ -354,7 +352,7 @@ private:
 
     ReputationManager m_repMan;
 
-    std::vector<DispatchFace*> m_dispatchers;
+    DispatchFace* m_dispatcher;
 
     Logger m_logger{createLogger(VerbosityDebug, "net")};
 };

@@ -139,11 +139,10 @@ std::shared_ptr<NodeEntry> NodeTable::nodeEntry(NodeID nID)
 
 void NodeTable::doDiscover(NodeID target, unsigned round, std::shared_ptr<std::set<std::shared_ptr<NodeEntry>>> tried)
 {
-    CINFO << "round " << round;
     // note : only called by doDiscovery
     if (!m_socketPointer->isOpen()) return;
     if (round == s_maxSteps) {
-        CINFO << "Terminating after " << round << "rounds";
+        // CINFO << "Terminating after " << round << " rounds";
         doDiscovery();
         return;
     } else if (!round && !tried) {
@@ -165,7 +164,7 @@ void NodeTable::doDiscover(NodeID target, unsigned round, std::shared_ptr<std::s
     }
 
     if (triedList.empty()) {
-        CINFO << "Terminating after " << round << "rounds";
+        // CINFO << "Terminating after " << round << "rounds";
         doDiscovery();
         return;
     }
@@ -289,8 +288,8 @@ void NodeTable::noteActiveNode(Public const& pubK, boost::asio::ip::udp::endpoin
 
     shared_ptr<NodeEntry> newNode = nodeEntry(pubK);
     if (newNode && !newNode->pending) {
-        LOG(m_logger) << "Noting active node: " << pubK << " " << ep.address().to_string()
-                      << ":" << ep.port();
+        //LOG(m_logger) << "Noting active node: " << pubK << " " << ep.address().to_string()
+        //              << ":" << ep.port();
         newNode->endpoint.setAddress(ep.address());
         newNode->endpoint.setUdpPort(ep.port());
 
@@ -529,7 +528,7 @@ void NodeTable::doDiscovery()
         if (_ec.value() == boost::asio::error::operation_aborted || m_timers.isStopped())
             return;
 
-        CINFO << "performing random discovery";
+        // CINFO << "performing random discovery";
         NodeID randNodeId;
 
 

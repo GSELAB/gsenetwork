@@ -15,17 +15,6 @@
 
 namespace config {
 
-#define DEFAULT_LOCAL_IP "127.0.0.1"
-#define DEFAULT_LISTEN_PORT 60606
-#define DEFAULT_LOCAL_IP_PORT "127.0.0.1:60606"
-#define DEFAULT_LOCAL_RPC_PORT 50505
-
-/*
-#define DEFAULT_LOCAL_IP "127.0.0.1"
-#define DEFAULT_LISTEN_PORT 60607
-#define DEFAULT_LOCAL_IP_PORT "127.0.0.1:60607"
-#define DEFAULT_LOCAL_RPC_PORT 50506
-*/
 struct NetConfig {
 
 };

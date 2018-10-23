@@ -29,7 +29,7 @@ using namespace core;
 using namespace net;
 
 const unsigned net::c_protocolVersion = 4;
-const unsigned net::c_defaultIPPort = 30303;
+const unsigned net::c_defaultIPPort = 60606;
 static_assert(net::c_protocolVersion == 4, "Replace v3 compatbility with v4 compatibility before updating network version.");
 
 const net::NodeIPEndpoint net::UnspecifiedNodeIPEndpoint = NodeIPEndpoint(bi::address(), 0, 0);
@@ -227,9 +227,22 @@ std::string NodeSpec::enode() const
     return ret;
 }
 
-
 namespace net
 {
+std::string ptToString(PacketType type)
+{
+    switch (type) {
+        case HelloPacket: return std::string("HelloPacket");
+        case DisconnectPacket: return std::string("DisconnectPacket");
+        case PingPacket: return std::string("PingPacket");
+        case PongPacket: return std::string("PongPacket");
+        case GetPeersPacket: return std::string("GetPeersPacket");
+        case PeersPacket: return std::string("PeersPacket");
+        case UserPacket: return std::string("UserPacket");
+        default: return chain::pptToString((chain::ProtocolPacketType)type);
+    }
+}
+
 std::ostream& operator<<(std::ostream& _out, NodeIPEndpoint const& _ep)
 {
     _out << _ep.address() << " UDP " << _ep.udpPort() << " TCP " << _ep.tcpPort();

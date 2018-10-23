@@ -57,8 +57,10 @@ void init(int argc, char **argv)
     toPublic({});
     if (argc > 1 && (strncmp(argv[1], "-p", 2) == 0 || strncmp(argv[1], "-P", 2) == 0)) {
         CINFO << "Set argInstance.m_producerON true";
-        argInstance.m_producerON = true;
+        ARGs.m_producerON = true;
     }
+
+    initArgument();
 }
 
 bool s_shouldExit = false;
@@ -101,18 +103,12 @@ void doCheck()
 
 int main(int argc, char** argv)
 {
-    //setDefaultOrCLocale();
-    //bool enableProducer = false;
-    //Address producerAddress;
     init(argc, argv);
     signal(SIGABRT, &exitHandler);
     signal(SIGTERM, &exitHandler);
     signal(SIGINT, &exitHandler);
 
-    //Secret sec("4077db9374f9498aff4b4ae6eb1400755655b50457930193948d2dc6cf70bf00");
-
-    Secret sec("4077db9374f9498aff4b4ae6eb1400755655b50457930193948d2dc6cf70bf0f");
-    GKey key(sec);
+    GKey key(ARGs.m_secret);
     CINFO << "Secret:" << toHex(key.getSecret().ref());
     CINFO << "Public:" << toHex(key.getPublic().ref());
     CINFO << "Address:" << toHex(key.getAddress().ref());

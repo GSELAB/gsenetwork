@@ -42,6 +42,7 @@
 #include <core/Exceptions.h>
 #include <core/RLP.h>
 #include <core/Guards.h>
+#include <chain/Common.h>
 
 using namespace core;
 using namespace crypto;
@@ -50,8 +51,8 @@ namespace ba = boost::asio;
 namespace bi = boost::asio::ip;
 
 
-class RLP;
-class RLPStream;
+//class RLP;
+//class RLPStream;
 
 namespace net {
 
@@ -74,7 +75,7 @@ bool isPublicAddress(bi::address const& _addressToCheck);
 bool isPublicAddress(std::string const& _addressToCheck);
 
 class UPnP;
-class Capability;
+class PeerCapabilityFace;
 class Host;
 class Session;
 
@@ -106,6 +107,8 @@ enum PacketType
     PeersPacket,
     UserPacket = 0x10
 };
+
+std::string ptToString(PacketType type);
 
 enum DisconnectReason
 {

@@ -39,13 +39,13 @@ void Controller::init(crypto::GKey const& key)
     m_net = new NetController(m_key, m_chain->getDispatcher());
     m_net->init();
 
-    if (argInstance.m_producerON) {
+    if (ARGs.m_producerON) {
         CINFO << "Start produce...";
         m_producerServer = new ProducerServer(m_key, this);
         m_producerServer->start();
     }
 
-    if (argInstance.m_rpcON) {
+    if (ARGs.m_rpcON) {
         CINFO << "Start rpc service ...";
         m_rpcServer = new RpcService(this);
         m_rpcServer->start();
@@ -59,8 +59,8 @@ void Controller::exit()
     if (m_net) delete m_net;
     if (m_chain) delete m_chain;
     if (m_dbc) delete m_dbc;
-    if (argInstance.m_producerON && m_producerServer) delete m_producerServer;
-    if (argInstance.m_rpcON && m_rpcServer) delete m_rpcServer;
+    if (ARGs.m_producerON && m_producerServer) delete m_producerServer;
+    if (ARGs.m_rpcON && m_rpcServer) delete m_rpcServer;
 
 }
 
