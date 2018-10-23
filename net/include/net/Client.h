@@ -3,11 +3,11 @@
 #include <net/Common.h>
 #include <net/HostCapability.h>
 #include <core/Task.h>
-#include <chain/GPeer.h>
+#include <net/GSEPeer.h>
 
 namespace net {
 
-class Client: public HostCapability<chain::GPeer>, core::Task{
+class Client: public HostCapability<GSEPeer>, core::Task{
 public:
     Client(Host const& host);
 
@@ -17,7 +17,8 @@ public:
 
     bool isSyncing() const;
 
-
+protected:
+    std::shared_ptr<PeerCapabilityFace> newPeerCapability(std::shared_ptr<SessionFace> const& _s, unsigned _idOffset,CapDesc const& _cap) override;
 
 private:
 

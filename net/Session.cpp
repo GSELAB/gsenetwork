@@ -108,16 +108,18 @@ template <class T> vector<T> randomSelection(vector<T> const& _t, unsigned _n)
 bool Session::readPacket(uint16_t _capId, PacketType _packetType, core::RLP const& _r)
 {
     m_lastReceived = chrono::steady_clock::now();
-    CINFO  << "-> " << _packetType << " " << _r;
+    // CINFO  << "Session::readPacket " << _packetType << ":" << ptToString(_packetType); // << " - " << _r;
     try {// Generic try-catch block designed to capture RLP format errors - TODO: give decent diagnostics, make a bit more specific over what is caught.
         // v4 frame headers are useless, offset packet type used
         // v5 protocol type is in header, packet type not offset
         if (_capId == 0 && _packetType < UserPacket)
             return interpret(_packetType, _r);
 
-        for (auto const& i: m_capabilities)
+        for (auto const& i: m_capabilities) {
+            // CINFO << "m_capabilities - " << m_capabilities.size();
             if (i.second->canHandle(_packetType))
                 return i.second->enabled() ? i.second->interpret(_packetType, _r) : true;
+        }
 
         return false;
     } catch (std::exception const& _e) {
@@ -132,21 +134,20 @@ bool Session::readPacket(uint16_t _capId, PacketType _packetType, core::RLP cons
 bool Session::interpret(PacketType _t, core::RLP const& _r)
 {
     switch (_t) {
-    case DisconnectPacket:
-    {
+    case DisconnectPacket: {
         string reason = "Unspecified";
         auto r = (DisconnectReason)_r[0].toInt<int>();
         if (!_r[0].isInt())
             drop(BadProtocol);
         else {
             reason = reasonOf(r);
-            //cnetlog << "Disconnect (reason: " << reason << ")";
+            CDEBUG << "Disconnect (reason: " << reason << ")";
             drop(DisconnectRequested);
         }
         break;
     }
     case PingPacket: {
-        //cnetdetails << "Ping " << m_info.id;
+        CDEBUG << "Ping " << m_info.id;
         core::RLPStream s;
         sealAndSend(prep(s, PongPacket));
         break;
@@ -155,9 +156,9 @@ bool Session::interpret(PacketType _t, core::RLP const& _r)
         DEV_GUARDED(x_info)
         {
             m_info.lastPing = std::chrono::steady_clock::now() - m_ping;
-            //cnetdetails << "Latency: "
-            //            << chrono::duration_cast<chrono::milliseconds>(m_info.lastPing).count()
-            //            << " ms";
+            CDEBUG << "Latency: "
+                        << chrono::duration_cast<chrono::milliseconds>(m_info.lastPing).count()
+                        << " ms";
         }
         break;
     case GetPeersPacket:
@@ -190,19 +191,23 @@ void Session::sealAndSend(core::RLPStream& _s)
 
 bool Session::checkPacket(bytesConstRef _msg)
 {
-    if (_msg[0] > 0x7f || _msg.size() < 2)
+    if (_msg[0] > 0x7f || _msg.size() < 2) {
+        CINFO << "Session::checkPacket Invalid check!";
         return false;
+    }
+    /*
     if (core::RLP(_msg.cropped(1)).actualSize() + 1 != _msg.size())
         return false;
+    */
     return true;
 }
 
 void Session::send(bytes&& _msg)
 {
     bytesConstRef msg(&_msg);
-    CINFO  << " Session::send <- " << core::RLP(msg.cropped(1));
     if (!checkPacket(msg)) {
         CDEBUG << "INVALID PACKET CONSTRUCTED!";
+        return;
     }
 
     if (!m_socket->ref().is_open())
@@ -318,7 +323,7 @@ void Session::doRead()
             if (!checkRead(h256::size, ec, length))
                 return;
             else if (!m_io->authAndDecryptHeader(bytesRef(m_data.data(), length))) {
-                CDEBUG << "header decrypt failed";
+                CINFO << "Session::doRead header decrypt failed";
                 drop(BadProtocol);  // todo: better error
                 return;
             }

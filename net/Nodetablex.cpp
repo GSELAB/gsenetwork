@@ -142,7 +142,7 @@ void NodeTable::doDiscover(NodeID target, unsigned round, std::shared_ptr<std::s
     // note : only called by doDiscovery
     if (!m_socketPointer->isOpen()) return;
     if (round == s_maxSteps) {
-        CINFO << "Terminating after " << round << " rounds";
+        // CINFO << "Terminating after " << round << " rounds";
         doDiscovery();
         return;
     } else if (!round && !tried) {
@@ -164,7 +164,7 @@ void NodeTable::doDiscover(NodeID target, unsigned round, std::shared_ptr<std::s
     }
 
     if (triedList.empty()) {
-        CINFO << "Terminating after " << round << "rounds";
+        // CINFO << "Terminating after " << round << "rounds";
         doDiscovery();
         return;
     }
@@ -528,7 +528,7 @@ void NodeTable::doDiscovery()
         if (_ec.value() == boost::asio::error::operation_aborted || m_timers.isStopped())
             return;
 
-        CINFO << "performing random discovery";
+        // CINFO << "performing random discovery";
         NodeID randNodeId;
 
 

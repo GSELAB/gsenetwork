@@ -1,30 +1,22 @@
 #pragma once
 
-#include <string>
-#include <mutex>
-#include <array>
-#include <memory>
-#include <utility>
-
-#include <core/RLP.h>
-#include <core/Guards.h>
-#include <chain/Common.h>
 #include <net/PeerCapability.h>
+#include <chain/Common.h>
 
-namespace chain {
+namespace net {
 
-class GPeer: public net::PeerCapability {
+class GSEPeer: public net::PeerCapability {
 public:
-    GPeer(std::weak_ptr<net::SessionFace> s, std::string const& name,
+    GSEPeer(std::weak_ptr<net::SessionFace> s, std::string const& name,
                   unsigned messageCount, unsigned offset, net::CapDesc const& cap);
 
-    ~GPeer() override;
+    ~GSEPeer() override;
 
     static std::string name() { return "GSE"; }
 
     static u256 version() { return net::c_protocolVersion; }
 
-    static unsigned messageCount() { return PacketCount; }
+    static unsigned messageCount() { return chain::PacketCount; }
 
 private:
 

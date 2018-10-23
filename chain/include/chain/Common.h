@@ -3,23 +3,28 @@
 namespace chain {
 
 
-enum ProtocolPacketType: uint8_t {
-    StatusPacket = 0x00,
-    NewBlockHashesPacket = 0x01,
-    TransactionsPacket = 0x02,
-    GetBlockHeadersPacket = 0x03,
-    BlockHeadersPacket = 0x04,
-    GetBlockBodiesPacket = 0x05,
-    BlockBodiesPacket = 0x06,
-    NewBlockPacket = 0x07,
+enum ProtocolPacketType {
+    StatusPacket = 0x20,
+    NewBlockHashesPacket,
+    TransactionPacket,
+    TransactionsPacket,
+    GetBlockHeadersPacket,
+    BlockHeadersPacket,
+    GetBlockBodiesPacket,
+    BlockPacket,
+    BlockBodiesPacket,
+    NewBlockPacket,
 
-    GetNodeDataPacket = 0x0d,
-    NodeDataPacket = 0x0e,
-    GetReceiptsPacket = 0x0f,
-    ReceiptsPacket = 0x10,
+    GetNodeDataPacket = 0x4d,
+    NodeDataPacket = 0x4e,
+    GetReceiptsPacket = 0x4f,
+    ReceiptsPacket = 0x50,
 
     PacketCount
-
 };
+
+std::string pptToString(ProtocolPacketType type);
+
+bool canHandle(ProtocolPacketType type);
 
 }
