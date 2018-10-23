@@ -5,8 +5,8 @@ using namespace utils;
 
 namespace net {
 
-Client::Client(Host const& host):
-    HostCapability<GSEPeer>(host), Task("SyncClient")
+Client::Client(Host const& host, DispatchFace* dispatcher):
+    HostCapability<GSEPeer>(host), Task("SyncClient"), m_dispatcher(dispatcher)
 {
 
 }
@@ -42,9 +42,9 @@ void Client::doWork()
     }
 }
 
-std::shared_ptr<PeerCapabilityFace> Client::newPeerCapability(std::shared_ptr<SessionFace> const& _s,
-    unsigned _idOffset,CapDesc const& _cap) {
-    auto ret = HostCapability<GSEPeer>::newPeerCapability(_s, _idOffset, _cap);
+std::shared_ptr<PeerCapabilityFace> Client::newPeerCapability(
+    DispatchFace* dispatcher, std::shared_ptr<SessionFace> const& _s, unsigned _idOffset,CapDesc const& _cap) {
+    auto ret = HostCapability<GSEPeer>::newPeerCapability(dispatcher, _s, _idOffset, _cap);
 
     /*
     auto cap = capabilityFromSession<chain::GPeer>(*_s, _cap.second);

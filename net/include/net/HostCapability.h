@@ -31,6 +31,8 @@
 
 namespace net {
 
+class DispatchFace;
+
 class HostCapabilityFace
 {
 public:
@@ -40,11 +42,13 @@ public:
     virtual u256 version() const = 0;
     virtual unsigned messageCount() const = 0;
 
-    virtual std::shared_ptr<PeerCapabilityFace> newPeerCapability(
+    virtual std::shared_ptr<PeerCapabilityFace> newPeerCapability(DispatchFace* dispatcher,
         std::shared_ptr<SessionFace> const& _s, unsigned _idOffset, CapDesc const& _cap) = 0;
 
     virtual void onStarting() = 0;
     virtual void onStopping() = 0;
+
+    virtual DispatchFace* getDispatcher() const = 0;
 };
 
 template<class PeerCap>
@@ -57,16 +61,18 @@ public:
     u256 version() const override { return PeerCap::version(); }
     unsigned messageCount() const override { return PeerCap::messageCount(); }
 
-    std::shared_ptr<PeerCapabilityFace> newPeerCapability(
+    std::shared_ptr<PeerCapabilityFace> newPeerCapability(DispatchFace* dispatcher,
         std::shared_ptr<SessionFace> const& _s, unsigned _idOffset, CapDesc const& _cap) override
     {
-        auto p = std::make_shared<PeerCap>(
+        auto p = std::make_shared<PeerCap>(dispatcher,
             std::weak_ptr<SessionFace>{_s}, name(), messageCount(), _idOffset, _cap);
         _s->registerCapability(_cap, p);
         return p;
     }
     void onStarting() override {}
     void onStopping() override {}
+
+    DispatchFace* getDispatcher() const override { return nullptr; }
 
 protected:
     CapDesc capDesc() const { return std::make_pair(name(), version()); }

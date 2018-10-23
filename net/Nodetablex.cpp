@@ -288,8 +288,8 @@ void NodeTable::noteActiveNode(Public const& pubK, boost::asio::ip::udp::endpoin
 
     shared_ptr<NodeEntry> newNode = nodeEntry(pubK);
     if (newNode && !newNode->pending) {
-        LOG(m_logger) << "Noting active node: " << pubK << " " << ep.address().to_string()
-                      << ":" << ep.port();
+        //LOG(m_logger) << "Noting active node: " << pubK << " " << ep.address().to_string()
+        //              << ":" << ep.port();
         newNode->endpoint.setAddress(ep.address());
         newNode->endpoint.setUdpPort(ep.port());
 

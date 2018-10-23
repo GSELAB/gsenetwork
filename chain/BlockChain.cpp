@@ -340,6 +340,64 @@ void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
     m_chain->processObject(interpretObject(from, msg));
 }
 
+bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP const& rlp)
+{
+    if (rlp.isList() && rlp.itemCount() == 1) {
+        try {
+            bytesConstRef data = rlp[0].data();
+            switch (type) {
+            case chain::StatusPacket: {
+                CINFO << "GSEPeer - Recv status packet.";
+
+                return true;
+            }
+            case chain::TransactionPacket: {
+
+                CINFO << "GSEPeer - Recv tx packet";
+                Transaction tx(data);
+                CINFO << "TX:" <<  toJson(tx).toStyledString();
+                return true;
+            }
+            case chain::TransactionsPacket: {
+                CINFO << "GSEPeer - Recv txs packet.";
+
+                return true;
+            }
+            case chain::BlockPacket: {
+                CINFO << "GSEPeer - Recv block packet.";
+                return true;
+            }
+            case chain::BlockBodiesPacket: {
+                CINFO << "GSEPeer - Recv blocks packet.";
+                return true;
+            }
+            case chain::NewBlockPacket: {
+                CINFO << "GSEPeer - Recv new block packet.";
+                return true;
+            }
+            default:
+                CINFO << "GPeer - Unknown packet type - " << chain::pptToString((chain::ProtocolPacketType)type);
+                return false;
+            }
+
+        } catch (...) {
+            CINFO << "Dispatch::processMsg - error.";
+            return false;
+        }
+
+    } else {
+        CINFO << "Dispatch::processMsg - unknown rlp.";
+        return false;
+    }
+
+}
+
+bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, bytes const& data)
+{
+
+    return false;
+}
+
 /*
  * 0x01: Transactoon
  * 0x02: BlockHeader

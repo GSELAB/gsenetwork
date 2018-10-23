@@ -338,7 +338,7 @@ void Host::startPeerSession(Public const& _id, core::RLP const& _rlp, unique_ptr
             if (!pcap)
                 return ps->disconnect(IncompatibleProtocol);
 
-            pcap->newPeerCapability(ps, offset, i);
+            pcap->newPeerCapability(pcap->getDispatcher(), ps, offset, i);
             offset += pcap->messageCount();
         }
 
