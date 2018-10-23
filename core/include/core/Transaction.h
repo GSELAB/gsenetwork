@@ -88,7 +88,7 @@ public:
 
     Address const& getRecipient() const { return m_recipient; }
 
-    uint64_t getTimestamp() const { return m_timestamp; }
+    int64_t getTimestamp() const { return m_timestamp; }
 
     bytes const& getData() const { return m_data; }
 
@@ -110,7 +110,7 @@ private:
     uint32_t m_type;
     Address m_sender;
     Address m_recipient;
-    uint64_t m_timestamp;
+    int64_t m_timestamp;
     bytes m_data;
     uint64_t m_value;
     SignatureStruct m_signature;
@@ -119,5 +119,14 @@ private:
 };
 
 using Transactions = vector<Transaction>;
+
+using TransactionPtr = std::shared_ptr<Transaction>;
+
+using TxID = h256;
+using TransactionID = TxID;
+
+extern Transaction EmptyTransaction;
+
+extern TransactionPtr EmptyTransactionPtr;
 
 } /* end of namespace */

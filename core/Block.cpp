@@ -20,7 +20,9 @@ using namespace runtime;
 using namespace trie;
 
 namespace core {
-Block EmptyBlock(0xFFFFFFFFFFFFFFFF);
+Block EmptyBlock;
+
+BlockPtr EmptyBlockPtr = BlockPtr();
 
 BlockHeader::BlockHeader()
 {
@@ -192,10 +194,8 @@ void BlockHeader::sign(Secret const& priv)
     if (_sig.isValid()) m_signature = _sig;
 }
 
-h256& BlockHeader::getHash()
+h256 const& BlockHeader::getHash()
 {
-    if (m_hash) return m_hash;
-
     RLPStream rlpStream;
     streamRLPContent(rlpStream);
     m_hash = sha3(&rlpStream.out());
