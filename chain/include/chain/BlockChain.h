@@ -67,16 +67,16 @@ struct ByTxTimestamp;
 typedef boost::multi_index::multi_index_container<
     TransactionPtr,
     indexed_by<
-        hashed_unique<tag<ByTxID>, mem_fun<Transaction, TxID const&, &Transaction::getHash>, std::hash<TxID>>,
-        ordered_non_unique<tag<ByTxTimestamp>, const_mem_fun<Transaction, int64_t, &Transaction::getTimestamp>>
+        ordered_unique<tag<ByTxTimestamp>, const_mem_fun<Transaction, int64_t, &Transaction::getTimestamp>>,
+        hashed_non_unique<tag<ByTxID>, mem_fun<Transaction, TxID const&, &Transaction::getHash>, std::hash<TxID>>
     >
 > TxCacheMultiIndexType;
 
 typedef boost::multi_index::multi_index_container<
     BlockPtr,
     indexed_by<
-        hashed_unique<tag<ByBlockID>, mem_fun<Block, BlockID const&, &Block::getHash>, std::hash<BlockID>>,
-        ordered_non_unique<tag<ByBlockNumber>, const_mem_fun<Block, uint64_t, &Block::getNumber>>
+        ordered_unique<tag<ByBlockNumber>, const_mem_fun<Block, uint64_t, &Block::getNumber>>,
+        hashed_non_unique<tag<ByBlockID>, mem_fun<Block, BlockID const&, &Block::getHash>, std::hash<BlockID>>
     >
 > BlockCacheMultiIndexType;
 
@@ -117,9 +117,7 @@ public:
     typedef core::Queue<MemoryItem*> Queue_t;
 
 public:
-    BlockChain(crypto::GKey const& key);
-
-    BlockChain(crypto::GKey const& key, Controller* c, ChainID const& chainID = DEFAULT_GSE_NETWORK);
+    BlockChain(crypto::GKey const& key, DatabaseController* dbc, ChainID const& chainID = DEFAULT_GSE_NETWORK);
 
     virtual ~BlockChain();
 
@@ -127,7 +125,7 @@ public:
 
     void initializeRollbackState();
 
-    Controller* getController() const { return m_controller; }
+    DatabaseController* getDBC() const { return m_dbc; }
 
     ChainID const& getChainID() const { return m_chainID; }
 
@@ -167,6 +165,8 @@ public:
 public: /// Used by network
     bool preProcessTx(Transaction& tx);
 
+    bool preProcessBlock(Block& block);
+
     void processTxMessage(Transaction& tx);
 
     void processBlockMessage(Block& block);
@@ -186,7 +186,7 @@ private:
 
 private:
 
-    Controller* m_controller = nullptr;
+    DatabaseController* m_dbc = nullptr;
 
     GKey m_key;
     ChainID m_chainID = GSE_UNKNOWN_NETWORK;

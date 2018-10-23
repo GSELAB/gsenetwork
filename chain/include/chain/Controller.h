@@ -48,6 +48,8 @@ public:
 
     void setChainID(ChainID chainID);
 
+    database::DatabaseController* getDBC() const { return m_dbc; }
+
     // @only used by rpc module
     bool generateTransaction();
 

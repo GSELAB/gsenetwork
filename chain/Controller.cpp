@@ -32,7 +32,7 @@ void Controller::init(crypto::GKey const& key)
     m_dbc->init();
 
     CINFO << "Start GSE Chain init...";
-    m_chain = new BlockChain(key, this);
+    m_chain = new BlockChain(key, m_dbc);
     m_chain->init();
 
     CINFO << "Start network init...";
