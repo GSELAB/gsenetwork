@@ -52,6 +52,8 @@ public:
 
     void put(Transaction& transaction);
 
+    Block getBlock(BlockID const& key) const;
+
     Block getBlock(bytes const& key) const;
 
     Block getBlock(uint64_t blockNumber) const;
