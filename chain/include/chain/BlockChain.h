@@ -51,11 +51,34 @@ private:
     BlockChain *m_chain;
 };
 
+class BlockChainMessageFace {
+public:
+    BlockChainMessageFace() = default;
+};
+
 enum BlockChainStatus {
     NormalStatus = 0x01,
     SyncStatus,
     ProducerStatus,
 };
+
+struct ByTxID;
+struct ByTxTimestamp;
+typedef boost::multi_index::multi_index_container<
+    TransactionPtr,
+    indexed_by<
+        hashed_unique<tag<ByTxID>, mem_fun<Transaction, TxID const&, &Transaction::getHash>, std::hash<TxID>>,
+        ordered_non_unique<tag<ByTxTimestamp>, const_mem_fun<Transaction, int64_t, &Transaction::getTimestamp>>
+    >
+> TxCacheMultiIndexType;
+
+typedef boost::multi_index::multi_index_container<
+    BlockPtr,
+    indexed_by<
+        hashed_unique<tag<ByBlockID>, mem_fun<Block, BlockID const&, &Block::getHash>, std::hash<BlockID>>,
+        ordered_non_unique<tag<ByBlockNumber>, const_mem_fun<Block, uint64_t, &Block::getNumber>>
+    >
+> BlockCacheMultiIndexType;
 
 class BlockChain {
 public:
@@ -140,6 +163,18 @@ public:
 
     void onIrreversible(BlockStatePtr bsp);
 
+
+public: /// Used by network
+    bool preProcessTx(Transaction& tx);
+
+    void processTxMessage(Transaction& tx);
+
+    void processBlockMessage(Block& block);
+
+    bool isExist(Transaction& tx);
+
+    bool isExist(Block& block);
+
 private:
     MemoryItem* addMemoryItem(std::shared_ptr<Block> block);
     void cancelMemoryItem();
@@ -167,11 +202,10 @@ private:
     uint64_t m_solidifyIndex;
     BlockChainStatus m_blockChainStatus = NormalStatus;
 
-    // ? Change Mutex to spinlock ??? ?
-    mutable Mutex x_transactionsQueue;
-    std::queue<std::shared_ptr<core::Transaction>> transactionsQueue;
+    mutable Mutex x_txCache;
+    TxCacheMultiIndexType m_txCache;
 
-    mutable Mutex x_blocksQueue;
-    std::queue<std::shared_ptr<core::Block>> blocksQueue;
+    mutable Mutex x_blockCache;
+    BlockCacheMultiIndexType m_blockCache;
 };
 } // end namespace

@@ -14,6 +14,7 @@
 #include <core/JsonHelper.h>
 #include <core/Log.h>
 #include <core/Exceptions.h>
+#include <crypto/Valid.h>
 
 using namespace core;
 using namespace runtime::storage;
@@ -299,24 +300,26 @@ Block BlockChain::getBlockByNumber(uint64_t number)
 std::shared_ptr<core::Transaction> BlockChain::getTransactionFromCache()
 {
     std::shared_ptr<core::Transaction> ret = nullptr;
-    Guard l(x_transactionsQueue);
-    if (!this->transactionsQueue.empty()) {
-        ret = this->transactionsQueue.front();
-        this->transactionsQueue.pop();
+    Guard l(x_txCache);
+    /*
+    if (!this->m_txCache.empty()) {
+        //ret = this->transactionsQueue.front();
+        //this->transactionsQueue.pop();
     }
-
+    */
     return ret;
 }
 
 std::shared_ptr<core::Block> BlockChain::getBlockFromCache()
 {
     std::shared_ptr<core::Block> ret = nullptr;
-    Guard l(x_blocksQueue);
-    if (!transactionsQueue.empty()) {
-        ret = blocksQueue.front();
-        blocksQueue.pop();
+    Guard l(x_blockCache);
+    /*
+    if (!m_blockCache.empty()) {
+        //ret = blockCache.front();
+        //blocksQueue.pop();
     }
-
+    */
     return ret;
 }
 
@@ -333,6 +336,61 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
             m_memoryQueue.front()->setParentEmpty();
         item = m_memoryQueue.front();
     }
+}
+
+bool BlockChain::isExist(Transaction& tx)
+{
+    {
+        Guard l{x_txCache};
+        //auto itr = m_txCache.find(tx.getHash());
+        //if (itr != m_txCache.end()) return true;
+    }
+
+    { // find from db (include memory db)
+
+    }
+
+    return false;
+}
+
+bool BlockChain::isExist(Block& block)
+{
+    return false;
+}
+
+bool BlockChain::preProcessTx(Transaction& tx)
+{
+    return true;
+}
+
+void BlockChain::processTxMessage(Transaction& tx)
+{
+    if (!crypto::isValidSig(tx)) {
+        CDEBUG << "Recv tx: invalid signature.";
+        return;
+    }
+
+    if (isExist(tx)) {
+        CDEBUG << "Recv tx: tx has been exist.";
+        return;
+    }
+
+    if (!preProcessTx(tx)) {
+        CDEBUG << "Recv tx: preProcessTx failed.";
+        return;
+    }
+
+    {
+        Guard l{x_txCache};
+        //m_txCache.emplace(tx.getHash(), tx);
+    }
+
+    CINFO << "Recv tx:" <<  toJson(tx).toStyledString();
+}
+
+void BlockChain::processBlockMessage(Block& block)
+{
+
 }
 
 void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
@@ -352,10 +410,8 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
                 return true;
             }
             case chain::TransactionPacket: {
-
-                CINFO << "GSEPeer - Recv tx packet";
                 Transaction tx(data);
-                CINFO << "TX:" <<  toJson(tx).toStyledString();
+                m_chain->processTxMessage(tx);
                 return true;
             }
             case chain::TransactionsPacket: {

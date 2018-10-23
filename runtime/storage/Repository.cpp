@@ -122,6 +122,45 @@ void Repository::put(Producer const& producer)
     }
 }
 
+Transaction Repository::getTransaction(TxID const& id)
+{
+    Transaction tx;
+    {
+        Guard l(x_mutexTransaction);
+        auto itr = m_cacheTransaction.find(id);
+        if (itr != m_cacheTransaction.end())
+            return itr->second;
+    }
+
+    if (m_parent) {
+        tx = m_parent->getTransaction(id);
+        if (tx == EmptyTransaction) {} else {
+            put(tx);
+            return tx;
+        }
+    }
+
+    tx = m_dbc->getTransaction(id);
+    if (tx == EmptyTransaction) {} else {
+        put(tx);
+        return tx;
+    }
+
+    return EmptyTransaction;
+}
+
+void Repository::put(Transaction& tx)
+{
+    Guard l(x_mutexTransaction);
+    h256 hash = tx.getHash();
+    auto itr = m_cacheTransaction.find(hash);
+    if (itr != m_cacheTransaction.end()) {
+        m_cacheTransaction[hash] = tx;
+    } else {
+        m_cacheTransaction.emplace(hash, tx);
+    }
+}
+
 void Repository::put(Block const& block)
 {
     // DO NOTHING
@@ -161,6 +200,7 @@ void Repository::commit()
     // commit to db?
     COMMIT_REPO(Account);
     COMMIT_REPO(Producer);
+    COMMIT_REPO(Transaction);
     if (!m_parent)
         m_dbc->put(getBlock());
 }

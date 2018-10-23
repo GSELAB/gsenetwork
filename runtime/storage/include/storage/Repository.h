@@ -55,6 +55,10 @@ public:
 
     void voteDecrease(Address const& voter, Address const& candidate, uint64_t value);
 
+    Transaction getTransaction(TxID const& id);
+
+    void put(Transaction& tx);
+
     void commit();
 
 private:
@@ -66,6 +70,9 @@ private:
 
     mutable Mutex x_mutexProducer;
     mutable std::unordered_map<Address, Producer> m_cacheProducer;
+
+    mutable Mutex x_mutexTransaction;
+    mutable std::unordered_map<TxID, Transaction> m_cacheTransaction;
 
     std::shared_ptr<Block> m_block;
 };

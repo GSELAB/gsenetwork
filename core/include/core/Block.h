@@ -88,7 +88,7 @@ public:
 
     bytes const& getExtra() const { return m_extra; }
 
-    h256& getHash();
+    h256 const& getHash();
 
     SignatureStruct const& getSignature() const { return m_signature; }
 
@@ -164,7 +164,7 @@ public:
 
     uint64_t getNumber() const { return m_blockHeader.getNumber(); }
 
-    h256& getHash() { return m_blockHeader.getHash(); }
+    h256 const& getHash() { return m_blockHeader.getHash(); }
 
     SignatureStruct const& getSignature() const { return m_blockHeader.getSignature(); }
 
@@ -186,5 +186,9 @@ private:
 };
 
 using BlockID = h256;
+
+using BlockPtr = std::shared_ptr<Block>;
+
+extern BlockPtr EmptyBlockPtr;
 
 }  /* namespace end */

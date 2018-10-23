@@ -48,6 +48,8 @@ public:
 
     Transaction getTransaction(bytes const& key) const;
 
+    Transaction getTransaction(TxID const& key) const;
+
     void put(Transaction& transaction);
 
     Block getBlock(bytes const& key) const;
