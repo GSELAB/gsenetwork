@@ -89,19 +89,7 @@ void Controller::setChainID(chain::ChainID chainID)
     m_chainID = chainID;
 }
 
-// @only used by rpc module
-bool Controller::generateTransaction()
-{
-    return true;
-}
-
-// @only used by rpc module
-bool Controller::addTransaction(Transaction const& transaction)
-{
-    return true;
-}
-
-// @used by producer
+/// Producer interface
 void Controller::broadcast(std::shared_ptr<Block> block)
 {
     // send to current block chain
@@ -111,7 +99,7 @@ void Controller::broadcast(std::shared_ptr<Block> block)
     m_net->broadcast(block);
 }
 
-// @used by producer
+/// Producer interface
 void Controller::processProducerEvent()
 {
 
@@ -131,6 +119,45 @@ Block Controller::getBlockByNumber(uint64_t number)
     return m_chain->getBlockByNumber(number);
 }
 
+void Controller::broadcast(bi::tcp::endpoint const& from, Block& block)
+{
+
+}
+
+void Controller::broadcast(bi::tcp::endpoint const& from, BlockPtr block)
+{
+
+}
+
+void Controller::broadcast(bi::tcp::endpoint const& from, Transaction& tx)
+{
+
+}
+
+void Controller::broadcast(bi::tcp::endpoint const& from, TransactionPtr tx)
+{
+
+}
+
+void Controller::broadcast(bi::tcp::endpoint const& from, BlockState& bs)
+{
+
+}
+
+void Controller::broadcast(bi::tcp::endpoint const& from, BlockStatePtr bsp)
+{
+
+}
+
+void Controller::send(BlockState& bs)
+{
+
+}
+
+void Controller::send(BlockStatePtr bsp)
+{
+
+}
 
 Controller controller(DEFAULT_GSE_NETWORK);
 

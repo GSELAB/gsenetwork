@@ -7,11 +7,13 @@ enum ProtocolPacketType {
     StatusPacket = 0x20,
     NewBlockHashesPacket,
     TransactionPacket,
+    BlockPacket,
+    ConfirmationPacket,
     TransactionsPacket,
     GetBlockHeadersPacket,
     BlockHeadersPacket,
     GetBlockBodiesPacket,
-    BlockPacket,
+
     BlockBodiesPacket,
     NewBlockPacket,
 

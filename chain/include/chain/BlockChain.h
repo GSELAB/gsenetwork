@@ -28,9 +28,6 @@ using namespace core;
 
 namespace chain {
 
-class Controller;
-extern Controller controller;
-
 class BlockChain;
 
 class Dispatch: public DispatchFace {
@@ -53,7 +50,23 @@ private:
 
 class BlockChainMessageFace {
 public:
-    BlockChainMessageFace() = default;
+    virtual ~BlockChainMessageFace() {}
+
+    virtual void broadcast(bi::tcp::endpoint const& from, Block& block) = 0;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockPtr block) = 0;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, Transaction& tx) = 0;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, TransactionPtr tx) = 0;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockState& bs) = 0;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockStatePtr bsp) = 0;
+
+    virtual void send(BlockState& bs) = 0;
+
+    virtual void send(BlockStatePtr bsp) = 0;
 };
 
 enum BlockChainStatus {

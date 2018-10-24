@@ -23,12 +23,15 @@
 #include <producer/ProducerServer.h>
 #include <rpc/RpcService.h>
 
+using namespace core;
+
 namespace chain {
 
 static std::string ChainVersion("version 1.0");
 
 // @thread safe
-class Controller: public producer::ProcuderEventHandleFace, public rpc::WebSocketEventHandlerFace {
+class Controller: public producer::ProcuderEventHandleFace, public rpc::WebSocketEventHandlerFace,
+    public BlockChainMessageFace {
 public:
     Controller(ChainID const& chainID): m_chainID(chainID) {}
 
@@ -50,39 +53,48 @@ public:
 
     database::DatabaseController* getDBC() const { return m_dbc; }
 
-    // @only used by rpc module
-    bool generateTransaction();
+public: // RPC Handle
+    virtual string const& getVersion() const override { return ChainVersion; }
 
-    // @only used by rpc module
-    bool addTransaction(Transaction const& transaction);
+    virtual uint64_t getBlockNumberRef() const override { return getLastBlockNumber(); }
 
-    // @used by producer
-    void broadcast(std::shared_ptr<Block> block);
+    virtual void broadcast(Transaction const& transaction) override;
 
-    // @used by producer
-    void processProducerEvent();
+    virtual Block getBlockByNumber(uint64_t number) override;
 
-    uint64_t getLastBlockNumber() const { return m_chain->getLastBlockNumber(); }
+public: // Producer Handle
+    virtual void broadcast(std::shared_ptr<Block> block) override;
 
-    Block getLastBlock() const { return m_chain->getLastBlock(); }
+    virtual void processProducerEvent() override;
 
-    std::shared_ptr<core::Transaction> getTransactionFromCache() { return m_chain->getTransactionFromCache(); }
+    virtual uint64_t getLastBlockNumber() const override { return m_chain->getLastBlockNumber(); }
 
-    std::shared_ptr<core::Block> getBlockFromCache() { return m_chain->getBlockFromCache(); }
+    virtual Block getLastBlock() const override { return m_chain->getLastBlock(); }
 
-    BlockChainStatus getBlockChainStatus() const { return m_chain->getBlockChainStatus(); };
+    virtual std::shared_ptr<core::Transaction> getTransactionFromCache() override { return m_chain->getTransactionFromCache(); }
 
-    // @rpc-interface
-    string const& getVersion() const { return ChainVersion; }
+    virtual std::shared_ptr<core::Block> getBlockFromCache() override { return m_chain->getBlockFromCache(); }
 
-    // @rpc-interface
-    uint64_t getBlockNumberRef() const { return getLastBlockNumber(); }
+    virtual BlockChainStatus getBlockChainStatus() const override { return m_chain->getBlockChainStatus(); };
 
-    // @rpc-interface
-    void broadcast(core::Transaction const& transaction);
 
-    // @rpc-interface
-    core::Block getBlockByNumber(uint64_t number);
+
+public: // used by block chain
+    virtual void broadcast(bi::tcp::endpoint const& from, Block& block) override;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockPtr block) override;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, Transaction& tx) override;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, TransactionPtr tx) override;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockState& bs) override;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockStatePtr bsp) override;
+
+    virtual void send(BlockState& bs) override;
+
+    virtual void send(BlockStatePtr bsp) override;
 
 private:
     chain::ChainID m_chainID;
