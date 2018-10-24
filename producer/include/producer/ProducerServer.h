@@ -24,8 +24,6 @@
 
 using namespace core;
 
-class Controller;
-
 namespace producer {
 
 class ProcuderEventHandleFace {
