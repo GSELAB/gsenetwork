@@ -22,6 +22,10 @@
 #include <net/Network.h>
 #include <net/Client.h>
 #include <chain/Common.h>
+#include <chain/BlockState.h>
+
+using namespace core;
+using namespace chain;
 
 namespace net {
 
@@ -43,11 +47,22 @@ public:
 
     void broadcast(std::shared_ptr<core::Block> bMsg);
 
-    // std::queue<TransactionBundle> getTransactionCache();
+public: // used by block chain
+    virtual void broadcast(bi::tcp::endpoint const& from, Block& block);
 
-    std::shared_ptr<core::Transaction> getTransactionFromCache();
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockPtr block);
 
-    std::shared_ptr<core::Block> getBlockFromCache();
+    virtual void broadcast(bi::tcp::endpoint const& from, Transaction& tx);
+
+    virtual void broadcast(bi::tcp::endpoint const& from, TransactionPtr tx);
+
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockState& bs);
+
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockStatePtr bsp);
+
+    virtual void send(BlockState& bs);
+
+    virtual void send(BlockStatePtr bsp);
 
 protected:
     void addNode(std::string const& host);
@@ -68,9 +83,6 @@ private:
     NetworkConfig m_networkConfig;
     NodeIPEndpoint m_nodeIPEndpoint;
     Host* m_host;
-
-    std::queue<std::shared_ptr<core::Transaction>> transactionsQueue;
-    std::queue<std::shared_ptr<core::Block>> blocksQueue;
 };
 
 } // end of namespace
