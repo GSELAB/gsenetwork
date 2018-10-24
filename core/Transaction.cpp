@@ -13,8 +13,12 @@
 #include <core/Exceptions.h>
 #include <crypto/SHA3.h>
 
-using namespace core;
 using namespace crypto;
+
+namespace core {
+Transaction EmptyTransaction;
+
+TransactionPtr EmptyTransactionPtr = TransactionPtr();
 
 const uint32_t Transaction::ContractCreation = 0;
 const uint32_t Transaction::ContractCall = 1;
@@ -186,4 +190,6 @@ bytes Transaction::getRLPData()
     core::RLPStream rlpStream;
     streamRLP(rlpStream);
     return rlpStream.out();
+}
+
 }
