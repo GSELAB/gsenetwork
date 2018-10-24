@@ -74,30 +74,6 @@ void NetController::broadcast(std::shared_ptr<core::Block> bMsg)
     CINFO << "Broadcast block success. number(" << bMsg->getNumber() << ")";
 }
 
-std::shared_ptr<core::Transaction> NetController::getTransactionFromCache()
-{
-    std::shared_ptr<core::Transaction> ret = nullptr;
-
-    if (!this->transactionsQueue.empty()) {
-        ret = this->transactionsQueue.front();
-        this->transactionsQueue.pop();
-    }
-
-    return ret;
-}
-
-std::shared_ptr<core::Block> NetController::getBlockFromCache()
-{
-    std::shared_ptr<core::Block> ret = nullptr;
-
-    if (!transactionsQueue.empty()) {
-        ret = blocksQueue.front();
-        blocksQueue.pop();
-    }
-
-    return ret;
-}
-
 void NetController::addNode(std::string const& host)
 {
 
@@ -139,6 +115,46 @@ void NetController::send(bytes const& data, ProtocolPacketType packetType)
             CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
         }
     }
+}
+
+void NetController::broadcast(bi::tcp::endpoint const& from, Block& block)
+{
+
+}
+
+void NetController::broadcast(bi::tcp::endpoint const& from, BlockPtr block)
+{
+
+}
+
+void NetController::broadcast(bi::tcp::endpoint const& from, Transaction& tx)
+{
+
+}
+
+void NetController::broadcast(bi::tcp::endpoint const& from, TransactionPtr tx)
+{
+
+}
+
+void NetController::broadcast(bi::tcp::endpoint const& from, BlockState& bs)
+{
+
+}
+
+void NetController::broadcast(bi::tcp::endpoint const& from, BlockStatePtr bsp)
+{
+
+}
+
+void NetController::send(BlockState& bs)
+{
+
+}
+
+void NetController::send(BlockStatePtr bsp)
+{
+
 }
 
 } // end of namespace

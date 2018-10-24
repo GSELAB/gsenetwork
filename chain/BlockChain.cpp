@@ -22,19 +22,7 @@ using namespace runtime;
 
 namespace chain {
 
-BlockChain::BlockChain(crypto::GKey const& key): m_key(key)
-{
-    if (m_controller == nullptr) m_controller = &controller;
-    if (m_chainID == GSE_UNKNOWN_NETWORK) {
-        // THROW_GSEXCEPTION("GSE_UNKNOWN_NETWORK");
-        CWARN << "GSE_UNKNOWN_NETWORK, SET DEFAULT_GSE_NETWORK";
-        m_chainID = DEFAULT_GSE_NETWORK;
-    }
-
-    m_dispatcher = new Dispatch(this);
-}
-
-BlockChain::BlockChain(crypto::GKey const& key, Controller* c, ChainID const& chainID): m_key(key), m_controller(c), m_chainID(chainID)
+BlockChain::BlockChain(crypto::GKey const& key, DatabaseController* dbc, ChainID const& chainID): m_key(key), m_dbc(dbc), m_chainID(chainID)
 {
     m_dispatcher = new Dispatch(this);
 }
@@ -70,9 +58,9 @@ BlockChain::MemoryItem* BlockChain::addMemoryItem(std::shared_ptr<Block> block)
         Guard g(x_memoryQueue);
         std::shared_ptr<runtime::storage::Repository> repository;
         if (m_memoryQueue.empty()) {
-            repository = std::make_shared<runtime::storage::Repository>(block);
+            repository = std::make_shared<runtime::storage::Repository>(block, getDBC());
         } else {
-            repository = std::make_shared<runtime::storage::Repository>(block, m_memoryQueue.back()->getRepository());
+            repository = std::make_shared<runtime::storage::Repository>(block, m_memoryQueue.back()->getRepository(), getDBC());
         }
 
         mItem->setBlockNumber(block->getNumber());
@@ -301,12 +289,12 @@ std::shared_ptr<core::Transaction> BlockChain::getTransactionFromCache()
 {
     std::shared_ptr<core::Transaction> ret = nullptr;
     Guard l(x_txCache);
-    /*
-    if (!this->m_txCache.empty()) {
-        //ret = this->transactionsQueue.front();
-        //this->transactionsQueue.pop();
+    if (!m_txCache.empty()) {
+        auto itr = m_txCache.begin();
+        ret = *itr;
+        m_txCache.erase(itr);
     }
-    */
+
     return ret;
 }
 
@@ -314,12 +302,12 @@ std::shared_ptr<core::Block> BlockChain::getBlockFromCache()
 {
     std::shared_ptr<core::Block> ret = nullptr;
     Guard l(x_blockCache);
-    /*
     if (!m_blockCache.empty()) {
-        //ret = blockCache.front();
-        //blocksQueue.pop();
+        auto itr = m_blockCache.begin();
+        ret = *itr;
+        m_blockCache.erase(itr);
     }
-    */
+
     return ret;
 }
 
@@ -342,12 +330,31 @@ bool BlockChain::isExist(Transaction& tx)
 {
     {
         Guard l{x_txCache};
-        //auto itr = m_txCache.find(tx.getHash());
-        //if (itr != m_txCache.end()) return true;
+        auto& item = m_txCache.get<ByTxID>();
+        auto itr = item.find(tx.getHash());
+        if (itr != item.end())
+            return true;
     }
 
     { // find from db (include memory db)
+        std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
+        {
+            Guard g(x_memoryQueue);
+            if (!m_memoryQueue.empty())
+                backItem = m_memoryQueue.back()->getRepository();
+        }
 
+        std::shared_ptr<runtime::storage::Repository> repository;
+        if (backItem) {
+            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), backItem, getDBC());
+        } else {
+            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), getDBC());
+        }
+
+        auto itr = repository->getTransaction(tx.getHash());
+        if (itr == EmptyTransaction) {} else {
+            return true;
+        }
     }
 
     return false;
@@ -355,10 +362,44 @@ bool BlockChain::isExist(Transaction& tx)
 
 bool BlockChain::isExist(Block& block)
 {
+    {
+        Guard l(x_blockCache);
+        auto& item = m_blockCache.get<ByBlockID>();
+        auto itr = item.find(block.getHash());
+        if (itr != item.end())
+            return true;
+    }
+
+    {
+        std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
+        {
+            Guard g(x_memoryQueue);
+            if (!m_memoryQueue.empty())
+                backItem = m_memoryQueue.back()->getRepository();
+        }
+
+        std::shared_ptr<runtime::storage::Repository> repository;
+        if (backItem) {
+            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), backItem, getDBC());
+        } else {
+            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), getDBC());
+        }
+
+        auto itr = repository->getBlock(block.getHash());
+        if (itr == EmptyBlock) {} else {
+            return true;
+        }
+    }
+
     return false;
 }
 
 bool BlockChain::preProcessTx(Transaction& tx)
+{
+    return true;
+}
+
+bool BlockChain::preProcessBlock(Block& block)
 {
     return true;
 }
@@ -371,7 +412,7 @@ void BlockChain::processTxMessage(Transaction& tx)
     }
 
     if (isExist(tx)) {
-        CDEBUG << "Recv tx: tx has been exist.";
+        CDEBUG << "Recv tx: repeat tx.";
         return;
     }
 
@@ -382,7 +423,7 @@ void BlockChain::processTxMessage(Transaction& tx)
 
     {
         Guard l{x_txCache};
-        //m_txCache.emplace(tx.getHash(), tx);
+        m_txCache.emplace(std::make_shared<Transaction>(tx));
     }
 
     CINFO << "Recv tx:" <<  toJson(tx).toStyledString();
@@ -390,7 +431,27 @@ void BlockChain::processTxMessage(Transaction& tx)
 
 void BlockChain::processBlockMessage(Block& block)
 {
+    if (!crypto::isValidSig(block)) {
+        CINFO << "Recv block: invalid signature.";
+        return;
+    }
 
+    if (isExist(block)) {
+        CINFO << "Recv block: repeat block.";
+        return;
+    }
+
+    if (!preProcessBlock(block)) {
+        CINFO << "Recv block: preProcess block failed.";
+        return;
+    }
+
+    {
+        Guard l{x_blockCache};
+        m_blockCache.emplace(std::make_shared<Block>(block));
+    }
+
+    CINFO << "Recv block:" << toJson(block).toStyledString();
 }
 
 void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
@@ -405,7 +466,7 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
             bytesConstRef data = rlp[0].data();
             switch (type) {
             case chain::StatusPacket: {
-                CINFO << "GSEPeer - Recv status packet.";
+                CINFO << "Recv status packet.";
 
                 return true;
             }
@@ -415,24 +476,25 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
                 return true;
             }
             case chain::TransactionsPacket: {
-                CINFO << "GSEPeer - Recv txs packet.";
+                CINFO << "Recv txs packet.";
 
                 return true;
             }
             case chain::BlockPacket: {
-                CINFO << "GSEPeer - Recv block packet.";
+                Block block(data);
+                m_chain->processBlockMessage(block);
                 return true;
             }
             case chain::BlockBodiesPacket: {
-                CINFO << "GSEPeer - Recv blocks packet.";
+                CINFO << "Recv blocks packet.";
                 return true;
             }
             case chain::NewBlockPacket: {
-                CINFO << "GSEPeer - Recv new block packet.";
+                CINFO << "Recv new block packet.";
                 return true;
             }
             default:
-                CINFO << "GPeer - Unknown packet type - " << chain::pptToString((chain::ProtocolPacketType)type);
+                CINFO << "Unknown packet type - " << chain::pptToString((chain::ProtocolPacketType)type);
                 return false;
             }
 
