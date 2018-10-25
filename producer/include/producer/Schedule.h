@@ -58,6 +58,8 @@ public: // used by producer or block chain
 
     void producerSort();
 
+    std::vector<Producer> const& getProducerList() const;
+
 private:
     mutable Mutex x_activeProducers;
     std::vector<Producer> m_activeProducers;
