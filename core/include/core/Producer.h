@@ -37,6 +37,10 @@ public:
 
     bool operator!=(Producer const& producer) const;
 
+    bool operator>(Producer const& producer) const;
+
+    bool operator<(Producer const& producer) const;
+
     void streamRLP(RLPStream& rlpStream) const;
 
     void setVotes(uint64_t votes);
@@ -68,5 +72,7 @@ private:
 };
 
 extern Producer EmptyProducer;
+
+using ProducerPtr = std::shared_ptr<Producer>;
 
 } // end of namespace

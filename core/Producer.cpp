@@ -68,6 +68,16 @@ bool Producer::operator!=(Producer const& producer) const
     return !operator==(producer);
 }
 
+bool Producer::operator>(Producer const& producer) const
+{
+    return m_votes > producer.getVotes();
+}
+
+bool Producer::operator<(Producer const& producer) const
+{
+    return m_votes < producer.getVotes();
+}
+
 void Producer::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(PRODUCER_FIELDS);
