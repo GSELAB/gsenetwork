@@ -5,6 +5,7 @@
 #include <chain/Types.h>
 #include <utils/Utils.h>
 
+
 using namespace std;
 using namespace core;
 using namespace chain;
@@ -57,11 +58,25 @@ void WebSocket::registerUrlHandlers()
         if (reader.parse(body, root))
         {
             // body to rlp transaction
-            std::string str_transaction = root["transaction"].asString();
+            ChainID chainID = std::stoll(root["ChainID"].asString());
+            uint32_t type = std::stol(root["type"].asString());
+            Address sender = Address(root["sender"].asString());
+            Address recipient = Address(root["recipient"].asString());
             bytes data;
-            data.insert(data.begin(), str_transaction.begin(), str_transaction.end());
+            std::string dataStr = root["data"].asString();
+            data.insert(data.begin(), dataStr.begin(), dataStr.end());
+            uint64_t value = std::stoll(root["value"].asString());
+            Signature sig = Signature(root["signature"].asString());
+            SignatureStruct signature = *(SignatureStruct*)&sig;
+            Transaction transaction;
+            transaction.setChainID(chainID);
+            transaction.setType(type);
+            transaction.setSender(sender);
+            transaction.setRecipient(recipient);
+            transaction.setData(data);
+            transaction.setValue(value);
+            transaction.setSignature(signature);
 
-            Transaction transaction(data);
             m_face->broadcast(transaction);
         } else {
             ret = "Parse body failed, invalid format.\n";
@@ -79,21 +94,17 @@ void WebSocket::registerUrlHandlers()
         if(reader.parse(body, root))
         {
             // body to json
-            std::string str_sender = root["sender"].asString();
-            std::string str_recipient = root["recipient"].asString();
+            std::string senderStr = root["sender"].asString();
+            std::string recipientStr = root["recipient"].asString();
             uint64_t value = root["value"].asInt();
 
             Transaction transaction;
             transaction.setChainID(DEFAULT_GSE_NETWORK);
             transaction.setType(Transaction::TransferType);
-            transaction.setSender(Address(str_sender));
-            transaction.setRecipient(Address(str_recipient));
+            transaction.setSender(Address(senderStr));
+            transaction.setRecipient(Address(recipientStr));
             transaction.setValue(value);
-
-            bytes tem = transaction.getRLPData();
-            ret.insert(ret.begin(), tem.begin(),tem.end());
-
-            ret = toJson("transfer", ret).toStyledString();
+            ret = toJson(transaction).toStyledString();
         }else{
             ret = "Parse body failed, invalid format.\n";
             CINFO << ret;
@@ -117,10 +128,7 @@ void WebSocket::registerUrlHandlers()
             transaction.setType(Transaction::BeenProducerType);
             transaction.setSender(Address(str_sender));
 
-            bytes tem = transaction.getRLPData();
-            ret.insert(ret.begin(), tem.begin(), tem.end());
-
-            ret = toJson("producer", ret).toStyledString();
+            ret = toJson(transaction).toStyledString();
         }else{
             ret = "Parse body failed, invalid format.\n";
             CINFO << ret;
@@ -147,9 +155,7 @@ void WebSocket::registerUrlHandlers()
         transaction.setSender(Address(str_sender));
         transaction.setData(data);
 
-        bytes tem = transaction.getRLPData();
-        ret.insert(ret.begin(), tem.begin(), tem.end());
-        ret = toJson("producer", ret).toStyledString();
+        ret = toJson(transaction).toStyledString();
     }else{
         ret = "Parse body failed, invalid format.\n";
         CINFO << ret;
