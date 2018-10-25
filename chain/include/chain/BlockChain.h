@@ -60,13 +60,13 @@ public:
 
     virtual void broadcast(bi::tcp::endpoint const& from, TransactionPtr tx) = 0;
 
-    virtual void broadcast(bi::tcp::endpoint const& from, BlockState& bs) = 0;
+    virtual void broadcast(bi::tcp::endpoint const& from, HeaderConfirmation& hc) = 0;
 
-    virtual void broadcast(bi::tcp::endpoint const& from, BlockStatePtr bsp) = 0;
+    virtual void broadcast(bi::tcp::endpoint const& from, HeaderConfirmationPtr hcp) = 0;
 
-    virtual void send(BlockState& bs) = 0;
+    virtual void send(HeaderConfirmation& bs) = 0;
 
-    virtual void send(BlockStatePtr bsp) = 0;
+    virtual void send(HeaderConfirmationPtr hcp) = 0;
 };
 
 enum BlockChainStatus {
@@ -130,7 +130,7 @@ public:
     typedef core::Queue<MemoryItem*> Queue_t;
 
 public:
-    BlockChain(crypto::GKey const& key, DatabaseController* dbc, ChainID const& chainID = DEFAULT_GSE_NETWORK);
+    BlockChain(crypto::GKey const& key, DatabaseController* dbc, BlockChainMessageFace *messageFace, ChainID const& chainID = DEFAULT_GSE_NETWORK);
 
     virtual ~BlockChain();
 
@@ -174,15 +174,22 @@ public:
 
     void onIrreversible(BlockStatePtr bsp);
 
-
-public: /// Used by network
+public: /// used by rpc
     bool preProcessTx(Transaction& tx);
 
-    bool preProcessBlock(Block& block);
+    bool addRPCTx(Transaction& tx);
 
-    void processTxMessage(Transaction& tx);
 
-    void processBlockMessage(Block& block);
+public: /// Used by network
+    bool preProcessTx(bi::tcp::endpoint const& from, Transaction& tx);
+
+    bool preProcessBlock(bi::tcp::endpoint const& from, Block& block);
+
+    void processTxMessage(bi::tcp::endpoint const& from, Transaction& tx);
+
+    void processBlockMessage(bi::tcp::endpoint const& from, Block& block);
+
+    void processConfirmationMessage(bi::tcp::endpoint const& from, HeaderConfirmation& confirmation);
 
     bool isExist(Transaction& tx);
 
@@ -198,8 +205,9 @@ private:
     void doProcessBlock(std::shared_ptr<Block> block);
 
 private:
-
     DatabaseController* m_dbc = nullptr;
+
+    BlockChainMessageFace *m_messageFace = nullptr;
 
     GKey m_key;
     ChainID m_chainID = GSE_UNKNOWN_NETWORK;
