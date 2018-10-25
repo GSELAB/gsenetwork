@@ -135,44 +135,4 @@ void NetController::send(bytes const& data, ProtocolPacketType packetType, bi::t
     }
 }
 
-void NetController::broadcast(bi::tcp::endpoint const& from, Block& block)
-{
-
-}
-
-void NetController::broadcast(bi::tcp::endpoint const& from, BlockPtr block)
-{
-
-}
-
-void NetController::broadcast(bi::tcp::endpoint const& from, Transaction& tx)
-{
-
-}
-
-void NetController::broadcast(bi::tcp::endpoint const& from, TransactionPtr tx)
-{
-
-}
-
-void NetController::broadcast(bi::tcp::endpoint const& from, BlockState& bs)
-{
-
-}
-
-void NetController::broadcast(bi::tcp::endpoint const& from, BlockStatePtr bsp)
-{
-
-}
-
-void NetController::send(BlockState& bs)
-{
-
-}
-
-void NetController::send(BlockStatePtr bsp)
-{
-
-}
-
 } // end of namespace

@@ -47,23 +47,6 @@ public:
 
     void broadcast(std::shared_ptr<core::Block> bMsg);
 
-public: // used by block chain
-    virtual void broadcast(bi::tcp::endpoint const& from, Block& block);
-
-    virtual void broadcast(bi::tcp::endpoint const& from, BlockPtr block);
-
-    virtual void broadcast(bi::tcp::endpoint const& from, Transaction& tx);
-
-    virtual void broadcast(bi::tcp::endpoint const& from, TransactionPtr tx);
-
-    virtual void broadcast(bi::tcp::endpoint const& from, BlockState& bs);
-
-    virtual void broadcast(bi::tcp::endpoint const& from, BlockStatePtr bsp);
-
-    virtual void send(BlockState& bs);
-
-    virtual void send(BlockStatePtr bsp);
-
 protected:
     void addNode(std::string const& host);
 
