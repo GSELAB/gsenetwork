@@ -135,9 +135,19 @@ Transaction DatabaseController::getTransaction(bytes const& key) const
     return Transaction(m_transactionStore->get(key));
 }
 
+Transaction DatabaseController::getTransaction(TxID const& key) const
+{
+    return getTransaction(key.asBytes());
+}
+
 void DatabaseController::put(Transaction& transaction)
 {
     m_transactionStore->put(transaction);
+}
+
+Block DatabaseController::getBlock(BlockID const& key) const
+{
+    return getBlock(key.asBytes());
 }
 
 Block DatabaseController::getBlock(bytes const& key) const

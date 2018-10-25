@@ -8,6 +8,7 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 #include <boost/multi_index/composite_key.hpp>
+#include <boost/signals2/signal.hpp>
 
 #include <core/Block.h>
 #include <chain/BlockState.h>
@@ -16,7 +17,30 @@ using namespace core;
 
 namespace chain {
 
+using namespace boost::multi_index;
+
 typedef std::vector<BlockStatePtr> BranchType;
+
+struct ByBlockID;
+struct ByBlockNumber;
+struct ByPrev;
+struct ByMultiBlockNumber;
+typedef boost::multi_index::multi_index_container<
+    BlockStatePtr,
+    indexed_by<
+        hashed_unique<tag<ByBlockID>, member<BlockState, BlockID, &BlockState::m_blockID>, std::hash<BlockID>>,
+        ordered_non_unique<tag<ByPrev>, const_mem_fun<BlockState, BlockID const&, &BlockState::getPrev>>,
+        ordered_non_unique<tag<ByBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>>,
+        ordered_non_unique<tag<ByMultiBlockNumber>,
+            composite_key<BlockState,
+                member<BlockState, uint64_t,&BlockState::m_dposIrreversibleBlockNumber>,
+                member<BlockState, uint64_t,&BlockState::m_bftIrreversibleBlockNumber>,
+                member<BlockState, uint64_t,&BlockState::m_blockNumber>
+            >,
+            composite_key_compare<std::greater<uint64_t>, std::greater<uint64_t>, std::greater<uint64_t>>
+        >
+    >
+> RollbackMultiIndexType;
 
 class RollbackState {
 public:
@@ -30,8 +54,8 @@ public:
 
     void set(BlockStatePtr bsp);
 
-    BlockStatePtr add(Block const& block, bool trust = false);
-    BlockStatePtr add(BlockStatePtr nextBlock);
+    BlockStatePtr add(Block& block, bool trust = false);
+    BlockStatePtr add(BlockStatePtr nextBSP);
 
     void remove(BlockID const& blockID);
     void remove(uint64_t number);
@@ -48,12 +72,15 @@ public:
     void markInCurrentChain(BlockStatePtr const& blockState, bool inCurrentChain);
     void prune(BlockStatePtr const& blockState);
 
+public:
+    boost::signals2::signal<void(BlockStatePtr)> m_irreversible;
+
 private:
     void setBFTIrreversible(BlockID blockID);
 
     // std::unique_ptr<>
     BlockStatePtr m_head;
-    boost::multi_index::multi_index_container<BlockID> m_index;
+    RollbackMultiIndexType m_index;
 
 
 };

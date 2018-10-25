@@ -21,14 +21,12 @@
 #include <net/NetController.h>
 #include <crypto/GKey.h>
 #include <core/Queue.h>
+#include <chain/RollbackState.h>
 
 using namespace net;
 using namespace core;
 
 namespace chain {
-
-class Controller;
-extern Controller controller;
 
 class BlockChain;
 
@@ -40,10 +38,35 @@ public:
 
     void processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg);
 
+    bool processMsg(bi::tcp::endpoint const& from, unsigned type, RLP const& rlp);
+
+    bool processMsg(bi::tcp::endpoint const& from, unsigned type, bytes const& data);
+
     static std::unique_ptr<core::Object> interpretObject(bi::tcp::endpoint const& from, BytesPacket const& msg);
 
 private:
     BlockChain *m_chain;
+};
+
+class BlockChainMessageFace {
+public:
+    virtual ~BlockChainMessageFace() {}
+
+    virtual void broadcast(bi::tcp::endpoint const& from, Block& block) = 0;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockPtr block) = 0;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, Transaction& tx) = 0;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, TransactionPtr tx) = 0;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, HeaderConfirmation& hc) = 0;
+
+    virtual void broadcast(bi::tcp::endpoint const& from, HeaderConfirmationPtr hcp) = 0;
+
+    virtual void send(HeaderConfirmation& bs) = 0;
+
+    virtual void send(HeaderConfirmationPtr hcp) = 0;
 };
 
 enum BlockChainStatus {
@@ -52,6 +75,24 @@ enum BlockChainStatus {
     ProducerStatus,
 };
 
+struct ByTxID;
+struct ByTxTimestamp;
+typedef boost::multi_index::multi_index_container<
+    TransactionPtr,
+    indexed_by<
+        ordered_unique<tag<ByTxTimestamp>, const_mem_fun<Transaction, int64_t, &Transaction::getTimestamp>>,
+        hashed_non_unique<tag<ByTxID>, mem_fun<Transaction, TxID const&, &Transaction::getHash>, std::hash<TxID>>
+    >
+> TxCacheMultiIndexType;
+
+typedef boost::multi_index::multi_index_container<
+    BlockPtr,
+    indexed_by<
+        ordered_unique<tag<ByBlockNumber>, const_mem_fun<Block, uint64_t, &Block::getNumber>>,
+        hashed_non_unique<tag<ByBlockID>, mem_fun<Block, BlockID const&, &Block::getHash>, std::hash<BlockID>>
+    >
+> BlockCacheMultiIndexType;
+
 class BlockChain {
 public:
     struct MemoryItem {
@@ -59,11 +100,15 @@ public:
 
         MemoryItem(uint64_t number, std::shared_ptr<runtime::storage::Repository> repository): m_isDone(false), m_blockNumber(number), m_repository(repository) {}
 
+        ~MemoryItem() { m_repository.reset(); }
+
         std::shared_ptr<runtime::storage::Repository> getRepository() const { return m_repository; }
 
         void setRepository(std::shared_ptr<runtime::storage::Repository> repository) { m_repository = repository; }
 
         uint64_t getBlockNumber() const { return m_blockNumber; }
+
+        BlockID const& getBlockID() const { return m_repository->getBlock().getHash(); }
 
         Block getBlock() const { return m_repository->getBlock(); }
 
@@ -73,6 +118,10 @@ public:
 
         void setDone() { m_isDone = true; }
 
+        void setParentEmpty() { m_repository->setParentNULL(); }
+
+        void commit() { m_repository->commit(); }
+
         bool m_isDone = false;
         uint64_t m_blockNumber;
         std::shared_ptr<runtime::storage::Repository> m_repository;
@@ -81,17 +130,19 @@ public:
     typedef core::Queue<MemoryItem*> Queue_t;
 
 public:
-    BlockChain(crypto::GKey const& key);
-
-    BlockChain(crypto::GKey const& key, Controller* c, ChainID const& chainID = DEFAULT_GSE_NETWORK);
+    BlockChain(crypto::GKey const& key, DatabaseController* dbc, BlockChainMessageFace *messageFace, ChainID const& chainID = DEFAULT_GSE_NETWORK);
 
     virtual ~BlockChain();
 
     void init();
 
-    Controller* getController() const { return m_controller; }
+    void initializeRollbackState();
+
+    DatabaseController* getDBC() const { return m_dbc; }
 
     ChainID const& getChainID() const { return m_chainID; }
+
+    BlockChainStatus getBlockChainStatus() const { return m_blockChainStatus; }
 
     void setChainID(ChainID const& chainID) { m_chainID = chainID; }
 
@@ -103,13 +154,15 @@ public:
 
     bool processTransaction(Transaction const& transaction, MemoryItem* mItem);
 
-    bool checkBifurcation();
+    bool checkBifurcation(std::shared_ptr<Block> block);
 
     DispatchFace* getDispatcher() const { return m_dispatcher; }
 
     void processObject(std::unique_ptr<Object> object);
 
     uint64_t getLastBlockNumber() const;
+
+    uint64_t getLastIrreversibleBlockNumber() const;
 
     Block getLastBlock() const;
 
@@ -119,9 +172,42 @@ public:
 
     std::shared_ptr<Block> getBlockFromCache();
 
-private:
+    void onIrreversible(BlockStatePtr bsp);
 
-    Controller* m_controller = nullptr;
+public: /// used by rpc
+    bool preProcessTx(Transaction& tx);
+
+    bool addRPCTx(Transaction& tx);
+
+
+public: /// Used by network
+    bool preProcessTx(bi::tcp::endpoint const& from, Transaction& tx);
+
+    bool preProcessBlock(bi::tcp::endpoint const& from, Block& block);
+
+    void processTxMessage(bi::tcp::endpoint const& from, Transaction& tx);
+
+    void processBlockMessage(bi::tcp::endpoint const& from, Block& block);
+
+    void processConfirmationMessage(bi::tcp::endpoint const& from, HeaderConfirmation& confirmation);
+
+    bool isExist(Transaction& tx);
+
+    bool isExist(Block& block);
+
+private:
+    MemoryItem* addMemoryItem(std::shared_ptr<Block> block);
+    void cancelMemoryItem();
+
+    void commitBlockState(std::shared_ptr<Block> block);
+    void popBlockState();
+
+    void doProcessBlock(std::shared_ptr<Block> block);
+
+private:
+    DatabaseController* m_dbc = nullptr;
+
+    BlockChainMessageFace *m_messageFace = nullptr;
 
     GKey m_key;
     ChainID m_chainID = GSE_UNKNOWN_NETWORK;
@@ -129,16 +215,18 @@ private:
     DispatchFace* m_dispatcher;
 
     mutable Mutex x_memoryQueue;
-    //std::queue<MemoryItem*> m_memoryQueue;
     Queue_t m_memoryQueue;
+
+    RollbackState m_rollbackState;
+    BlockStatePtr m_head;
+
     uint64_t m_solidifyIndex;
     BlockChainStatus m_blockChainStatus = NormalStatus;
 
-    // ? Change Mutex to spinlock ??? ?
-    mutable Mutex x_transactionsQueue;
-    std::queue<std::shared_ptr<core::Transaction>> transactionsQueue;
+    mutable Mutex x_txCache;
+    TxCacheMultiIndexType m_txCache;
 
-    mutable Mutex x_blocksQueue;
-    std::queue<std::shared_ptr<core::Block>> blocksQueue;
+    mutable Mutex x_blockCache;
+    BlockCacheMultiIndexType m_blockCache;
 };
 } // end namespace

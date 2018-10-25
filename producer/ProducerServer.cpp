@@ -10,14 +10,13 @@
  */
 
 #include <producer/ProducerServer.h>
+#include <producer/Schedule.h>
 #include <config/Constant.h>
 #include <utils/Utils.h>
 #include <core/JsonHelper.h>
 
 using namespace utils;
 using namespace core;
-
-extern Controller controller;
 
 namespace producer {
 
@@ -69,16 +68,20 @@ void ProducerServer::doWork()
     unsigned i;
 
     int64_t timestamp = currentTimestamp();
-    if (m_prevTimestamp < 0) {
-        m_prevTimestamp = timestamp;
-    } else {
-        if ((timestamp - m_prevTimestamp) >= (PRODUCER_INTERVAL - PRODUCER_SLEEP_INTERVAL / 5)) {
-            m_prevTimestamp = m_prevTimestamp + PRODUCER_INTERVAL;
-        } else {
-            // CINFO << "Try to sleep " << PRODUCER_SLEEP_INTERVAL;
-            sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
-            return;
+    unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
+                (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
+
+    const std::vector<Producer> activeProducers = m_schedule.getActiveProducers();
+    if (m_key.getAddress() == activeProducers[producerPosition].getAddress()) {
+        if (((timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL > m_prevTimestamp) ||
+            ((1 + timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= m_prevTimestamp)) {
+            if (m_eventHandle->getBlockChainStatus() == chain::ProducerStatus) {
+                m_prevTimestamp = timestamp;
+            }
         }
+    } else {
+        sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
+        return;
     }
 
     Block prevBlock = m_eventHandle->getLastBlock();
@@ -93,9 +96,11 @@ void ProducerServer::doWork()
     //blockHeader.setExtra();
 
     std::shared_ptr<Block> block = std::make_shared<Block>(blockHeader);
-    for (i = 0; i < 20; i++) {
+    for (i = 0; i < MAX_TRANSACTIONS_PER_BLOCK; i++) {
         std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
         if (transaction) {
+            if (sizeof(*transaction) > MAX_TRANSACTION_SIZE)
+                continue;
             CINFO << "Package transaction to current block(" << block->getNumber() << ")";
             block->addTransaction(*transaction);
         }

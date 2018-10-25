@@ -19,17 +19,15 @@
 #include <crypto/GKey.h>
 #include <net/BytesPacket.h>
 #include <net/Common.h>
+#include <net/Network.h>
+#include <net/Client.h>
+#include <chain/Common.h>
+#include <chain/BlockState.h>
+
+using namespace core;
+using namespace chain;
 
 namespace net {
-
-class DispatchFace {
-public:
-    virtual ~DispatchFace() {}
-
-    virtual void processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg) = 0;
-};
-
-class Host;
 
 class NetController {
 public:
@@ -45,27 +43,49 @@ public:
 
     void broadcast(std::shared_ptr<core::Transaction> tMsg);
 
+    void broadcast(core::Transaction const& tMsg);
+
     void broadcast(std::shared_ptr<core::Block> bMsg);
 
-    // std::queue<TransactionBundle> getTransactionCache();
+public: // used by block chain
+    virtual void broadcast(bi::tcp::endpoint const& from, Block& block);
 
-    std::shared_ptr<core::Transaction> getTransactionFromCache();
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockPtr block);
 
-    std::shared_ptr<core::Block> getBlockFromCache();
+    virtual void broadcast(bi::tcp::endpoint const& from, Transaction& tx);
 
+    virtual void broadcast(bi::tcp::endpoint const& from, TransactionPtr tx);
+
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockState& bs);
+
+    virtual void broadcast(bi::tcp::endpoint const& from, BlockStatePtr bsp);
+
+    virtual void send(BlockState& bs);
+
+    virtual void send(BlockStatePtr bsp);
+
+protected:
+    void addNode(std::string const& host);
+
+    void addNode(bi::tcp::endpoint const& ep);
+
+    void addNode(NodeID const& nodeID, bi::tcp::endpoint const& ep);
+
+    core::RLPStream& prepare(core::RLPStream& rlpStream, unsigned id, unsigned args);
+
+public:
+    void send(bytes const& data, chain::ProtocolPacketType packetType);
+
+    void send(bytes const& data, chain::ProtocolPacketType packetType, bi::tcp::endpoint const& except);
 
 private:
     bool m_inited;
-
     crypto::GKey m_key;
 
     DispatchFace* m_dispatcher;
-
+    NetworkConfig m_networkConfig;
+    NodeIPEndpoint m_nodeIPEndpoint;
     Host* m_host;
-
-    std::queue<std::shared_ptr<core::Transaction>> transactionsQueue;
-
-    std::queue<std::shared_ptr<core::Block>> blocksQueue;
 };
 
 } // end of namespace

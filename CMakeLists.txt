@@ -8,9 +8,9 @@ INCLUDE(GNUInstallDirs)
 
 IF(UNIX)
     MESSAGE(STATUS "Unix system")
-    SET(toolchain cxx11-pic)
+    SET(toolchain cxx14-pic)
 ELSE()
-    SET(toolchain cxx11)
+    SET(toolchain cxx14)
 ENDIF()
 cable_configure_toolchain(DEFAULT ${toolchain})
 
@@ -80,20 +80,20 @@ SET(GSE_BOOST_LIBS
     )
 
 hunter_add_package(cryptopp)
-FIND_PACKAGE(cryptopp CONFIG REQUIRED)
+find_package(cryptopp CONFIG REQUIRED)
 
 hunter_add_package(jsoncpp)
 find_package(jsoncpp CONFIG REQUIRED)
 
 #hunter_add_package(libscrypt)
-#FIND_PACKAGE(libscrypt CONFIG REQUIRED)
+#find_package(libscrypt CONFIG REQUIRED)
 
 hunter_add_package(websocketpp)
-FIND_PACKAGE(websocketpp CONFIG REQUIRED)
+find_package(websocketpp CONFIG REQUIRED)
 
 INCLUDE(ProjectSecp256k1)
 
-FIND_PACKAGE(Threads)
+find_package(Threads)
 
 
 IF(MINIUPNPC)

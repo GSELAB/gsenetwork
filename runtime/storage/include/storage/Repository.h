@@ -27,9 +27,12 @@ namespace runtime {
 namespace storage {
 class Repository { //: public std::enable_shared_from_this<Repository> {
 public:
-    Repository(std::shared_ptr<Block> block): m_block(block) {}
+    Repository(std::shared_ptr<Block> block, DatabaseController *dbc): m_block(block), m_dbc(dbc) {}
 
-    Repository(std::shared_ptr<Block> block, std::shared_ptr<Repository> parent): m_block(block), m_parent(parent) {}
+    Repository(std::shared_ptr<Block> block, std::shared_ptr<Repository> parent, DatabaseController *dbc):
+        m_block(block), m_parent(parent), m_dbc(dbc) {}
+
+    ~Repository() { if (m_parent) m_parent.reset(); if (m_block) m_block.reset(); }
 
     void setParentNULL() { m_parent.reset(); }
 
@@ -53,6 +56,12 @@ public:
 
     void voteDecrease(Address const& voter, Address const& candidate, uint64_t value);
 
+    Transaction getTransaction(TxID const& id);
+
+    void put(Transaction& tx);
+
+    Block getBlock(BlockID const& blockID);
+
     void commit();
 
 private:
@@ -64,6 +73,9 @@ private:
 
     mutable Mutex x_mutexProducer;
     mutable std::unordered_map<Address, Producer> m_cacheProducer;
+
+    mutable Mutex x_mutexTransaction;
+    mutable std::unordered_map<TxID, Transaction> m_cacheTransaction;
 
     std::shared_ptr<Block> m_block;
 };

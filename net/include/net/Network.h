@@ -14,11 +14,6 @@
 	You should have received a copy of the GNU General Public License
 	along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** @file Network.h
- * @author Alex Leverington <nessence@gmail.com>
- * @author Gav Wood <i@gavwood.com>
- * @date 2014
- */
 
 #pragma once
 
@@ -29,12 +24,13 @@
 #include <core/RLP.h>
 #include <core/Guards.h>
 #include <net/Common.h>
+
 namespace ba = boost::asio;
 namespace bi = ba::ip;
 
 namespace net {
 
-static const unsigned short c_defaultListenPort = 30303;
+static const unsigned short c_defaultListenPort = 60606;
 
 struct NetworkConfig
 {

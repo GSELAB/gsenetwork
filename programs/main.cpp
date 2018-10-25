@@ -17,9 +17,10 @@
 #include <core/Log.h>
 #include <crypto/Common.h>
 #include <crypto/GKey.h>
+#include <crypto/Valid.h>
 #include <chain/Controller.h>
 #include <config/Argument.h>
-
+#include <utils/Utils.h>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -29,7 +30,7 @@
 using namespace std;
 using namespace crypto;
 using namespace chain;
-
+using namespace utils;
 namespace {
 
 void printFlag()
@@ -56,8 +57,10 @@ void init(int argc, char **argv)
     toPublic({});
     if (argc > 1 && (strncmp(argv[1], "-p", 2) == 0 || strncmp(argv[1], "-P", 2) == 0)) {
         CINFO << "Set argInstance.m_producerON true";
-        argInstance.m_producerON = true;
+        ARGs.m_producerON = true;
     }
+
+    initArgument();
 }
 
 bool s_shouldExit = false;
@@ -100,19 +103,38 @@ void doCheck()
 
 int main(int argc, char** argv)
 {
-    //setDefaultOrCLocale();
-    //bool enableProducer = false;
-    //Address producerAddress;
     init(argc, argv);
     signal(SIGABRT, &exitHandler);
     signal(SIGTERM, &exitHandler);
     signal(SIGINT, &exitHandler);
 
-    Secret sec("4077db9374f9498aff4b4ae6eb1400755655b50457930193948d2dc6cf70bf0f");
-    GKey key(sec);
+    GKey key(ARGs.m_secret);
     CINFO << "Secret:" << toHex(key.getSecret().ref());
     CINFO << "Public:" << toHex(key.getPublic().ref());
     CINFO << "Address:" << toHex(key.getAddress().ref());
+
+    /*
+    {
+        //Transaction(chain::ChainID chainID, uint32_t type, Address const& sender, Address const& recipient,
+        //          uint64_t timestamp, bytes const& data, uint64_t value);
+        Transaction tx(0, 0, key.getAddress(), key.getAddress(), currentTimestamp(), bytes(), 12);
+        tx.sign(key.getSecret());
+
+        if (isValidSig(tx)) {
+            CINFO << "tx sign correct";
+        } else {
+            CINFO << "tx sign incorrect";
+        }
+
+        Transaction tx2 = tx;
+        tx2.setValue(1000);
+        if (isValidSig(tx2)) {
+            CINFO << "tx2 sign correct";
+        } else {
+            CINFO << "tx2 sign incorrect";
+        }
+    }
+    */
 
     // TODO : Controller
     controller.init(key);

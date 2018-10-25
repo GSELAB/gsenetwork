@@ -3,10 +3,12 @@
 #include <core/Log.h>
 #include <core/Transaction.h>
 #include <chain/Types.h>
+#include <utils/Utils.h>
 
 using namespace std;
 using namespace core;
 using namespace chain;
+using namespace utils;
 
 namespace rpc {
 
@@ -84,7 +86,6 @@ void WebSocket::registerUrlHandlers()
             ret = "Parse body failed, invalid format.\n";
             CINFO << ret;
         }
-
         urlRC(URLCode::Default, ret);
     });
 
