@@ -1,50 +1,79 @@
-#pragma once
-
-#include <vector>
-
-#include <core/Address.h>
-#include <core/Guards.h>
-#include <core/Producer.h>
-
-using namespace core;
+#include <producer/Schedule.h>
 
 namespace producer {
 
-class ProducerScheduleType {
-public:
-    ProducerScheduleType() {}
+ProducerScheduleType& ProducerScheduleType::operator=(ProducerScheduleType const& pst)
+{
+    if (&pst == this) return *this;
+    for (auto i : pst.m_producers)
+        m_producers.push_back(i);
+    return *this;
+}
 
-    ProducerScheduleType& operator=(ProducerScheduleType const& pst);
+bool ProducerScheduleType::isExist(Address const& address)
+{
+    auto itr = std::find(m_producers.begin(), m_producers.end(), address);
+    if (itr != m_producers.end()) return true;
+    return false;
+}
 
-    size_t size() const { return m_producers.size(); }
+// ------------------------
+Schedule::Schedule()
+{
 
-    bool isExist(Address const& address);
+}
 
-public:
-    std::vector<Address> m_producers;
-};
+Schedule::~Schedule()
+{
 
-class Schedule {
-public:
-    Schedule();
+}
 
-    ~Schedule();
+//@not thread safe
+std::vector<Producer> const& Schedule::getActiveProducers() const
+{
+    return m_activeProducers;
+}
 
-    std::vector<Producer> const& getActiveProducers() const;
+std::vector<Producer> const& Schedule::getProducerList() const
+{
+    return m_producerList;
+}
 
-    void schedule();
+void Schedule::schedule()
+{
 
-    void addActiveProducer(Producer const& producer);
+}
 
-    void addActiveProducer(Address const& address);
+void Schedule::addActiveProducer(Producer const& producer)
+{
 
-    void removeActiveProducer(Producer const& producer);
+}
 
-    void removeActiveProducer(Address const& producer);
+void Schedule::addActiveProducer(Address const& address)
+{
 
-private:
-    mutable Mutex x_activeProducers;
-    std::vector<Producer> m_activeProducers;   //
-};
+}
+
+void Schedule::removeActiveProducer(Producer const& producer)
+{
+
+}
+
+void Schedule::removeActiveProducer(Address const& producer)
+{
+
+}
+
+void Schedule::addProducer(Producer const& producer)
+{
+    Guard l{x_producerList};
+    m_producerList.push_back(producer);
+}
+
+void Schedule::producerSort()
+{
+    Guard l{x_producerList};
+    std::sort(m_producerList.begin(), m_producerList.end(), ProducerCompareGreater());
+}
 
 }
