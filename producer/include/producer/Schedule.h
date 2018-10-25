@@ -24,6 +24,17 @@ public:
     std::vector<Address> m_producers;
 };
 
+// Up
+class ProducerCompareLess {
+public:
+    bool operator()(Producer const& first, Producer const& second) { return first > second; }
+};
+
+class ProducerCompareGreater {
+public:
+    bool operator()(Producer const& first, Producer const& second) { return first < second; }
+};
+
 class Schedule {
 public:
     Schedule();
@@ -42,9 +53,17 @@ public:
 
     void removeActiveProducer(Address const& producer);
 
+public: // used by producer or block chain
+    void addProducer(Producer const& producer);
+
+    void producerSort();
+
 private:
     mutable Mutex x_activeProducers;
-    std::vector<Producer> m_activeProducers;   //
+    std::vector<Producer> m_activeProducers;
+
+    mutable Mutex x_producerList;
+    std::vector<Producer> m_producerList;
 };
 
 }

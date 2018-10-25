@@ -59,4 +59,16 @@ void Schedule::removeActiveProducer(Address const& producer)
 
 }
 
+void Schedule::addProducer(Producer const& producer)
+{
+    Guard l{x_producerList};
+    m_producerList.push_back(producer);
+}
+
+void Schedule::producerSort()
+{
+    Guard l{x_producerList};
+    std::sort(m_producerList.begin(), m_producerList.end(), ProducerCompareGreater());
+}
+
 }
