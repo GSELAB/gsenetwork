@@ -7,12 +7,9 @@ namespace core {
 namespace js_util {
 bytes jsToBytes(string const& _s, OnFailed _f)
 {
-	try
-	{
+	try {
 		return fromHex(_s, WhenError::Throw);
-	}
-	catch (...)
-	{
+	} catch (...) {
 		if (_f == OnFailed::InterpretRaw)
 			return asBytes(_s);
 		else if (_f == OnFailed::Throw)
@@ -58,8 +55,7 @@ bytes unpadLeft(bytes _b)
 
 string fromRaw(h256 _n)
 {
-	if (_n)
-	{
+	if (_n) {
 		string s((char const*)_n.data(), 32);
 		auto l = s.find_first_of('\0');
 		if (!l)
