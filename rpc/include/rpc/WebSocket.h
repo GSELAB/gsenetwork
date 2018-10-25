@@ -20,7 +20,6 @@ using URLRequestCallback = std::function<void(int, std::string)>;
 using URLHandler = std::function<void(std::string, std::string, URLRequestCallback)>;
 
 
-
 class WebSocketEventHandlerFace {
 public:
     virtual ~WebSocketEventHandlerFace() {}

@@ -117,8 +117,6 @@ void ProducerServer::doWork()
     for (i = 0; i < MAX_TRANSACTIONS_PER_BLOCK; i++) {
         std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
         if (transaction) {
-            if (sizeof(*transaction) > MAX_TRANSACTION_SIZE)
-                continue;
             CINFO << "Package transaction to current block(" << block->getNumber() << ")";
             block->addTransaction(*transaction);
         }
@@ -137,7 +135,4 @@ void ProducerServer::doWork()
     CINFO << "Generate block:" << toJson(*block);
     m_eventHandle->broadcast(block);
 }
-
-
-
 } // end of namespace
