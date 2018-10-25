@@ -22,7 +22,8 @@ using namespace runtime;
 
 namespace chain {
 
-BlockChain::BlockChain(crypto::GKey const& key, DatabaseController* dbc, ChainID const& chainID): m_key(key), m_dbc(dbc), m_chainID(chainID)
+BlockChain::BlockChain(crypto::GKey const& key, DatabaseController* dbc, BlockChainMessageFace *messageFace, ChainID const& chainID):
+    m_key(key), m_dbc(dbc), m_messageFace(messageFace), m_chainID(chainID)
 {
     m_dispatcher = new Dispatch(this);
 }
@@ -326,6 +327,49 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
     }
 }
 
+bool BlockChain::preProcessTx(Transaction& tx)
+{
+    try {
+        std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
+        {
+            Guard g(x_memoryQueue);
+            if (!m_memoryQueue.empty())
+                backItem = m_memoryQueue.back()->getRepository();
+        }
+
+        std::shared_ptr<runtime::storage::Repository> repository;
+        if (backItem) {
+            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), backItem, getDBC());
+        } else {
+            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), getDBC());
+        }
+
+        Runtime runtime(tx, repository);
+        runtime.init();
+        runtime.excute();
+        runtime.finished();
+    } catch (...) {
+
+    }
+    return true;
+}
+
+bool BlockChain::addRPCTx(Transaction& tx)
+{
+    if (isExist(tx))
+        return false;
+
+    if (!preProcessTx(tx))
+        return false;
+
+    {
+        Guard l{x_txCache};
+        m_txCache.emplace(std::make_shared<Transaction>(tx));
+    }
+
+    return true;
+}
+
 bool BlockChain::isExist(Transaction& tx)
 {
     {
@@ -394,17 +438,17 @@ bool BlockChain::isExist(Block& block)
     return false;
 }
 
-bool BlockChain::preProcessTx(Transaction& tx)
+bool BlockChain::preProcessTx(bi::tcp::endpoint const& from, Transaction& tx)
+{
+    return preProcessTx(tx);
+}
+
+bool BlockChain::preProcessBlock(bi::tcp::endpoint const& from, Block& block)
 {
     return true;
 }
 
-bool BlockChain::preProcessBlock(Block& block)
-{
-    return true;
-}
-
-void BlockChain::processTxMessage(Transaction& tx)
+void BlockChain::processTxMessage(bi::tcp::endpoint const& from, Transaction& tx)
 {
     if (!crypto::isValidSig(tx)) {
         CDEBUG << "Recv tx: invalid signature.";
@@ -426,10 +470,11 @@ void BlockChain::processTxMessage(Transaction& tx)
         m_txCache.emplace(std::make_shared<Transaction>(tx));
     }
 
+    m_messageFace->broadcast(from, tx);
     CINFO << "Recv tx:" <<  toJson(tx).toStyledString();
 }
 
-void BlockChain::processBlockMessage(Block& block)
+void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block)
 {
     if (!crypto::isValidSig(block)) {
         CINFO << "Recv block: invalid signature.";
@@ -441,7 +486,7 @@ void BlockChain::processBlockMessage(Block& block)
         return;
     }
 
-    if (!preProcessBlock(block)) {
+    if (!preProcessBlock(from, block)) {
         CINFO << "Recv block: preProcess block failed.";
         return;
     }
@@ -451,7 +496,18 @@ void BlockChain::processBlockMessage(Block& block)
         m_blockCache.emplace(std::make_shared<Block>(block));
     }
 
+    m_messageFace->broadcast(from, block);
     CINFO << "Recv block:" << toJson(block).toStyledString();
+}
+
+void BlockChain::processConfirmationMessage(bi::tcp::endpoint const& from, HeaderConfirmation& confirmation)
+{
+    try {
+        m_rollbackState.add(confirmation);
+
+    } catch (RollbackStateException) {
+
+    }
 }
 
 void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
@@ -467,30 +523,30 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
             switch (type) {
             case chain::StatusPacket: {
                 CINFO << "Recv status packet.";
-
                 return true;
             }
             case chain::TransactionPacket: {
                 Transaction tx(data);
-                m_chain->processTxMessage(tx);
-                return true;
-            }
-            case chain::TransactionsPacket: {
-                CINFO << "Recv txs packet.";
-
+                m_chain->processTxMessage(from, tx);
                 return true;
             }
             case chain::BlockPacket: {
                 Block block(data);
-                m_chain->processBlockMessage(block);
+                m_chain->processBlockMessage(from, block);
+                return true;
+            }
+            case chain::ConfirmationPacket: {
+                HeaderConfirmation confirmation(data);
+                m_chain->processConfirmationMessage(from, confirmation);
+                return true;
+            }
+            case chain::TransactionsPacket: {
                 return true;
             }
             case chain::BlockBodiesPacket: {
-                CINFO << "Recv blocks packet.";
                 return true;
             }
             case chain::NewBlockPacket: {
-                CINFO << "Recv new block packet.";
                 return true;
             }
             default:

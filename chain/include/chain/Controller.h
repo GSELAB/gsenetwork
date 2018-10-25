@@ -24,6 +24,7 @@
 #include <rpc/RpcService.h>
 
 using namespace core;
+using namespace net;
 
 namespace chain {
 
@@ -58,7 +59,7 @@ public: // RPC Handle
 
     virtual uint64_t getBlockNumberRef() const override { return getLastBlockNumber(); }
 
-    virtual void broadcast(Transaction const& transaction) override;
+    virtual void broadcast(Transaction& tx) override;
 
     virtual Block getBlockByNumber(uint64_t number) override;
 
@@ -88,13 +89,13 @@ public: // used by block chain
 
     virtual void broadcast(bi::tcp::endpoint const& from, TransactionPtr tx) override;
 
-    virtual void broadcast(bi::tcp::endpoint const& from, BlockState& bs) override;
+    virtual void broadcast(bi::tcp::endpoint const& from, HeaderConfirmation& hc) override;
 
-    virtual void broadcast(bi::tcp::endpoint const& from, BlockStatePtr bsp) override;
+    virtual void broadcast(bi::tcp::endpoint const& from, HeaderConfirmationPtr hcp) override;
 
-    virtual void send(BlockState& bs) override;
+    virtual void send(HeaderConfirmation& hc) override;
 
-    virtual void send(BlockStatePtr bsp) override;
+    virtual void send(HeaderConfirmationPtr hcp) override;
 
 private:
     chain::ChainID m_chainID;

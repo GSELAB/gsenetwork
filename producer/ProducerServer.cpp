@@ -18,8 +18,6 @@
 using namespace utils;
 using namespace core;
 
-extern Controller controller;
-
 namespace producer {
 
 ProducerServer::~ProducerServer()

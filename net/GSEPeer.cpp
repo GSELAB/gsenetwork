@@ -18,6 +18,11 @@ GSEPeer::~GSEPeer()
 
 }
 
+void GSEPeer::beat()
+{
+
+}
+
 bool GSEPeer::interpretCapabilityPacket(unsigned id, core::RLP const& rlp)
 {
     PeerSessionInfo  peerInfo = session()->info();
