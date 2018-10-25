@@ -117,6 +117,24 @@ void NetController::send(bytes const& data, ProtocolPacketType packetType)
     }
 }
 
+void NetController::send(bytes const& data, ProtocolPacketType packetType, bi::tcp::endpoint const& except)
+{
+    Peers ps = m_host->getPeers();
+    for (auto i : ps) {
+        NodeID id = i.address();
+        if (except.address() == i.endpoint.address() && except.port() == i.endpoint.tcpPort())
+            continue;
+        std::shared_ptr<SessionFace> session = m_host->peerSession(id);
+        if (session) {
+            core::RLPStream rlpStream;
+            prepare(rlpStream, packetType, 1).appendRaw(data);
+            session->sealAndSend(rlpStream);
+        } else {
+            CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
+        }
+    }
+}
+
 void NetController::broadcast(bi::tcp::endpoint const& from, Block& block)
 {
 

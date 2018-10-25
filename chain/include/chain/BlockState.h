@@ -93,12 +93,12 @@ public:
     producer::ProducerScheduleType m_activeProucers;
     uint8_t m_confirmCount;
     std::vector<HeaderConfirmation> m_confirmations;
-
-
 };
 
 using BlockStatePtr = std::shared_ptr<BlockState>;
 
 extern BlockStatePtr EmptyBlockStatePtr;
+
+using HeaderConfirmationPtr = std::shared_ptr<HeaderConfirmation>;
 
 } // namespace chain

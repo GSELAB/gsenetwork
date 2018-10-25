@@ -37,6 +37,10 @@ void Client::doWork()
     if (current > m_lastTimestamp + 1) {
         // do check height
         m_lastTimestamp = current;
+        for (auto i : peerSessions()) {
+            auto gsePeer = capabilityFromSession<GSEPeer>(*i.first);
+            gsePeer->beat();
+        }
     } else {
         sleepMilliseconds(200);
     }

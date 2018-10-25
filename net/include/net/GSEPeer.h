@@ -30,6 +30,8 @@ public:
 
     static unsigned messageCount() { return chain::PacketCount; }
 
+    void beat();
+
 private:
 
     /// Interpret an incoming message.
