@@ -36,6 +36,15 @@ void ProducerServer::start()
         return;
     }
 
+    {
+        // TODO:Just for testing
+        Producer self(m_key.getAddress(), currentTimestamp());
+        self.setVotes(1000);
+        m_schedule.addProducer(self);
+    }
+
+
+
     startWorking();
     if (isWorking()) return;
 
@@ -71,20 +80,33 @@ void ProducerServer::doWork()
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
 
-    const std::vector<Producer> activeProducers = m_schedule.getActiveProducers();
-    if (!activeProducers.empty()) {
-        if (m_key.getAddress() == activeProducers[producerPosition].getAddress()) {
+    const std::vector<Producer> producerList = m_schedule.getProducerList();
+
+    if (!producerList.empty()) {
+        if (m_key.getAddress() == producerList[producerPosition].getAddress()) {
             if (((timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL > m_prevTimestamp) ||
                 ((1 + timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= m_prevTimestamp)) {
                 if (m_eventHandle->getBlockChainStatus() == chain::ProducerStatus) {
                     m_prevTimestamp = timestamp;
+                } else {
+                    sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
+                    return;
                 }
+            } else {
+                sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
+                return;
             }
+        } else {
+            sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
+            return;
         }
     } else {
         sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
         return;
     }
+
+    CINFO << "producerPosition:" << producerPosition;
+    CINFO << "producerList.size()=" << producerList.size();
 
     Block prevBlock = m_eventHandle->getLastBlock();
     BlockHeader blockHeader(m_eventHandle->getLastBlockNumber() + 1);
