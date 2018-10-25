@@ -101,8 +101,6 @@ void ProducerServer::doWork()
     for (i = 0; i < MAX_TRANSACTIONS_PER_BLOCK; i++) {
         std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
         if (transaction) {
-            if (sizeof(*transaction) > MAX_TRANSACTION_SIZE)
-                continue;
             CINFO << "Package transaction to current block(" << block->getNumber() << ")";
             block->addTransaction(*transaction);
         }
@@ -118,6 +116,8 @@ void ProducerServer::doWork()
 
     block->setRoots();
     block->sign(m_key.getSecret());
+
+    CINFO << "Generate Block:" << toJson(*block);
 
     // do broadcast opeartion
     m_eventHandle->broadcast(block);
