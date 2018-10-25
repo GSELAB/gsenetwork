@@ -51,9 +51,21 @@ void WebSocket::registerUrlHandlers()
     addHandler("/push_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
         CINFO << "/push_transaction";
         // TODO: Add content here
-        std::string ret("Undefined\n");
+        std::string ret;
+        Json::Reader reader(Json::Features::strictMode());
+        Json::Value root;
+        if (reader.parse(body, root))
         {
             // body to rlp transaction
+            std::string str_transaction = root["transaction"].asString();
+            bytes data;
+            data.insert(data.begin(), str_transaction.begin(), str_transaction.end());
+
+            Transaction transaction(data);
+            m_face->broadcast(transaction);
+        } else {
+            ret = "Parse body failed, invalid format.\n";
+            CINFO << ret;
         }
         urlRC(URLCode::Default, ret);
     });
