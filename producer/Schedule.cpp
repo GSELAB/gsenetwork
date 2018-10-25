@@ -34,6 +34,11 @@ std::vector<Producer> const& Schedule::getActiveProducers() const
     return m_activeProducers;
 }
 
+std::vector<Producer> const& Schedule::getProducerList() const
+{
+    return m_producerList;
+}
+
 void Schedule::schedule()
 {
 
@@ -57,6 +62,18 @@ void Schedule::removeActiveProducer(Producer const& producer)
 void Schedule::removeActiveProducer(Address const& producer)
 {
 
+}
+
+void Schedule::addProducer(Producer const& producer)
+{
+    Guard l{x_producerList};
+    m_producerList.push_back(producer);
+}
+
+void Schedule::producerSort()
+{
+    Guard l{x_producerList};
+    std::sort(m_producerList.begin(), m_producerList.end(), ProducerCompareGreater());
 }
 
 }
