@@ -16,6 +16,7 @@
 #include <core/Block.h>
 #include <core/Producer.h>
 #include <core/SubChain.h>
+#include <core/Task.h>
 #include <core/Transaction.h>
 #include <storage/Repository.h>
 #include <net/NetController.h>
@@ -93,7 +94,7 @@ typedef boost::multi_index::multi_index_container<
     >
 > BlockCacheMultiIndexType;
 
-class BlockChain {
+class BlockChain: public Task {
 public:
     struct MemoryItem {
         MemoryItem(): m_isDone(false) {}
@@ -204,6 +205,14 @@ private:
 
     void doProcessBlock(std::shared_ptr<Block> block);
 
+public:
+    void start();
+
+    void stop();
+
+private:
+    virtual void doWork() override;
+
 private:
     DatabaseController* m_dbc = nullptr;
 
@@ -221,7 +230,7 @@ private:
     BlockStatePtr m_head;
 
     uint64_t m_solidifyIndex;
-    BlockChainStatus m_blockChainStatus = NormalStatus;
+    BlockChainStatus m_blockChainStatus = ProducerStatus;
 
     mutable Mutex x_txCache;
     TxCacheMultiIndexType m_txCache;
