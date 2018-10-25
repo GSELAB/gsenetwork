@@ -59,6 +59,7 @@ void Controller::init(crypto::GKey const& key)
     CINFO << "Start GSE Chain init...";
     m_chain = new BlockChain(key, m_dbc, this);
     m_chain->init();
+    m_chain->start();
 
     CINFO << "Start network init...";
     m_net = new NetController(m_key, m_chain->getDispatcher());
@@ -75,7 +76,6 @@ void Controller::init(crypto::GKey const& key)
         m_rpcServer = new RpcService(this);
         m_rpcServer->start();
     }
-
 }
 
 void Controller::exit()

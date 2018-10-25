@@ -15,15 +15,17 @@
 #include <core/Log.h>
 #include <core/Exceptions.h>
 #include <crypto/Valid.h>
+#include <utils/Utils.h>
 
 using namespace core;
 using namespace runtime::storage;
 using namespace runtime;
+using namespace utils;
 
 namespace chain {
 
 BlockChain::BlockChain(crypto::GKey const& key, DatabaseController* dbc, BlockChainMessageFace *messageFace, ChainID const& chainID):
-    m_key(key), m_dbc(dbc), m_messageFace(messageFace), m_chainID(chainID)
+    m_key(key), m_dbc(dbc), m_messageFace(messageFace), m_chainID(chainID), Task("Chain")
 {
     m_dispatcher = new Dispatch(this);
 }
@@ -32,6 +34,8 @@ BlockChain::~BlockChain()
 {
     CINFO << "BlockChain::~BlockChain";
     if (m_dispatcher) delete m_dispatcher;
+    stop();
+    terminate();
 }
 
 void BlockChain::initializeRollbackState()
@@ -150,7 +154,10 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
 
 bool BlockChain::processProducerBlock(std::shared_ptr<Block> block)
 {
-    return processBlock(block);
+    Guard l{x_blockCache};
+    m_blockCache.emplace(block);
+    //return processBlock(block);
+    return true;
 }
 
 bool BlockChain::processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem)
@@ -324,6 +331,44 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
         if (!m_memoryQueue.empty())
             m_memoryQueue.front()->setParentEmpty();
         item = m_memoryQueue.front();
+    }
+}
+
+void BlockChain::start()
+{
+    startWorking();
+    if (isWorking()) return;
+    doneWorking();
+}
+
+void BlockChain::stop()
+{
+    if (isWorking()) {
+        stopWorking();
+    }
+}
+
+void BlockChain::doWork()
+{
+    bool empty;
+    BlockPtr block;
+    {
+        Guard l{x_blockCache};
+        if (m_blockCache.empty()) {
+            empty = true;
+        } else {
+            empty = false;
+            auto itr = m_blockCache.begin();
+            block = *itr;
+            m_blockCache.erase(m_blockCache.begin());
+
+        }
+    }
+
+    if (empty) {
+        sleepMilliseconds(100);
+    } else {
+        processBlock(block);
     }
 }
 
