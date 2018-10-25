@@ -80,6 +80,8 @@ public:
 
     void setValue(uint64_t value) { m_value = value; }
 
+    void setSignature(SignatureStruct const& sig) { m_signature = sig; }
+
     chain::ChainID getChainID() const { return m_chainID; }
 
     uint32_t getType() const { return m_type; }
