@@ -71,9 +71,12 @@ protected:
 
     void addNode(NodeID const& nodeID, bi::tcp::endpoint const& ep);
 
+    core::RLPStream& prepare(core::RLPStream& rlpStream, unsigned id, unsigned args);
+
+public:
     void send(bytes const& data, chain::ProtocolPacketType packetType);
 
-    core::RLPStream& prepare(core::RLPStream& rlpStream, unsigned id, unsigned args);
+    void send(bytes const& data, chain::ProtocolPacketType packetType, bi::tcp::endpoint const& except);
 
 private:
     bool m_inited;
