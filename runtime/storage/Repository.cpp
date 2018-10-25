@@ -166,6 +166,23 @@ void Repository::put(Block const& block)
     // DO NOTHING
 }
 
+Block Repository::getBlock(BlockID const& blockID)
+{
+    Block ret;
+    if (m_block->getHash() == blockID)
+        return *m_block;
+
+    if (m_parent) {
+        ret = m_parent->getBlock(blockID);
+        if (ret == EmptyBlock) {} else {
+            return ret;
+        }
+    }
+
+    ret = m_dbc->getBlock(blockID);
+    return ret;
+}
+
 void Repository::voteIncrease(Address const& voter, Address const& candidate, uint64_t value)
 {
     Account account = getAccount(voter);

@@ -23,8 +23,6 @@
 
 namespace core {
 
-class Repository;
-
 class Block;
 extern Block EmptyBlock;
 
@@ -32,7 +30,6 @@ extern Block EmptyBlock;
 #define BLOCK_HEADER_FIELDS_ALL (9 + 3)
 
 class BlockHeader: public Object {
-    friend class Repository;
 public:
     BlockHeader();
 
