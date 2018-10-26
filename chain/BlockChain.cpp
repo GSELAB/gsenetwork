@@ -599,6 +599,11 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
                 return false;
             }
 
+        } catch (DeserializeException& e) {
+            CINFO << "DeserializeException " <<e.waht();
+            return false;
+        } catch (GSException& e) {
+            CINFO << "GSException " << e.waht();
         } catch (...) {
             CINFO << "Dispatch::processMsg - error.";
             return false;
