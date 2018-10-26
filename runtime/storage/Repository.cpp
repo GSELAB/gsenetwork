@@ -169,8 +169,10 @@ void Repository::put(Block const& block)
 Block Repository::getBlock(BlockID const& blockID)
 {
     Block ret;
-    if (m_block->getHash() == blockID)
-        return *m_block;
+    if (m_block) {
+        if (m_block->getHash() == blockID)
+            return *m_block;
+    }
 
     if (m_parent) {
         ret = m_parent->getBlock(blockID);
