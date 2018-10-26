@@ -70,11 +70,8 @@ void ProducerServer::stop()
     m_state = Stop;
 }
 
-void ProducerServer::doWork()
+bool ProducerServer::checkProducer(int64_t timestamp) const
 {
-    unsigned i;
-
-    int64_t timestamp = currentTimestamp();
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
 
@@ -84,19 +81,22 @@ void ProducerServer::doWork()
             if (((timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL > m_prevTimestamp) ||
                 ((1 + timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= m_prevTimestamp)) {
                 if (m_eventHandle->getBlockChainStatus() == chain::ProducerStatus) {
-                    m_prevTimestamp = timestamp;
-                } else {
-                    sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
-                    return;
+                    return true;
                 }
-            } else {
-                sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
-                return;
             }
-        } else {
-            sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
-            return;
         }
+    }
+    return false;
+}
+
+void ProducerServer::doWork()
+{
+    unsigned i;
+
+    int64_t timestamp = currentTimestamp();
+
+    if (checkProducer(timestamp)) {
+        m_prevTimestamp = timestamp;
     } else {
         sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
         return;
