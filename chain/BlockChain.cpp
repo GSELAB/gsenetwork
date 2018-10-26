@@ -600,15 +600,15 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
             }
 
         } catch (DeserializeException& e) {
-            CINFO << "DeserializeException " <<e.waht();
+            CINFO << "DeserializeException " <<e.what();
             return false;
         } catch (GSException& e) {
-            CINFO << "GSException " << e.waht();
+            CINFO << "GSException " << e.what();
+            return false;
         } catch (...) {
             CINFO << "Dispatch::processMsg - error.";
             return false;
         }
-
     } else {
         CINFO << "Dispatch::processMsg - unknown rlp.";
         return false;
