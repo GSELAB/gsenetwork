@@ -59,13 +59,22 @@ void Schedule::removeActiveProducer(Address const& producer)
 
 }
 
-std::vector<Producer> const & Schedule::getProducerList() const {
+std::vector<Producer> const & Schedule::getProducerList() const
+{
     return m_producerList;
 }
 
 void Schedule::addProducer(Producer const& producer)
 {
     Guard l{x_producerList};
+    for (auto itr = m_producerList.begin(); itr != m_producerList.end(); ++itr) {
+        if (itr->getAddress() == producer.getAddress()) {
+            if (itr->getTimestamp() < producer.getTimestamp()) {
+                *itr = producer;
+            }
+            return;
+        }
+    }
     m_producerList.push_back(producer);
 }
 
