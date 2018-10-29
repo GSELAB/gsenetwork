@@ -1,5 +1,4 @@
 #include <producer/Schedule.h>
-#include <algorithm>
 
 namespace producer {
 
