@@ -1,4 +1,5 @@
 #include <producer/Schedule.h>
+#include <algorithm>
 
 namespace producer {
 
@@ -59,7 +60,8 @@ void Schedule::removeActiveProducer(Address const& producer)
 
 }
 
-std::vector<Producer> const & Schedule::getProducerList() const {
+std::vector<Producer> const & Schedule::getProducerList() const
+{
     return m_producerList;
 }
 
@@ -73,6 +75,7 @@ void Schedule::producerSort()
 {
     Guard l{x_producerList};
     std::sort(m_producerList.begin(), m_producerList.end(), ProducerCompareGreater());
+    m_producerList.erase(std::unique(m_producerList.begin(), m_producerList.end(), ProducerCompareEqual()), m_producerList.end());
 }
 
 }
