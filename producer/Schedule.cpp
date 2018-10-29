@@ -83,7 +83,6 @@ void Schedule::producerSort()
 {
     Guard l{x_producerList};
     std::sort(m_producerList.begin(), m_producerList.end(), ProducerCompareGreater());
-    m_producerList.erase(std::unique(m_producerList.begin(), m_producerList.end(), ProducerCompareEqual()), m_producerList.end());
 }
 
 }
