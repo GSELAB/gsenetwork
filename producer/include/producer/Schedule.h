@@ -35,6 +35,11 @@ public:
     bool operator()(Producer const& first, Producer const& second) { return first < second; }
 };
 
+class ProducerCompareEqual {
+public:
+    bool operator()(Producer const& first, Producer const& second) { return first == second; }
+};
+
 class Schedule {
 public:
     Schedule();
