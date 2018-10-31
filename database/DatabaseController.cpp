@@ -125,6 +125,12 @@ Producer DatabaseController::getProducer(Address const& address) const
     return Producer(bytesConstRef(&value));
 }
 
+std::vector<Producer> DatabaseController::getProducerList() const
+{
+    return m_producerStore->getProducerList();
+}
+
+
 void DatabaseController::put(Producer& producer)
 {
     m_producerStore->put(producer);

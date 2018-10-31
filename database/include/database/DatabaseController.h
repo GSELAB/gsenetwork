@@ -44,6 +44,8 @@ public:
 
     Producer getProducer(Address const& address) const;
 
+    std::vector<Producer> getProducerList() const;
+
     void put(Producer& producer);
 
     Transaction getTransaction(bytes const& key) const;

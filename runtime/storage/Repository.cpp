@@ -111,6 +111,21 @@ Producer Repository::getProducer(Address const& address)
     return EmptyProducer;
 }
 
+std::vector<Producer> Repository::getProducerList() const
+{
+    if (m_parent != nullptr) {
+        std::vector<Producer> producerList;
+        std::unordered_map<Address, Producer>::iterator iter;
+        for (iter = m_parent->m_cacheProducer.begin(); iter != m_parent->m_cacheProducer.end(); ++iter) {
+            producerList.push_back(iter->second);
+        }
+
+        return producerList;
+    }
+
+    return m_dbc->getProducerList();
+}
+
 void Repository::put(Producer const& producer)
 {
     Guard l(x_mutexProducer);
