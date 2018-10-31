@@ -111,6 +111,17 @@ Producer Repository::getProducer(Address const& address)
     return EmptyProducer;
 }
 
+std::vector<Producer> Repository::getProducerList() const
+{
+    if (!m_producerList.empty())
+        return m_producerList;
+
+    if (m_parent != nullptr)
+        return m_parent->getProducerList();
+
+    return m_dbc->getProducerList();
+}
+
 void Repository::put(Producer const& producer)
 {
     Guard l(x_mutexProducer);

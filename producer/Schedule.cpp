@@ -59,7 +59,8 @@ void Schedule::removeActiveProducer(Address const& producer)
 
 }
 
-std::vector<Producer> const & Schedule::getProducerList() const {
+std::vector<Producer> const & Schedule::getProducerList() const
+{
     return m_producerList;
 }
 

@@ -16,6 +16,7 @@
 #include <core/Object.h>
 #include <core/CommonIO.h>
 #include <core/Common.h>
+#include <core/Producer.h>
 
 namespace database {
 
@@ -35,6 +36,7 @@ public:
 
     void del(core::bytes const& key);
 
+    std::vector<core::Producer> getProducerList() const;
 private:
     DatabaseImpl* m_impl;
 };
