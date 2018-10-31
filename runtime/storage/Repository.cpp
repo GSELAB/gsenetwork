@@ -114,7 +114,7 @@ Producer Repository::getProducer(Address const& address)
 std::vector<Producer> Repository::getProducerList() const
 {
     if (!m_producerList.empty())
-        return m_produceList;
+        return m_producerList;
 
     if (m_parent != nullptr)
         return m_parent->getProducerList();
