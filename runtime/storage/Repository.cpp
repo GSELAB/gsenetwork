@@ -113,15 +113,11 @@ Producer Repository::getProducer(Address const& address)
 
 std::vector<Producer> Repository::getProducerList() const
 {
-    if (m_parent != nullptr) {
-        std::vector<Producer> producerList;
-        std::unordered_map<Address, Producer>::iterator iter;
-        for (iter = m_parent->m_cacheProducer.begin(); iter != m_parent->m_cacheProducer.end(); ++iter) {
-            producerList.push_back(iter->second);
-        }
+    if (!m_producerList.empty())
+        return m_produceList;
 
-        return producerList;
-    }
+    if (m_parent != nullptr)
+        return m_parent->getProducerList();
 
     return m_dbc->getProducerList();
 }
