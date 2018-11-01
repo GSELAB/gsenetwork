@@ -186,6 +186,8 @@ using BlockID = h256;
 
 using BlockPtr = std::shared_ptr<Block>;
 
+using Blocks = std::vector<Block>;
+
 extern BlockPtr EmptyBlockPtr;
 
 }  /* namespace end */
