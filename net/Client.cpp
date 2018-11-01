@@ -1,7 +1,9 @@
 #include <net/Client.h>
 #include <utils/Utils.h>
+#include <config/Argument.h>
 
 using namespace utils;
+using namespace config;
 
 namespace net {
 
@@ -37,11 +39,16 @@ void Client::doWork()
     if (current > m_lastTimestamp + 2000) {
         // do check height
         m_lastTimestamp = current;
-        CINFO << "Client - try to beat(" << peerSessions().size() << ")";
-        for (auto i : peerSessions()) {
-            auto gsePeer = capabilityFromSession<GSEPeer>(*i.first);
-            gsePeer->beat();
+        CINFO << "Client - try to beat(" << peerSessions().size() << ")" << " syncFlag:" << ARGs.m_syncFlag;
+        if (ARGs.m_syncFlag) {
+            for (auto i : peerSessions()) {
+                auto gsePeer = capabilityFromSession<GSEPeer>(*i.first);
+                gsePeer->beat();
+            }
+        } else {
+            stopWorking();
         }
+
     } else {
         sleepMilliseconds(200);
     }
