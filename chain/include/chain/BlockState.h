@@ -82,11 +82,11 @@ public:
 
     void streamRLP(RLPStream& rlpStream) const;
 
-    bytes getKey() override;
+    virtual bytes getKey() override;
 
-    bytes getRLPData() override;
+    virtual bytes getRLPData() override;
 
-    Object::ObjectType getObjectType() const override { return Object::BlockStateType; }
+    virtual Object::ObjectType getObjectType() const override { return Object::BlockStateType; }
 
 public:
     core::Block m_block;
