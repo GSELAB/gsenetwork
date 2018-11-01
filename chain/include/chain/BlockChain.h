@@ -230,7 +230,7 @@ private:
     BlockStatePtr m_head;
 
     uint64_t m_solidifyIndex;
-    BlockChainStatus m_blockChainStatus = NormalStatus;
+    BlockChainStatus m_blockChainStatus = ProducerStatus;
 
     mutable Mutex x_txCache;
     TxCacheMultiIndexType m_txCache;

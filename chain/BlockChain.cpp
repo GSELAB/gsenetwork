@@ -453,12 +453,16 @@ bool BlockChain::isExist(Block& block)
 {
     {
         Guard l(x_blockCache);
-        auto& item = m_blockCache.get<ByBlockID>();
-        auto itr = item.find(block.getHash());
-        if (itr != item.end())
-            return true;
+        CINFO << "block cache size - " << m_blockCache.size();
+        if (!m_blockCache.empty()) {
+            auto& item = m_blockCache.get<ByBlockID>();
+            auto itr = item.find(block.getHash());
+            if (itr != item.end())
+                return true;
+        }
     }
 
+    CINFO << "try find block from memoryDB & levelDB";
     {
         std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
         {
@@ -474,12 +478,13 @@ bool BlockChain::isExist(Block& block)
             repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), getDBC());
         }
 
-        auto itr = repository->getBlock(block.getHash());
-        if (itr == EmptyBlock) {} else {
+        auto item = repository->getBlock(block.getHash());
+        if (item == EmptyBlock) {} else {
             return true;
         }
     }
 
+    CINFO << "Not find block from memoryDB & levelDB";
     return false;
 }
 
@@ -490,6 +495,7 @@ bool BlockChain::preProcessTx(bi::tcp::endpoint const& from, Transaction& tx)
 
 bool BlockChain::preProcessBlock(bi::tcp::endpoint const& from, Block& block)
 {
+    CINFO << "preProcessBlock";
     return true;
 }
 
@@ -538,7 +544,8 @@ void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block
 
     {
         Guard l{x_blockCache};
-        m_blockCache.emplace(std::make_shared<Block>(block));
+        auto ret = m_blockCache.insert(std::make_shared<Block>(block));
+        CINFO << "insert status:" << ret.second;
     }
 
     m_messageFace->broadcast(from, block);
@@ -599,11 +606,16 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
                 return false;
             }
 
-        } catch (...) {
-            CINFO << "Dispatch::processMsg - error.";
+        } catch (DeserializeException const& e) {
+            CINFO << "DeserializeException " <<e.what();
+            return false;
+        } catch (GSException const& e) {
+            CINFO << "GSException " << e.what();
+            return false;
+        } catch (Exception const& e) {
+            CINFO << "Exception " << e.what();
             return false;
         }
-
     } else {
         CINFO << "Dispatch::processMsg - unknown rlp.";
         return false;

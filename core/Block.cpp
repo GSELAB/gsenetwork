@@ -44,28 +44,26 @@ BlockHeader::BlockHeader(bytesConstRef data)
     unsigned index = 0;
     try {
         RLP rlp = RLP(data);
-        if (!rlp.isList() || rlp.itemCount() != BLOCK_HEADER_FIELDS_ALL) {
-            throw DeserializeException("BlockHeader deserialize incorrect list or item count!");
-        }
-        m_chainID = rlp[index = 0].toInt<chain::ChainID>();
-        m_producer = rlp[index = 1].toHash<Address>(RLP::VeryStrict);
-        m_parentHash = rlp[index = 2].toHash<h256>(RLP::VeryStrict);
-        m_mklRoot = rlp[index = 3].toHash<h256>(RLP::VeryStrict);
-        m_transactionsRoot = rlp[index = 4].toHash<h256>(RLP::VeryStrict);
-        m_receiptRoot = rlp[index = 5].toHash<h256>(RLP::VeryStrict);
-        m_number = rlp[index = 6].toPositiveInt64();
-        m_timestamp = rlp[index = 7].toPositiveInt64();
-        m_extra = rlp[index = 8].toBytes();
+        if (rlp.isList() && rlp.itemCount() == BLOCK_HEADER_FIELDS_ALL) {
+            m_chainID = rlp[index = 0].toInt<chain::ChainID>();
+            m_producer = rlp[index = 1].toHash<Address>(RLP::VeryStrict);
+            m_parentHash = rlp[index = 2].toHash<h256>(RLP::VeryStrict);
+            m_mklRoot = rlp[index = 3].toHash<h256>(RLP::VeryStrict);
+            m_transactionsRoot = rlp[index = 4].toHash<h256>(RLP::VeryStrict);
+            m_receiptRoot = rlp[index = 5].toHash<h256>(RLP::VeryStrict);
+            m_number = rlp[index = 6].toPositiveInt64();
+            m_timestamp = rlp[index = 7].toPositiveInt64();
+            m_extra = rlp[index = 8].toBytes();
 
-        int v = rlp[index = 9].toInt<int>();
-        h256 r = rlp[index = 10].toInt<u256>();
-        h256 s = rlp[index = 11].toInt<u256>();
-        m_signature = SignatureStruct(r, s, v);
-    } catch (DeserializeException& e) {
-        throw e;
+            int v = rlp[index = 9].toInt<int>();
+            h256 r = rlp[index = 10].toInt<u256>();
+            h256 s = rlp[index = 11].toInt<u256>();
+            m_signature = SignatureStruct(r, s, v);
+        }
     } catch (GSException const& e) {
-        // e << errinfo_name("Interpret RLP header failed") << BadFieldError(index, toHex(rlp[index - 1].data().toBytes()));
-        throw GSException("Interpret RLP Block header failed");
+        throw DeserializeException("Interpret RLP Block header failed");
+    } catch (Exception& e) {
+        throw e;
     }
 }
 
@@ -155,28 +153,26 @@ void BlockHeader::populate(bytesConstRef data)
     unsigned index = 0;
     try {
         RLP rlp = RLP(data);
-        if (!rlp.isList() || rlp.itemCount() != BLOCK_HEADER_FIELDS_ALL) {
-            throw DeserializeException("BlockHeader deserialize incorrect list or item count!");
-        }
-        m_chainID = rlp[index = 0].toInt<chain::ChainID>();
-        m_producer = rlp[index = 1].toHash<Address>(RLP::VeryStrict);
-        m_parentHash = rlp[index = 2].toHash<h256>(RLP::VeryStrict);
-        m_mklRoot = rlp[index = 3].toHash<h256>(RLP::VeryStrict);
-        m_transactionsRoot = rlp[index = 4].toHash<h256>(RLP::VeryStrict);
-        m_receiptRoot = rlp[index = 5].toHash<h256>(RLP::VeryStrict);
-        m_number = rlp[index = 6].toPositiveInt64();
-        m_timestamp = rlp[index = 7].toPositiveInt64();
-        m_extra = rlp[index = 8].toBytes();
+        if (rlp.isList() && rlp.itemCount() == BLOCK_HEADER_FIELDS_ALL) {
+            m_chainID = rlp[index = 0].toInt<chain::ChainID>();
+            m_producer = rlp[index = 1].toHash<Address>(RLP::VeryStrict);
+            m_parentHash = rlp[index = 2].toHash<h256>(RLP::VeryStrict);
+            m_mklRoot = rlp[index = 3].toHash<h256>(RLP::VeryStrict);
+            m_transactionsRoot = rlp[index = 4].toHash<h256>(RLP::VeryStrict);
+            m_receiptRoot = rlp[index = 5].toHash<h256>(RLP::VeryStrict);
+            m_number = rlp[index = 6].toPositiveInt64();
+            m_timestamp = rlp[index = 7].toPositiveInt64();
+            m_extra = rlp[index = 8].toBytes();
 
-        int v = rlp[index = 9].toInt<int>();
-        h256 r = rlp[index = 10].toInt<u256>();
-        h256 s = rlp[index = 11].toInt<u256>();
-        m_signature = SignatureStruct(r, s, v);
-    } catch (DeserializeException& e) {
-        throw e;
+            int v = rlp[index = 9].toInt<int>();
+            h256 r = rlp[index = 10].toInt<u256>();
+            h256 s = rlp[index = 11].toInt<u256>();
+            m_signature = SignatureStruct(r, s, v);
+        }
     } catch (GSException const& e) {
-        // e << errinfo_name("Interpret RLP header failed") << BadFieldError(index, toHex(rlp[index - 1].data().toBytes()));
-        throw GSException("Interpret RLP Block header failed");
+        throw DeserializeException("Interpret RLP Block header failed");
+    } catch (Exception& e) {
+        throw e;
     }
 }
 
@@ -261,16 +257,15 @@ Block::Block(bytesConstRef data)
         RLP rlp(data);
         if (rlp.isList() && rlp.itemCount() == BLOCK_FIELDS) {
             // header bytes
-            bytes bytesHeader = rlp[0].toBytes();
-            bytes bytesTransactions = rlp[1].toBytes();
-            bytes bytesReceipts = rlp[2].toBytes();
-            m_blockHeader.populate(&bytesHeader);
-
+            bytesConstRef bytesHeader = rlp[0].data();
+            bytesConstRef bytesTransactions = rlp[1].data();
+            bytesConstRef bytesReceipts = rlp[2].data();
+            m_blockHeader.populate(bytesHeader);
             RLP rlpTx(bytesTransactions);
             if (rlpTx.isList()) {
                 for (i = 0; i < rlpTx.itemCount(); i++) {
-                    bytes itemTx = rlpTx[i].toBytes();
-                    Transaction tx(&itemTx);
+                    bytesConstRef itemTx = rlpTx[i].data();
+                    Transaction tx(itemTx);
                     m_transactions.push_back(tx);
                 }
             }
@@ -278,8 +273,8 @@ Block::Block(bytesConstRef data)
             RLP rlpRp(bytesReceipts);
             if (rlpRp.isList()) {
                 for (i = 0; i < rlpRp.itemCount(); i++) {
-                    bytes itemRp = rlpRp[i].toBytes();
-                    TransactionReceipt rp(&itemRp);
+                    bytesConstRef itemRp = rlpRp[i].data();
+                    TransactionReceipt rp(itemRp);
                     m_transactionReceipts.push_back(rp);
                 }
             }
@@ -289,6 +284,8 @@ Block::Block(bytesConstRef data)
     } catch (DeserializeException& e) {
         throw e;
     } catch (GSException& e) {
+        throw e;
+    } catch (Exception& e) {
         throw e;
     }
 }

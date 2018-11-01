@@ -36,6 +36,13 @@ void ProducerServer::start()
         return;
     }
 
+    {
+        // Just for testing
+        Producer self(m_key.getAddress(), currentTimestamp());
+        self.setVotes(1000);
+        m_schedule.addProducer(self);
+    }
+
     startWorking();
     if (isWorking()) return;
 
@@ -63,24 +70,33 @@ void ProducerServer::stop()
     m_state = Stop;
 }
 
+bool ProducerServer::checkProducer(int64_t timestamp) const
+{
+    unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
+                (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
+
+    const std::vector<Producer> producerList = m_schedule.getProducerList();
+    if (!producerList.empty()) {
+        if (m_key.getAddress() == producerList[producerPosition].getAddress()) {
+            if (((timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL > m_prevTimestamp) ||
+                ((1 + timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= m_prevTimestamp)) {
+                if (m_eventHandle->getBlockChainStatus() == chain::ProducerStatus) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 void ProducerServer::doWork()
 {
     unsigned i;
 
     int64_t timestamp = currentTimestamp();
-    unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
-                (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
 
-    const std::vector<Producer> activeProducers = m_schedule.getActiveProducers();
-    if (!activeProducers.empty()) {
-        if (m_key.getAddress() == activeProducers[producerPosition].getAddress()) {
-            if (((timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL > m_prevTimestamp) ||
-                ((1 + timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= m_prevTimestamp)) {
-                if (m_eventHandle->getBlockChainStatus() == chain::ProducerStatus) {
-                    m_prevTimestamp = timestamp;
-                }
-            }
-        }
+    if (checkProducer(timestamp)) {
+        m_prevTimestamp = timestamp;
     } else {
         sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
         return;
@@ -116,13 +132,7 @@ void ProducerServer::doWork()
 
     block->setRoots();
     block->sign(m_key.getSecret());
-
-    CINFO << "Generate Block:" << toJson(*block);
-
-    // do broadcast opeartion
+    CINFO << "Generate block:" << toJson(*block);
     m_eventHandle->broadcast(block);
 }
-
-
-
 } // end of namespace

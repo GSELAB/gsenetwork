@@ -110,8 +110,9 @@ void DatabaseController::decrementBlockHeight(uint64_t decr)
 
 Account DatabaseController::getAccount(Address const& address) const
 {
-    bytes value = m_accountStore->get(address.asBytes());
-    return Account(bytesConstRef(&value));
+    bytes data = m_accountStore->get(address.asBytes());
+    if (data == EmptyBytes) return EmptyAccount;
+    return Account(bytesConstRef(&data));
 }
 
 void DatabaseController::put(Account& account)
@@ -121,9 +122,16 @@ void DatabaseController::put(Account& account)
 
 Producer DatabaseController::getProducer(Address const& address) const
 {
-    bytes value = m_producerStore->get(address.asBytes());
-    return Producer(bytesConstRef(&value));
+    bytes data = m_producerStore->get(address.asBytes());
+    if (data == EmptyBytes) return EmptyProducer;
+    return Producer(bytesConstRef(&data));
 }
+
+std::vector<Producer> DatabaseController::getProducerList() const
+{
+    return m_producerStore->getProducerList();
+}
+
 
 void DatabaseController::put(Producer& producer)
 {
@@ -132,7 +140,9 @@ void DatabaseController::put(Producer& producer)
 
 Transaction DatabaseController::getTransaction(bytes const& key) const
 {
-    return Transaction(m_transactionStore->get(key));
+    bytes data = m_transactionStore->get(key);
+    if (data == EmptyBytes) return EmptyTransaction;
+    return Transaction(data);
 }
 
 Transaction DatabaseController::getTransaction(TxID const& key) const
@@ -152,7 +162,9 @@ Block DatabaseController::getBlock(BlockID const& key) const
 
 Block DatabaseController::getBlock(bytes const& key) const
 {
-    return Block(m_blockStore->get(key));
+    bytes data = m_blockStore->get(key);
+    if (data == EmptyBytes) return EmptyBlock;
+    return Block(data);
 }
 
 Block DatabaseController::getBlock(uint64_t blockNumber) const

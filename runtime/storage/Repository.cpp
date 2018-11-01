@@ -111,6 +111,17 @@ Producer Repository::getProducer(Address const& address)
     return EmptyProducer;
 }
 
+std::vector<Producer> Repository::getProducerList() const
+{
+    if (!m_producerList.empty())
+        return m_producerList;
+
+    if (m_parent != nullptr)
+        return m_parent->getProducerList();
+
+    return m_dbc->getProducerList();
+}
+
 void Repository::put(Producer const& producer)
 {
     Guard l(x_mutexProducer);
@@ -169,8 +180,10 @@ void Repository::put(Block const& block)
 Block Repository::getBlock(BlockID const& blockID)
 {
     Block ret;
-    if (m_block->getHash() == blockID)
-        return *m_block;
+    if (m_block) {
+        if (m_block->getHash() == blockID)
+            return *m_block;
+    }
 
     if (m_parent) {
         ret = m_parent->getBlock(blockID);
