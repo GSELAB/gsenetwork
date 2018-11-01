@@ -5,20 +5,33 @@
 #include <core/Address.h>
 #include <core/Guards.h>
 #include <core/Producer.h>
+#include <core/Object.h>
 
 using namespace core;
 
 namespace producer {
 
-class ProducerScheduleType {
+class ProducerScheduleType: public core::Object {
 public:
-    ProducerScheduleType() {}
+    ProducerScheduleType() = default;
+
+    ProducerScheduleType(bytesConstRef data);
 
     ProducerScheduleType& operator=(ProducerScheduleType const& pst);
 
     size_t size() const { return m_producers.size(); }
 
     bool isExist(Address const& address);
+
+    void populate(bytesConstRef data);
+
+    void streamRLP(core::RLPStream& rlpStream) const;
+
+    virtual bytes getKey() override;
+
+    virtual bytes getRLPData() override;
+
+    virtual Object::ObjectType getObjectType() const override { return Object::ProducerScheduleTypeType; }
 
 public:
     std::vector<Address> m_producers;
