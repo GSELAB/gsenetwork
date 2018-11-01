@@ -58,14 +58,14 @@ void WebSocket::registerUrlHandlers()
         if (reader.parse(body, root))
         {
             // body to rlp transaction
-            ChainID chainID = std::stoll(root["ChainID"].asString());
-            uint32_t type = std::stol(root["type"].asString());
+            ChainID chainID = std::stoll(root["ChainID"].asString(),0,16);
+            uint32_t type = std::stol(root["type"].asString(),0,16);
             Address sender = Address(root["sender"].asString());
             Address recipient = Address(root["recipient"].asString());
             bytes data;
             std::string dataStr = root["data"].asString();
             data.insert(data.begin(), dataStr.begin(), dataStr.end());
-            uint64_t value = std::stoll(root["value"].asString());
+            uint64_t value = std::stoll(root["value"].asString(),0,16);
             Signature sig = Signature(root["signature"].asString());
             SignatureStruct signature = *(SignatureStruct*)&sig;
             Transaction transaction;
