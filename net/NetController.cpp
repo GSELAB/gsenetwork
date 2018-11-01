@@ -34,6 +34,7 @@ void NetController::init()
         auto hostCap = std::make_shared<Client>(*m_host, m_dispatcher);
         m_host->registerCapability(hostCap);
         m_host->start();
+        hostCap->start();
         m_inited = true;
         m_nodeIPEndpoint = NodeIPEndpoint(ARGs.m_local.m_address, ARGs.m_local.m_tcpPort, ARGs.m_local.m_udpPort);
         if (ARGs.m_neighbors.size() > 0)
@@ -133,6 +134,26 @@ void NetController::send(bytes const& data, ProtocolPacketType packetType, bi::t
             CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
         }
     }
+}
+
+void NetController::send(bytes const& data, bi::tcp::endpoint const& to, chain::ProtocolPacketType packetType)
+{
+    Peers ps = m_host->getPeers();
+    for (auto i : ps) {
+        NodeID id = i.address();
+        if (to.address() == i.endpoint.address() && to.port() == i.endpoint.tcpPort()) {
+            std::shared_ptr<SessionFace> session = m_host->peerSession(id);
+            if (session) {
+                core::RLPStream rlpStream;
+                prepare(rlpStream, packetType, 1).appendRaw(data);
+                session->sealAndSend(rlpStream);
+            } else {
+                CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
+            }
+            break;
+        }
+    }
+
 }
 
 } // end of namespace

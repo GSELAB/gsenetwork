@@ -34,9 +34,10 @@ void Client::doWork()
     }
 
     int64_t current = currentTimestamp();
-    if (current > m_lastTimestamp + 1) {
+    if (current > m_lastTimestamp + 2000) {
         // do check height
         m_lastTimestamp = current;
+        CINFO << "Client - try to beat(" << peerSessions().size() << ")";
         for (auto i : peerSessions()) {
             auto gsePeer = capabilityFromSession<GSEPeer>(*i.first);
             gsePeer->beat();
@@ -65,6 +66,22 @@ std::shared_ptr<PeerCapabilityFace> Client::newPeerCapability(
     */
 
     return ret;
+}
+
+void Client::start()
+{
+    startWorking();
+    if (isWorking())
+        return;
+    doneWorking();
+}
+
+
+void Client::stop()
+{
+    if (isWorking()) {
+        stopWorking();
+    }
 }
 
 } // namespace
