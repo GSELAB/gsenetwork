@@ -124,6 +124,27 @@ BlockState::BlockState(core::Block& block):
     m_blockID = block.getHash();
 }
 
+BlockState::BlockState(bytesConstRef data)
+{
+    try {
+        RLP rlp(data);
+        if (rlp.isList() && rlp.itemCount() >= 4) {
+            m_blockNumber = rlp[0].toInt<uint64_t>();
+            m_blockID = rlp[1].toHash<BlockID>(RLP::VeryStrict);
+            bytesConstRef aps = rlp[2].data();
+            m_activeProucers.populate(aps);
+            m_confirmCount = rlp[3].toInt<uint8_t>();
+            for (unsigned i = 4; i < rlp.itemCount(); i ++) {
+                bytesConstRef hcBytes = rlp[i].data();
+                HeaderConfirmation hc(hcBytes);
+                m_confirmations.push_back(hc);
+            }
+        }
+    } catch (...) {
+
+    }
+}
+
 void BlockState::addConfirmation(HeaderConfirmation const& confirmation)
 {
     if (confirmation.getNumber() != m_blockNumber || confirmation.getBlockID() != m_blockID)
@@ -133,7 +154,36 @@ void BlockState::addConfirmation(HeaderConfirmation const& confirmation)
         return;
 
     m_confirmCount++;
-    m_confirmations.emplace_back(confirmation);
+    m_confirmations.push_back(confirmation);
+}
+
+void BlockState::streamRLP(RLPStream& rlpStream) const
+{
+    rlpStream.appendList(4 + m_confirmations.size());
+    rlpStream << m_blockNumber
+              << m_blockID;
+    {
+        RLPStream rlpStreamAPS;
+        m_activeProucers.streamRLP(rlpStreamAPS);
+        rlpStream.appendRaw(rlpStreamAPS.out());
+    }
+    rlpStream << m_confirmCount;
+    for (auto i : m_confirmations) {
+        rlpStream.appendRaw(i.getRLPData());
+    }
+}
+
+bytes BlockState::getKey()
+{
+    // use block key
+    return m_block.getKey();
+}
+
+bytes BlockState::getRLPData()
+{
+    RLPStream rlpStream;
+    streamRLP(rlpStream);
+    return rlpStream.out();
 }
 
 

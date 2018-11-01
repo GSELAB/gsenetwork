@@ -1,9 +1,11 @@
 #pragma once
 
 #include <core/Block.h>
+#include <core/Object.h>
 #include <producer/Schedule.h>
 
 using namespace core;
+using namespace producer;
 
 namespace chain {
 
@@ -47,14 +49,11 @@ public:
 
     core::h256 getHash();
 
-    // @override
-    bytes getKey();
+    bytes getKey() override;
 
-    // @override
-    bytes getRLPData();
+    bytes getRLPData() override;
 
-    // @override
-    Object::ObjectType getObjectType() const { return Object::HeaderConfirmationType; }
+    Object::ObjectType getObjectType() const override { return Object::HeaderConfirmationType; }
 
 private:
     ChainID m_chainID;
@@ -67,9 +66,11 @@ private:
     bool m_hasSigned = false;
 };
 
-class BlockState {
+class BlockState: public Object {
 public:
     BlockState(core::Block& block);
+
+    BlockState(bytesConstRef data);
 
     BlockID const& getPrev() const { return m_block.getBlockHeader().getParentHash(); }
 
@@ -78,6 +79,14 @@ public:
     size_t getConfirmationsSize() const { return m_confirmations.size(); }
 
     bool isExistInActiveProducers(Address const& address) { return m_activeProucers.isExist(address); }
+
+    void streamRLP(RLPStream& rlpStream) const;
+
+    bytes getKey() override;
+
+    bytes getRLPData() override;
+
+    Object::ObjectType getObjectType() const override { return Object::BlockStateType; }
 
 public:
     core::Block m_block;

@@ -39,6 +39,8 @@ public:
         CandidateType           = 0x09,
         AttributeStateType      = 0x0A,
         HeaderConfirmationType  = 0x0B,
+        BlockStateType          = 0x0C,
+        ProducerScheduleTypeType = 0x0D,
         /* Add new type */
 
         UnknownType = 0xFFFF,
