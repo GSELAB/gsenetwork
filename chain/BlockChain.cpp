@@ -133,22 +133,26 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
 
 bool BlockChain::processBlock(std::shared_ptr<Block> block)
 {
-
-    /* DO CHECK BLOCK HEADER and TRANSACTIONS (PARALLEL) */
-    {
-
-    }
-
     try {
+        for (auto& i : block->getTransactions()) {
+            if (!crypto::isValidSig(*const_cast<Transaction*>(&i)))
+                throw InvalidTransactionException("Invalid transaction signature!");
+        }
+
         // add block to rollback state
         m_rollbackState.add(*block);
         m_head = m_rollbackState.head();
         checkBifurcation(block);
+    } catch (InvalidTransactionException& e) {
+        CERROR << "processBlock - " << e.what();
+        return false;
     } catch (RollbackStateException& e) {
         CERROR << "RollbackState:" << e.what();
+        return false;
     } catch (Exception& e) {
-
+        return false;
     }
+
     return true;
 }
 
@@ -562,6 +566,47 @@ void BlockChain::processConfirmationMessage(bi::tcp::endpoint const& from, Heade
     }
 }
 
+void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& status)
+{
+    switch (status.getType()) {
+        case GetHeight: {
+            CINFO << "Recv from " << from <<  " GetHeight.";
+            Status _status(ReplyHeight, getLastBlockNumber());
+            m_messageFace->send(from, _status);
+            break;
+        }
+        case ReplyHeight: {
+            CINFO << "Recv from " << from <<  " ReplyHeight - " << status.getHeight() << ".";
+            if (status.getHeight() > getLastBlockNumber()) {
+                CINFO << "Need sync from " << from;
+                Status _status(SyncBlocks, getLastBlockNumber() + 1, status.getHeight());
+                m_messageFace->send(from, _status);
+            }
+            break;
+        }
+        case SyncBlocks: {
+            CINFO << "Recv from " << from << " SyncBlocks - (" << status.getStart() << ", " << status.getEnd() << ").";
+            if (status.getStart() < status.getEnd() && status.getEnd() <= getLastBlockNumber()) {
+                Status _status(ReplyBlocks);
+                for (uint64_t i = status.getStart(); i <= status.getEnd(); i++) {
+                    _status.addBlock(getBlockByNumber(i));
+                }
+                m_messageFace->send(from, _status);
+            }
+            break;
+        }
+        case ReplyBlocks: {
+            CINFO << "Recv from " << from << " ReplyBlocks - (" << status.getBlocks().size() << ").";
+
+            break;
+        }
+        default: {
+            CINFO << "Recv from " << from << " Unknown type.";
+            break;
+        }
+    }
+}
+
 void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
 {
     m_chain->processObject(interpretObject(from, msg));
@@ -574,7 +619,8 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
             bytesConstRef data = rlp[0].data();
             switch (type) {
             case chain::StatusPacket: {
-                CINFO << "Recv status packet.";
+                Status status(data);
+                m_chain->processStatusMessage(from, status);
                 return true;
             }
             case chain::TransactionPacket: {

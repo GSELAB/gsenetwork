@@ -18,6 +18,7 @@
 #include <core/SubChain.h>
 #include <core/Task.h>
 #include <core/Transaction.h>
+#include <core/Status.h>
 #include <storage/Repository.h>
 #include <net/NetController.h>
 #include <crypto/GKey.h>
@@ -68,6 +69,10 @@ public:
     virtual void send(HeaderConfirmation& bs) = 0;
 
     virtual void send(HeaderConfirmationPtr hcp) = 0;
+
+    virtual void send(bi::tcp::endpoint const& to, Status& status) = 0;
+
+    virtual void send(bi::tcp::endpoint const& to, StatusPtr status) = 0;
 };
 
 enum BlockChainStatus {
@@ -191,6 +196,8 @@ public: /// Used by network
     void processBlockMessage(bi::tcp::endpoint const& from, Block& block);
 
     void processConfirmationMessage(bi::tcp::endpoint const& from, HeaderConfirmation& confirmation);
+
+    void processStatusMessage(bi::tcp::endpoint const& from, Status& status);
 
     bool isExist(Transaction& tx);
 

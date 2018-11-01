@@ -25,6 +25,15 @@ enum ProtocolPacketType {
     PacketCount
 };
 
+enum StatusPacketType {
+    GetHeight   = 0x01,
+    ReplyHeight,
+    SyncBlocks,
+    ReplyBlocks,
+
+    UnknownSPT = 0xFF,
+};
+
 std::string pptToString(ProtocolPacketType type);
 
 bool canHandle(ProtocolPacketType type);
