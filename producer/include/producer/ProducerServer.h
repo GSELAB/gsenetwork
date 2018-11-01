@@ -75,6 +75,8 @@ public:
 
     void doWork();
 
+    bool checkProducer(int64_t timestamp) const;
+
 private:
     chain::ChainID m_chainID;
     crypto::GKey m_key;

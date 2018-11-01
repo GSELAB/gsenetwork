@@ -12,6 +12,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <vector>
 #include <string>
 
 #include <core/Block.h>
@@ -27,10 +28,10 @@ namespace runtime {
 namespace storage {
 class Repository { //: public std::enable_shared_from_this<Repository> {
 public:
-    Repository(std::shared_ptr<Block> block, DatabaseController *dbc): m_block(block), m_dbc(dbc) {}
+    Repository(std::shared_ptr<Block> block, DatabaseController *dbc): m_block(block), m_dbc(dbc) { m_producerList = getProducerList(); }
 
     Repository(std::shared_ptr<Block> block, std::shared_ptr<Repository> parent, DatabaseController *dbc):
-        m_block(block), m_parent(parent), m_dbc(dbc) {}
+        m_block(block), m_parent(parent), m_dbc(dbc) { m_producerList = getProducerList(); }
 
     ~Repository() { if (m_parent) m_parent.reset(); if (m_block) m_block.reset(); }
 
@@ -49,6 +50,8 @@ public:
     void put(Block const& block);
 
     Producer getProducer(Address const& address);
+
+    std::vector<Producer> getProducerList() const;
 
     void put(Producer const& producer);
 
@@ -78,7 +81,8 @@ private:
     mutable std::unordered_map<TxID, Transaction> m_cacheTransaction;
 
     std::shared_ptr<Block> m_block;
+
+    std::vector<Producer> m_producerList;
 };
 } // end namespace storage
 } // end namespace of runtime
-

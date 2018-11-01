@@ -10,10 +10,12 @@
  */
 
 #include <cassert>
+#include <vector>
 
 #include <leveldb/db.h>
 #include <database/Database.h>
 #include <core/Log.h>
+#include <core/Producer.h>
 #include <utils/Utils.h>
 
 using namespace std;
@@ -57,6 +59,18 @@ public:
         leveldb::Status status = m_db->Delete(leveldb::WriteOptions(), toString(key));
     }
 
+    std::vector<Producer> getProducerList() const {
+        std::vector<Producer> producerList;
+        leveldb::Iterator* itr = m_db->NewIterator(leveldb::ReadOptions());
+        for (itr->SeekToFirst(); itr->Valid(); itr->Next())
+        {
+            std::string value = itr->value().ToString();
+            bytes bytesValue = toBytes(value);
+            producerList.push_back(Producer(bytesConstRef(&bytesValue)));
+        }
+        return producerList;
+    }
+
 private:
     leveldb::DB *m_db;
     leveldb::Options m_options;
@@ -97,4 +111,8 @@ void Database::del(bytes const& key)
     m_impl->del(key);
 }
 
+std::vector<Producer> Database::getProducerList() const
+{
+    return m_impl->getProducerList();
+}
 } // endof namespace
