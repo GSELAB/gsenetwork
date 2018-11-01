@@ -41,6 +41,8 @@ public:
 
     crypto::Secret m_secret;
 
+    bool m_syncFlag = true;
+
 };
 
 extern Argument ARGs;
