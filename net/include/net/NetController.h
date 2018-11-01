@@ -61,6 +61,8 @@ public:
 
     void send(bytes const& data, chain::ProtocolPacketType packetType, bi::tcp::endpoint const& except);
 
+    void send(bytes const& data, bi::tcp::endpoint const& to, chain::ProtocolPacketType packetType);
+
 private:
     bool m_inited;
     crypto::GKey m_key;

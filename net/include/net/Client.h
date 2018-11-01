@@ -19,6 +19,11 @@ public:
 
     DispatchFace* getDispatcher() const override { return m_dispatcher; }
 
+public:
+    void start();
+
+    void stop();
+
 protected:
     std::shared_ptr<PeerCapabilityFace> newPeerCapability(
         DispatchFace* dispatcher, std::shared_ptr<SessionFace> const& _s, unsigned _idOffset,CapDesc const& _cap) override;

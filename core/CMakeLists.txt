@@ -5,6 +5,7 @@ SET(core_source
     Log.cpp
     RLP.cpp
     Address.cpp
+    Status.cpp
     Account.cpp
     TransactionReceipt.cpp
     Transaction.cpp

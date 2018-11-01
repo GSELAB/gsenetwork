@@ -41,6 +41,7 @@ public:
         HeaderConfirmationType  = 0x0B,
         BlockStateType          = 0x0C,
         ProducerScheduleTypeType = 0x0D,
+        StatusType              = 0x0E,
         /* Add new type */
 
         UnknownType = 0xFFFF,

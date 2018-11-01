@@ -78,8 +78,6 @@ public: // Producer Handle
 
     virtual BlockChainStatus getBlockChainStatus() const override { return m_chain->getBlockChainStatus(); };
 
-
-
 public: // used by block chain
     virtual void broadcast(bi::tcp::endpoint const& from, Block& block) override;
 
@@ -96,6 +94,10 @@ public: // used by block chain
     virtual void send(HeaderConfirmation& hc) override;
 
     virtual void send(HeaderConfirmationPtr hcp) override;
+
+    virtual void send(bi::tcp::endpoint const& to, Status& status) override;
+
+    virtual void send(bi::tcp::endpoint const& to, StatusPtr status) override;
 
 private:
     chain::ChainID m_chainID;

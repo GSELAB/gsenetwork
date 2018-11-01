@@ -24,25 +24,43 @@ using namespace core;
 
 namespace chain {
 
-#define RLP_STREAM_PTR_SEND_EXCEPT(name, type, except) do {    \
+#define RLP_STREAM_PTR_SEND_EXCEPT(name, type, except) \
+do {    \
     RLPStream rlpStream;    \
     name->streamRLP(rlpStream);     \
     m_net->send(rlpStream.out(), type, except);  \
 } while (0)
 
-#define RLP_STREAM_SEND_EXCEPT(name, type, except) do {    \
+#define RLP_STREAM_SEND_EXCEPT(name, type, except) \
+do {    \
     RLPStream rlpStream;    \
     name.streamRLP(rlpStream);  \
     m_net->send(rlpStream.out(), type, except);  \
 } while (0)
 
-#define RLP_STREAM_PTR_SEND(name, type) do {    \
+#define RLP_STREAM_PTR_SEND_TO(name, type, to) \
+do {    \
+    RLPStream rlpStream;    \
+    name->streamRLP(rlpStream); \
+    m_net->send(rlpStream.out(), to, type); \
+} while (0)
+
+#define RLP_STREAM_SEND_TO(name, type, to) \
+do {    \
+    RLPStream rlpStream;    \
+    name.streamRLP(rlpStream); \
+    m_net->send(rlpStream.out(), to, type); \
+} while (0)
+
+#define RLP_STREAM_PTR_SEND(name, type) \
+do {    \
     RLPStream rlpStream;    \
     name->streamRLP(rlpStream);     \
     m_net->send(rlpStream.out(), type);  \
 } while (0)
 
-#define RLP_STREAM_SEND(name, type) do {    \
+#define RLP_STREAM_SEND(name, type) \
+do {    \
     RLPStream rlpStream;    \
     name.streamRLP(rlpStream);  \
     m_net->send(rlpStream.out(), type);  \
@@ -181,6 +199,16 @@ void Controller::send(HeaderConfirmation& hc)
 void Controller::send(HeaderConfirmationPtr hcp)
 {
     RLP_STREAM_PTR_SEND(hcp, ConfirmationPacket);
+}
+
+void Controller::send(bi::tcp::endpoint const& to, Status& status)
+{
+    RLP_STREAM_SEND_TO(status, StatusPacket, to);
+}
+
+void Controller::send(bi::tcp::endpoint const& to, StatusPtr status)
+{
+    RLP_STREAM_PTR_SEND_TO(status, StatusPacket, to);
 }
 
 Controller controller(DEFAULT_GSE_NETWORK);

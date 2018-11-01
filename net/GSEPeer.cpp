@@ -1,5 +1,6 @@
 #include <net/GSEPeer.h>
 #include <core/Log.h>
+#include <core/Status.h>
 
 using namespace core;
 using namespace chain;
@@ -20,7 +21,11 @@ GSEPeer::~GSEPeer()
 
 void GSEPeer::beat()
 {
-
+    RLPStream rlpStream;
+    rlpStream.appendRaw(bytes(1, StatusPacket)).appendList(1);
+    Status status(GetHeight);
+    rlpStream.appendRaw(status.getRLPData());
+    session()->sealAndSend(rlpStream);
 }
 
 bool GSEPeer::interpretCapabilityPacket(unsigned id, core::RLP const& rlp)
