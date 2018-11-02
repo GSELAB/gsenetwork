@@ -73,6 +73,8 @@ public:
     virtual void send(bi::tcp::endpoint const& to, Status& status) = 0;
 
     virtual void send(bi::tcp::endpoint const& to, StatusPtr status) = 0;
+
+    virtual void schedule(ProducersConstRef producerList) = 0;
 };
 
 enum BlockChainStatus {

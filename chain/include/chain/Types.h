@@ -21,7 +21,7 @@ using ChainID = uint64_t;
 enum ChainDomain : ChainID {
     GSE_UNKNOWN_NETWORK         = 0xFFFFFFFFFFFFFFFF,   // < unknown
 
-    GSE_ROOT_NETWORK            = 0x000000,                     // < 0x0000 ~ 0x00FF : used for root chain id
+    GSE_ROOT_NETWORK            = 0x000010,                     // < 0x0000 ~ 0x00FF : used for root chain id
     GSE_ROOT_NETWORK_END        = 0x0000FF,
 
     GSE_ROOT_NETWORK_TEST       = 0x000100,                     // < 0x0100 ~ 0x01FF : used for test network chain id

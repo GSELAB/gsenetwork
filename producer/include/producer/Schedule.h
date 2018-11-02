@@ -54,7 +54,8 @@ public:
 
     ~Schedule();
 
-    std::vector<Producer> const& getActiveProducers() const;
+    /// @not thread safe
+    ProducersConstRef getActiveProducers() const { return m_activeProducers; }
 
     void schedule();
 
@@ -71,14 +72,16 @@ public: // used by producer or block chain
 
     void producerSort();
 
-    std::vector<Producer> const& getProducerList() const;
+    ProducersConstRef getProducerList() const { return m_producerList; }
+
+    void schedule(ProducersConstRef producerList);
 
 private:
     mutable Mutex x_activeProducers;
-    std::vector<Producer> m_activeProducers;
+    Producers m_activeProducers;
 
     mutable Mutex x_producerList;
-    std::vector<Producer> m_producerList;
+    Producers m_producerList;
 };
 
 }

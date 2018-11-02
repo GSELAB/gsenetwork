@@ -53,6 +53,8 @@ public:
 
     void populate(bytesConstRef data);
 
+    void setChainID(chain::ChainID chainID) { m_chainID = chainID; }
+
     void setProducer(Address const& producer) { m_producer = producer; }
 
     void setParentHash(h256 const& parentHash) { m_parentHash = parentHash; }
@@ -64,6 +66,10 @@ public:
     void setTimestamp(int64_t timestamp) { m_timestamp = timestamp; }
 
     void setExtra(bytes const& extra) { m_extra = extra; }
+
+    void setSignature(Signature const& sig) { m_signature = SignatureStruct(sig); }
+
+    void setSignature(SignatureStruct const& sig) { m_signature = sig; }
 
     void sign(Secret const& priv);
 

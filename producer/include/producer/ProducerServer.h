@@ -77,6 +77,9 @@ public:
 
     bool checkProducer(int64_t timestamp) const;
 
+public:
+    void schedule(ProducersConstRef producerList) { m_schedule.schedule(producerList); }
+
 private:
     chain::ChainID m_chainID;
     crypto::GKey m_key;

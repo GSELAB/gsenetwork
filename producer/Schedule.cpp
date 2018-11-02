@@ -69,12 +69,6 @@ Schedule::~Schedule()
 
 }
 
-//@not thread safe
-std::vector<Producer> const& Schedule::getActiveProducers() const
-{
-    return m_activeProducers;
-}
-
 void Schedule::schedule()
 {
 
@@ -100,11 +94,6 @@ void Schedule::removeActiveProducer(Address const& producer)
 
 }
 
-std::vector<Producer> const & Schedule::getProducerList() const
-{
-    return m_producerList;
-}
-
 void Schedule::addProducer(Producer const& producer)
 {
     Guard l{x_producerList};
@@ -117,4 +106,9 @@ void Schedule::producerSort()
     std::sort(m_producerList.begin(), m_producerList.end(), ProducerCompareGreater());
 }
 
+void Schedule::schedule(ProducersConstRef producerList)
+{
+
 }
+
+} // namespace end
