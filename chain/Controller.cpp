@@ -211,6 +211,11 @@ void Controller::send(bi::tcp::endpoint const& to, StatusPtr status)
     RLP_STREAM_PTR_SEND_TO(status, StatusPacket, to);
 }
 
+void Controller::schedule(ProducersConstRef producerList)
+{
+    m_producerServer->schedule(producerList);
+}
+
 Controller controller(DEFAULT_GSE_NETWORK);
 
 } /* end namespace */
