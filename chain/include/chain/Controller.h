@@ -99,6 +99,8 @@ public: // used by block chain
 
     virtual void send(bi::tcp::endpoint const& to, StatusPtr status) override;
 
+    virtual void schedule(ProducersConstRef producerList) override;
+
 private:
     chain::ChainID m_chainID;
     crypto::GKey m_key;
