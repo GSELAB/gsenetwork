@@ -77,6 +77,10 @@ bool DatabaseController::initGenesis()
         put(itr.second);
     }
 
+    for (auto& itr : genesis.m_initProducers) {
+        put(itr.second);
+    }
+
     put(genesis.m_genesisBlock);
     ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(ZERO_BLOCK_HEIGHT);
     putAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
