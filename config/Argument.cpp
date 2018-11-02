@@ -30,6 +30,7 @@ void initArgument()
     Json::Value net = root["net"];
     Json::Value key = root["key"];
     Json::Value node = root["node"];
+    Json::Value genesis = root["genesis"];
 
     bi::tcp::endpoint rpcEP = net::Network::resolveHost(rpc["ip_port"].asString());
     bi::tcp::endpoint localEP = net::Network::resolveHost(local["local_ip_port"].asString());
@@ -52,6 +53,7 @@ void initArgument()
     }
 
     ARGs.m_syncFlag = node["sync"].asBool();
+    initGenesis(ARGs.m_genesis, genesis);
 
     fin.close();
 }

@@ -5,10 +5,10 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <crypto/Common.h>
+#include <chain/Genesis.h>
 
 namespace ba = boost::asio;
 namespace bi = ba::ip;
-
 
 namespace config {
 
@@ -31,7 +31,6 @@ struct Host {
 class Argument {
 public:
     bool m_producerON = false;
-
     bool m_rpcON = true;
 
     Host m_local;
@@ -43,6 +42,7 @@ public:
 
     bool m_syncFlag = true;
 
+    chain::Genesis m_genesis;
 };
 
 extern Argument ARGs;
