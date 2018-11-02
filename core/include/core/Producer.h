@@ -75,4 +75,10 @@ extern Producer EmptyProducer;
 
 using ProducerPtr = std::shared_ptr<Producer>;
 
+using Producers = std::vector<Producer>;
+
+using ProducersRef = Producers&;
+
+using ProducersConstRef = Producers const&;
+
 } // end of namespace
