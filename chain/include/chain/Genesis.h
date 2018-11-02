@@ -11,20 +11,25 @@
 
 #pragma once
 
+#include <string>
+#include <json/json.h>
+
 #include <core/Address.h>
 #include <core/Common.h>
+#include <core/Account.h>
+#include <core/Producer.h>
+
+using namespace core;
 
 namespace chain {
 
-struct GenesisItem {
-    const core::Address address;
-    uint64_t balance;
-};
-
 struct Genesis {
-    std::vector<GenesisItem> genesisItems ;
+    std::map<Address, Account> m_initAccounts;
+    std::map<Address, Producer> m_initProducers;
+    Block m_genesisBlock;
+    bool m_inited = false;
 };
 
-extern Genesis const& getGenesis();
+extern void initGenesis(Genesis& genesis, Json::Value const& root);
 
 } // end namespace
