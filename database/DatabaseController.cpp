@@ -14,6 +14,7 @@
 #include <config/Constant.h>
 #include <chain/Genesis.h>
 #include <core/Exceptions.h>
+#include <config/Argument.h>
 
 using namespace std;
 using namespace core;
@@ -71,13 +72,12 @@ bool DatabaseController::checkGenesisExisted()
 
 bool DatabaseController::initGenesis()
 {
-    Genesis const& genesis = getGenesis();
-    for (auto const& item : genesis.genesisItems) {
-        Account account(item.address, item.balance);
-        put(account);
+    Genesis& genesis = ARGs.m_genesis;
+    for (auto& itr : genesis.m_initAccounts) {
+        put(itr.second);
     }
 
-    put(ZeroBlock);
+    put(genesis.m_genesisBlock);
     ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(ZERO_BLOCK_HEIGHT);
     putAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
 
