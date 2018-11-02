@@ -378,9 +378,9 @@ void Block::setRoots()
         m_transactions[i].streamRLP(rlpTransaction);
         transactionsMap.insert(std::make_pair(rlpIndex.out(), rlpTransaction.out()));
 
-        RLPStream rlpReceipt;
-        m_transactionReceipts[i].streamRLP(rlpReceipt);
-        receiptsMap.insert(std::make_pair(rlpIndex.out(), rlpReceipt.out()));
+        //RLPStream rlpReceipt;
+        //m_transactionReceipts[i].streamRLP(rlpReceipt);
+        //receiptsMap.insert(std::make_pair(rlpIndex.out(), rlpReceipt.out()));
     }
 
     trie::TrieType mklRoot;

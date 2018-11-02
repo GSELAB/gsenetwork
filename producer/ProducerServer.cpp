@@ -122,6 +122,15 @@ void ProducerServer::doWork()
         }
     }
 
+    {
+        // Just test
+        Transaction tx(DEFAULT_GSE_NETWORK, Transaction::TransferType, m_key.getAddress(), Address("969956599be0D545812813F76C61B2D9E283cc7c"),
+            currentTimestamp(), bytes(), 10);
+        tx.sign(m_key.getSecret());
+        block->addTransaction(tx);
+    }
+    CINFO << "Add to block";
+
     // set receipts
     {
         //size_t transactionCount = block.getTransactionsSize();

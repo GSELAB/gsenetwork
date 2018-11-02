@@ -83,7 +83,7 @@ void BlockChain::cancelMemoryItem()
 
 uint64_t BlockChain::getLastIrreversibleBlockNumber() const
 {
-    // return m_rollbackState.m_bftIrreversibleBlockNumber;
+    ///return m_rollbackState.m_bftIrreversibleBlockNumber;
     return 0;
 }
 
@@ -429,7 +429,7 @@ bool BlockChain::isExist(Transaction& tx)
             return true;
     }
 
-    { // find from db (include memory db)
+    {
         std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
         {
             Guard g(x_memoryQueue);
@@ -457,7 +457,6 @@ bool BlockChain::isExist(Block& block)
 {
     {
         Guard l(x_blockCache);
-        CINFO << "block cache size - " << m_blockCache.size();
         if (!m_blockCache.empty()) {
             auto& item = m_blockCache.get<ByBlockID>();
             auto itr = item.find(block.getHash());
@@ -466,7 +465,6 @@ bool BlockChain::isExist(Block& block)
         }
     }
 
-    CINFO << "try find block from memoryDB & levelDB";
     {
         std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
         {
