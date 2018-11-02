@@ -70,12 +70,24 @@ bool Producer::operator!=(Producer const& producer) const
 
 bool Producer::operator>(Producer const& producer) const
 {
-    return m_votes > producer.getVotes();
+    if (m_votes > producer.getVotes()) {
+        return true;
+    } else if (m_votes == producer.getVotes()) {
+        return m_address > producer.getAddress();
+    } else {
+        return false;
+    }
 }
 
 bool Producer::operator<(Producer const& producer) const
 {
-    return m_votes < producer.getVotes();
+    if (m_votes < producer.getVotes()) {
+        return true;
+    } else if (m_votes == producer.getVotes()) {
+        return m_address < producer.getAddress();
+    } else {
+        return false;
+    }
 }
 
 void Producer::streamRLP(RLPStream& rlpStream) const
