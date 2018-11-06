@@ -26,6 +26,7 @@ namespace chain {
 struct Genesis {
     std::map<Address, Account> m_initAccounts;
     std::map<Address, Producer> m_initProducers;
+    ProducerSnapshot m_producerSnapshot;
     Block m_genesisBlock;
     bool m_inited = false;
 };

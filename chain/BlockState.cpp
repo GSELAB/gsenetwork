@@ -9,6 +9,7 @@ using namespace crypto;
 namespace chain {
 
 BlockStatePtr EmptyBlockStatePtr = BlockStatePtr();
+BlockState EmptyBlockState;
 
 HeaderConfirmation::HeaderConfirmation(bytesConstRef data)
 {
@@ -117,6 +118,22 @@ bytes HeaderConfirmation::getRLPData()
 }
 
 // #########################################################
+BlockState::BlockState(BlockState const& bs)
+{
+    m_block = bs.m_block;
+    m_blockNumber = bs.m_blockNumber;
+    m_blockID = bs.m_blockID;
+    m_dposIrreversibleBlockNumber = bs.m_dposIrreversibleBlockNumber;
+    m_bftIrreversibleBlockNumber = bs.m_bftIrreversibleBlockNumber;
+    m_validated = bs.m_validated;
+    m_inCurrentChain = bs.m_inCurrentChain;
+    for (auto producer : bs.m_activeProucers.m_producers)
+        m_activeProucers.m_producers.push_back(producer);
+    m_confirmCount = bs.m_confirmCount;
+    for (auto confirmation : bs.m_confirmations)
+        m_confirmations.push_back(confirmation);
+}
+
 BlockState::BlockState(core::Block& block):
     m_block(block)
 {
@@ -143,6 +160,29 @@ BlockState::BlockState(bytesConstRef data)
     } catch (...) {
 
     }
+}
+
+BlockState::BlockState(bytes const& data): BlockState(bytesConstRef(&data))
+{
+
+}
+
+BlockState& BlockState::operator=(BlockState const& bs)
+{
+    if (this == &bs) return *this;
+    m_block = bs.m_block;
+    m_blockNumber = bs.m_blockNumber;
+    m_blockID = bs.m_blockID;
+    m_dposIrreversibleBlockNumber = bs.m_dposIrreversibleBlockNumber;
+    m_bftIrreversibleBlockNumber = bs.m_bftIrreversibleBlockNumber;
+    m_validated = bs.m_validated;
+    m_inCurrentChain = bs.m_inCurrentChain;
+    for (auto producer : bs.m_activeProucers.m_producers)
+        m_activeProucers.m_producers.push_back(producer);
+    m_confirmCount = bs.m_confirmCount;
+    for (auto confirmation : bs.m_confirmations)
+        m_confirmations.push_back(confirmation);
+    return *this;
 }
 
 void BlockState::addConfirmation(HeaderConfirmation const& confirmation)

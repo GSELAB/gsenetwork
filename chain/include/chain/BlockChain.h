@@ -246,5 +246,8 @@ private:
 
     mutable Mutex x_blockCache;
     BlockCacheMultiIndexType m_blockCache;
+
+    ProducerSnapshot m_prevPS;
+    ProducerSnapshot m_currentPS;
 };
 } // end namespace

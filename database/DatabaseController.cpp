@@ -27,6 +27,9 @@ std::string ATTRIBUTE_DIR_FILE("./data/attributes");
 std::string ACCOUNT_DIR_FILE("./data/account");
 std::string TRANSACTION_DIR_FILE("./data/transaction");
 std::string BLOCK_DIR_FILE("./data/block");
+std::string BLOCK_INDEX_DIR_FILE("./data/block-index");
+std::string BLOCK_STATE_DIR_FILE("./data/block-state");
+std::string BLOCK_STATE_INDEX_DIR_FILE("./data/block-state-index");
 std::string SUBCHAIN_DIR_FILE("./data/subchain");
 std::string PRODUCER_DIR_FILE("./data/producer");
 
@@ -35,6 +38,9 @@ DatabaseController::DatabaseController():
     m_accountStore(std::unique_ptr<Database>(new Database(ACCOUNT_DIR_FILE))),
     m_transactionStore(std::unique_ptr<Database>(new Database(TRANSACTION_DIR_FILE))),
     m_blockStore(std::unique_ptr<Database>(new Database(BLOCK_DIR_FILE))),
+    m_blockIndexStore(std::unique_ptr<Database>(new Database(BLOCK_INDEX_DIR_FILE))),
+    m_blockStateStore(std::unique_ptr<Database>(new Database(BLOCK_STATE_DIR_FILE))),
+    m_blockStateIndexStore(std::unique_ptr<Database>(new Database(BLOCK_STATE_INDEX_DIR_FILE))),
     m_subChainStore(std::unique_ptr<Database>(new Database(SUBCHAIN_DIR_FILE))),
     m_producerStore(std::unique_ptr<Database>(new Database(PRODUCER_DIR_FILE)))
 {
@@ -49,9 +55,10 @@ DatabaseController::~DatabaseController()
 void DatabaseController::init()
 {
     if (checkGenesisExisted()) {
-        bytes key = ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getKey();
-        AttributeState<uint64_t> height = getAttribute<uint64_t>(key);
-        CINFO << "Current block height : " << height.getValue();
+        ATTRIBUTE_CURRENT_BLOCK_HEIGHT = getAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getKey());
+        ATTRIBUTE_PREV_PRODUCER_LIST = getAttribute<bytes>(ATTRIBUTE_PREV_PRODUCER_LIST.getKey());
+        ATTRIBUTE_CURRENT_PRODUCER_LIST = getAttribute<bytes>(ATTRIBUTE_CURRENT_PRODUCER_LIST.getKey());
+        CINFO << "Current block height : " << ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue();
     } else {
         initGenesis();
     }
@@ -82,10 +89,15 @@ bool DatabaseController::initGenesis()
     }
 
     put(genesis.m_genesisBlock);
-    ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(ZERO_BLOCK_HEIGHT);
+    ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(0);
     putAttribute<uint64_t>(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
 
     putAttribute<bool>(ATTRIBUTE_GENESIS_INITED);
+
+    ATTRIBUTE_PREV_PRODUCER_LIST.setData(genesis.m_producerSnapshot.getRLPData());
+    ATTRIBUTE_CURRENT_PRODUCER_LIST.setData(genesis.m_producerSnapshot.getRLPData());
+    putAttribute<bytes>(ATTRIBUTE_PREV_PRODUCER_LIST);
+    putAttribute<bytes>(ATTRIBUTE_CURRENT_PRODUCER_LIST);
     return true;
 }
 
@@ -173,12 +185,40 @@ Block DatabaseController::getBlock(bytes const& key) const
 
 Block DatabaseController::getBlock(uint64_t blockNumber) const
 {
-    return Block();
+    bytes data = m_blockIndexStore->get(blockNumber);
+    if (data == EmptyBytes) return EmptyBlock;
+    return Block(data);
 }
 
 void DatabaseController::put(Block& block)
 {
     m_blockStore->put(block);
+    m_blockIndexStore->put(block.getNumber(), block.getRLPData());
+}
+
+chain::BlockState DatabaseController::getBlockState(BlockID const& key) const
+{
+    return getBlockState(key.asBytes());
+}
+
+chain::BlockState DatabaseController::getBlockState(bytes const& key) const
+{
+    bytes data = m_blockStateStore->get(key);
+    if (data == EmptyBytes) return chain::EmptyBlockState;
+    return chain::BlockState(data);
+}
+
+chain::BlockState DatabaseController::getBlockState(uint64_t key) const
+{
+    bytes data = m_blockStateStore->get(key);
+    if (data == EmptyBytes) return chain::EmptyBlockState;
+    return chain::BlockState(data);
+}
+
+void DatabaseController::put(chain::BlockState& bs)
+{
+    m_blockStateStore->put(bs);
+    m_blockStateIndexStore->put(bs.m_blockNumber, bs.getRLPData());
 }
 
 SubChain DatabaseController::getSubChain(chain::ChainID chainID) const

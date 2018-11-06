@@ -21,6 +21,7 @@
 #include <core/SubChain.h>
 #include <config/Constant.h>
 #include <core/Producer.h>
+#include <chain/BlockState.h>
 
 using namespace core;
 
@@ -62,6 +63,14 @@ public:
 
     void put(Block& block);
 
+    chain::BlockState getBlockState(BlockID const& key) const;
+
+    chain::BlockState getBlockState(bytes const& key) const;
+
+    chain::BlockState getBlockState(uint64_t key) const;
+
+    void put(chain::BlockState& bs);
+
     SubChain getSubChain(chain::ChainID chainID) const;
 
     void put(SubChain& subChain);
@@ -84,6 +93,9 @@ private:
     unique_ptr<Database> m_accountStore;
     unique_ptr<Database> m_transactionStore;
     unique_ptr<Database> m_blockStore;
+    unique_ptr<Database> m_blockIndexStore;
+    unique_ptr<Database> m_blockStateStore;
+    unique_ptr<Database> m_blockStateIndexStore;
     unique_ptr<Database> m_subChainStore;
     unique_ptr<Database> m_producerStore;
 

@@ -22,6 +22,7 @@ void initGenesis(Genesis& genesis, Json::Value const& root)
 {
     if (!genesis.m_inited) {
         int64_t genesisTimestamp = root["timestamp"].asInt64();
+        genesis.m_producerSnapshot.setTimestamp(genesisTimestamp);
         Json::Value initAccounts = root["init_accounts"];
         for (unsigned i = 0; i < initAccounts.size(); i++) {
             Json::Value item = initAccounts[i];
@@ -35,6 +36,7 @@ void initGenesis(Genesis& genesis, Json::Value const& root)
             Producer producer(Address(item["address"].asString()), genesisTimestamp);
             producer.setVotes(item["vote"].asUInt64());
             genesis.m_initProducers.emplace(producer.getAddress(), producer);
+            genesis.m_producerSnapshot.addProducer(producer);
         }
 
         Json::Value genesisBlock = root["genesis_block"];

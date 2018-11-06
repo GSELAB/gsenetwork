@@ -101,6 +101,21 @@ void Database::put(core::Object& object)
     m_impl->put(key, value);
 }
 
+void Database::put(bytes const& key, bytes const& value)
+{
+    m_impl->put(key, value);
+}
+
+void Database::put(uint64_t key, bytes const& value)
+{
+    m_impl->put(toBytes(toString(key)), value);
+}
+
+bytes Database::get(uint64_t key)
+{
+    return m_impl->get(toBytes(toString(key)));
+}
+
 bytes Database::get(bytes const& key) const
 {
     return m_impl->get(key);
