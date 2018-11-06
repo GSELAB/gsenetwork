@@ -76,6 +76,9 @@ bool ProducerServer::checkProducer(int64_t timestamp) const
                 (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
 
     const std::vector<Producer> producerList = m_schedule.getProducerList();
+    for (auto i : producerList) {
+        CINFO << "Address:" << i.getAddress() << "  votes:" << i.getVotes();
+    }
     if (!producerList.empty()) {
         if (m_key.getAddress() == producerList[producerPosition].getAddress()) {
             if (((timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL > m_prevTimestamp) ||

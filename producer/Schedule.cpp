@@ -1,4 +1,5 @@
 #include <producer/Schedule.h>
+#include <core/Log.h>
 
 namespace producer {
 
@@ -96,19 +97,47 @@ void Schedule::removeActiveProducer(Address const& producer)
 
 void Schedule::addProducer(Producer const& producer)
 {
-    Guard l{x_producerList};
-    m_producerList.push_back(producer);
+    //Guard l{x_producerList};
+    //m_producerList.push_back(producer);
 }
 
 void Schedule::producerSort()
 {
-    Guard l{x_producerList};
-    std::sort(m_producerList.begin(), m_producerList.end(), ProducerCompareGreater());
+    {
+        Guard l{x_prevProducerList};
+        std::sort(m_prevProducerList.begin(), m_prevProducerList.end(), ProducerCompareLess());
+    }
+
+    {
+        Guard l{x_currentProducerList};
+        std::sort(m_currentProducerList.begin(), m_currentProducerList.end(), ProducerCompareLess());
+    }
+
 }
 
 void Schedule::schedule(ProducersConstRef producerList)
 {
+    CINFO << "Schedule::schedule size:" << producerList.size();
+    {
+        Guard l(x_prevProducerList);
+        if (!m_prevProducerList.empty())
+            m_prevProducerList.clear();
+    }
 
+    CINFO << "Schedule::schedule 1";
+    {
+        Guard l{x_currentProducerList};
+        if (!m_currentProducerList.empty()) {
+            for (auto i : m_currentProducerList)
+                    m_prevProducerList.push_back(i);
+            m_currentProducerList.clear();
+        }
+
+        for (auto i : producerList)
+            m_currentProducerList.push_back(i);
+    }
+    CINFO << "Schedule::schedule before sort!";
+    producerSort();
 }
 
 } // namespace end
