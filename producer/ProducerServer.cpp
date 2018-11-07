@@ -88,7 +88,7 @@ void ProducerServer::doWork()
     BlockHeader blockHeader(m_eventHandle->getLastBlockNumber() + 1);
     blockHeader.setProducer(m_key.getAddress());
     if (prevBlock != EmptyBlock) {
-        CINFO << "prev:" << toJson(prevBlock).toStyledString();
+        //CINFO << "prev:" << toJson(prevBlock).toStyledString();
         blockHeader.setParentHash(prevBlock.getHash());
     }
 

@@ -14,6 +14,7 @@
 #include <chain/Genesis.h>
 #include <core/Exceptions.h>
 #include <config/Argument.h>
+#include <core/JsonHelper.h>
 
 using namespace std;
 using namespace core;

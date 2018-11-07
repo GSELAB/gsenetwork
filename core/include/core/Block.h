@@ -131,6 +131,8 @@ public:
 
     Block(Block const& block);
 
+    Block(bytes const& data): Block(bytesConstRef(&data)) {}
+
     Block(bytesConstRef data);
 
     // ~Block() {} cause signal c + c uncatched exception

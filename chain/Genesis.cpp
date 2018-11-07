@@ -60,6 +60,7 @@ void initGenesis(Genesis& genesis, Json::Value const& root)
         blockHeader.setExtra(toBytes(extraString));
         blockHeader.setSignature(signature);
         Block block(blockHeader);
+        genesis.m_genesisBlock = block;
         /// CINFO << "Genesis block:" << toJson(block).toStyledString();
     }
 }
