@@ -42,12 +42,15 @@ BlockChain::~BlockChain()
 
 void BlockChain::initializeRollbackState()
 {
-    // m_head = std::make_shared<BlockState>();
+    Block block = m_dbc->getBlock(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue());
+
+    m_head = std::make_shared<BlockState>(block);
+    m_rollbackState.set(m_head);
 }
 
 void BlockChain::init()
 {
-    CINFO << "Block chain init";
+    // CINFO << "Block chain init";
     m_rollbackState.m_irreversible.connect([&](auto bsp) {
         onIrreversible(bsp);
     });
@@ -171,7 +174,6 @@ bool BlockChain::processProducerBlock(std::shared_ptr<Block> block)
 {
     Guard l{x_blockCache};
     m_blockCache.emplace(block);
-    //return processBlock(block);
     return true;
 }
 
@@ -260,11 +262,8 @@ uint64_t BlockChain::getLastBlockNumber() const
     Guard l(x_memoryQueue);
     if (m_memoryQueue.empty()) {
         // read from db
-
-        return 0;
+        return ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue();
     }
-
-
 
     return m_memoryQueue.back()->getBlockNumber();
 }
@@ -274,8 +273,7 @@ Block BlockChain::getLastBlock() const
     Guard l(x_memoryQueue);
     if (m_memoryQueue.empty()) {
         // read from db
-
-        return EmptyBlock;
+        return m_dbc->getBlock(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue());
     }
 
     return m_memoryQueue.back()->getBlock();
