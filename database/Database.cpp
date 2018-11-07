@@ -17,6 +17,7 @@
 #include <core/Log.h>
 #include <core/Producer.h>
 #include <utils/Utils.h>
+#include <core/Common.h>
 
 using namespace std;
 using namespace core;
@@ -39,13 +40,17 @@ public:
     }
 
     void put(bytes const& key, bytes const& value) {
-        leveldb::Status status = m_db->Put(leveldb::WriteOptions(), toString(key), toString(value));
+        // leveldb::Status status = m_db->Put(leveldb::WriteOptions(), toString(key), toString(value));
+        bytesConstRef brKey(&key);
+        bytesConstRef brValue(&value);
+        leveldb::Status status = m_db->Put(leveldb::WriteOptions(), brKey.toString(), brValue.toString());
         assert(status.ok());
     }
 
     bytes get(bytes const& key) const {
         std::string value;
-        leveldb::Status status = m_db->Get(leveldb::ReadOptions(), toString(key), &value);
+        bytesConstRef brKey(&key);
+        leveldb::Status status = m_db->Get(leveldb::ReadOptions(), brKey.toString(), &value);
         if (status.ok()) {
             return toBytes(value);
         } else if (status.IsNotFound()) {

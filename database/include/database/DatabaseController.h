@@ -21,6 +21,7 @@
 #include <core/SubChain.h>
 #include <config/Constant.h>
 #include <core/Producer.h>
+#include <core/AttributeState.h>
 #include <chain/BlockState.h>
 
 using namespace core;
@@ -75,11 +76,9 @@ public:
 
     void put(SubChain& subChain);
 
-    template<class T>
-    AttributeState<T> getAttribute(bytes const& key) const;
+    AttributeState getAttribute(bytes const& key) const;
 
-    template<class T>
-    void putAttribute(AttributeState<T>& t);
+    void putAttribute(AttributeState& t);
 
 protected:
     bool checkGenesisExisted();
