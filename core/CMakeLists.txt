@@ -12,6 +12,7 @@ SET(core_source
     Block.cpp
     Producer.cpp
     SubChain.cpp
+    AttributeState.cpp
     Ballot.cpp
     Worker.cpp
     Task.cpp
