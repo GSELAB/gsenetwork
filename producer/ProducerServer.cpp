@@ -36,25 +36,11 @@ void ProducerServer::start()
         return;
     }
 
-    {
-        // Just for testing
-        Producer self(m_key.getAddress(), currentTimestamp());
-        self.setVotes(1000);
-        m_schedule.addProducer(self);
-    }
-
     startWorking();
     if (isWorking()) return;
 
     CWARN << "Start producer failed!";
     doneWorking();
-
-    /*
-    m_state = Running;
-    while (m_state == Running) {
-        generateBlock();
-    }
-    */
 }
 
 void ProducerServer::suspend()
@@ -91,7 +77,6 @@ void ProducerServer::doWork()
     unsigned i;
 
     int64_t timestamp = currentTimestamp();
-
     if (checkProducer(timestamp)) {
         m_prevTimestamp = timestamp;
     } else {

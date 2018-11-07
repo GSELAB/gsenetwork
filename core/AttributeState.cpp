@@ -20,7 +20,7 @@ AttributeState::AttributeState(bytes const& key, bytesConstRef data): m_key(key)
             if (m_type == Uint64Type) {
                 m_value = (uint64_t)rlp[1].toInt<uint64_t>();
             } else if (m_type == BytesType) {
-                m_data = rlp[2].data().toBytes();
+                m_data = rlp[1].data().toBytes();
             }
         } else {
             throw AttributeStateException("None list || None CONSTANT_STATE_FIELDS");

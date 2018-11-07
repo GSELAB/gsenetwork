@@ -120,12 +120,10 @@ void Schedule::producerSort()
         Guard l{x_currentProducerList};
         std::sort(m_currentProducerList.begin(), m_currentProducerList.end(), ProducerCompareLess());
     }
-
 }
 
 void Schedule::schedule(ProducersConstRef producerList)
 {
-    CINFO << "Schedule::schedule size:" << producerList.size();
     {
         Guard l(x_prevProducerList);
         if (!m_prevProducerList.empty())
