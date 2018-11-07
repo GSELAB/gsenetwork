@@ -101,6 +101,14 @@ void Schedule::addProducer(Producer const& producer)
     //m_producerList.push_back(producer);
 }
 
+Address Schedule::getAddress(unsigned idx) const
+{
+    Guard l{x_currentProducerList};
+    if (idx >= m_currentProducerList.size())
+        return ZeroAddress;
+    return m_currentProducerList[idx].getAddress();
+}
+
 void Schedule::producerSort()
 {
     {
@@ -123,8 +131,6 @@ void Schedule::schedule(ProducersConstRef producerList)
         if (!m_prevProducerList.empty())
             m_prevProducerList.clear();
     }
-
-    CINFO << "Schedule::schedule 1";
     {
         Guard l{x_currentProducerList};
         if (!m_currentProducerList.empty()) {
@@ -136,7 +142,6 @@ void Schedule::schedule(ProducersConstRef producerList)
         for (auto i : producerList)
             m_currentProducerList.push_back(i);
     }
-    CINFO << "Schedule::schedule before sort!";
     producerSort();
 }
 

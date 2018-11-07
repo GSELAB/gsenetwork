@@ -74,6 +74,8 @@ public: // used by producer or block chain
 
     ProducersConstRef getProducerList() const { return m_currentProducerList; }
 
+    Address getAddress(unsigned idx) const;
+
     void schedule(ProducersConstRef producerList);
 
 private:
