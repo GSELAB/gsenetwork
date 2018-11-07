@@ -14,6 +14,8 @@
 #include <crypto/SHA3.h>
 #include <storage/Repository.h>
 
+#include <vector>
+
 using namespace core;
 using namespace crypto;
 using namespace runtime;
@@ -176,7 +178,7 @@ void BlockHeader::populate(bytesConstRef data)
     }
 }
 
-void BlockHeader::setRoots(trie::TrieType const& mkl, trie::TrieType const& t, trie::TrieType const& r)
+void BlockHeader::setRoots(trie::H256 const& mkl, trie::H256 const& t, trie::H256 const& r)
 {
     m_mklRoot = mkl;
     m_transactionsRoot = t;
@@ -365,6 +367,26 @@ void Block::addTransactionReceipt(TransactionReceipt const& transactionReceipt)
     m_transactionReceipts.push_back(transactionReceipt);
 }
 
+trie::H256 Block::getTransactionMerkle()
+{
+    std::vector<trie::H256> trxDigest;
+    trxDigest.reserve(m_transactions.size());
+
+    for (unsigned i = 0; i < m_transactions.size(); i++)
+        trxDigest.emplace_back(m_transactions[i].getHash());
+
+    trie::H256 mklRoot = trie::merkle(move(trxDigest));
+
+
+      //vector<digest_type> trx_digests;
+      //const auto& trxs = pending->_pending_block_state->block->transactions;
+      //trx_digests.reserve( trxs.size() );
+      //for( const auto& a : trxs )
+         //trx_digests.emplace_back( a.digest() );
+
+      //pending->_pending_block_state->header.transaction_mroot = merkle( move(trx_digests) );
+}
+
 void Block::setRoots()
 {
     BytesMap transactionsMap;
@@ -383,9 +405,10 @@ void Block::setRoots()
         //receiptsMap.insert(std::make_pair(rlpIndex.out(), rlpReceipt.out()));
     }
 
-    trie::TrieType mklRoot;
+    trie::H256 mklRoot;
     {
         // set mklRoot
+        mklRoot = getTransactionMerkle();
     }
     m_blockHeader.setRoots(mklRoot, trieHash256(transactionsMap), trieHash256(receiptsMap));
 }

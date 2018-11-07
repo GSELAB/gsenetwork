@@ -6,26 +6,28 @@
 
 namespace trie {
 
-extern TrieType EmptyTrie;
+extern H256 EmptyTrie;
 
-TrieType makeTrieLeft(TrieType const& value);
-TrieType makeTrieRight(TrieType const& value);
+H256 makeTrieLeft(H256 const& value);
+H256 makeTrieRight(H256 const& value);
 
-bool isTrieLeft(TrieType const& value);
-bool isTrieRight(TrieType const& value);
+bool isTrieLeft(H256 const& value);
+bool isTrieRight(H256 const& value);
 
-inline std::pair<TrieType, TrieType> makeTriePair(TrieType const& l, TrieType const& r)
+inline std::pair<H256, H256> makeTriePair(H256 const& l, H256 const& r)
 {
     return std::make_pair(makeTrieLeft(l), makeTrieRight(r));
 }
+
+H256 merkle(std::vector<H256> hashes);
 
 // ------------------------------------------------------------------------------------
 
 
 bytes trieRLP256(BytesMap const& bytesMap);
-TrieType trieHash256(BytesMap const& bytesMap);
+H256 trieHash256(BytesMap const& bytesMap);
 
-TrieType trieRoot(std::vector<bytes> const& data);
-TrieType trieRoot(std::vector<bytesConstRef> const& data);
+H256 trieRoot(std::vector<bytes> const& data);
+H256 trieRoot(std::vector<bytesConstRef> const& data);
 
 }
