@@ -147,7 +147,7 @@ BlockStatePtr const& RollbackState::head() const
     return m_head;
 }
 
-// Given two head blocks, return two branchs of the fork graph that end with a common ancestor(same prior block)
+// Given two head blocks, return two branches of the fork graph that end with a common ancestor(same prior block)
 std::pair<BranchType, BranchType> RollbackState::fetchBranchFrom(BlockID const& first, BlockID const& second) const
 {
     std::pair<BranchType, BranchType> ret;
