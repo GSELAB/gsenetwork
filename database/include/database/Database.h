@@ -32,6 +32,12 @@ public:
 
     void put(core::Object& object);
 
+    void put(core::bytes const& key, core::bytes const& value);
+
+    void put(uint64_t key, core::bytes const& value);
+
+    core::bytes get(uint64_t key);
+
     core::bytes get(core::bytes const& key) const;
 
     void del(core::bytes const& key);

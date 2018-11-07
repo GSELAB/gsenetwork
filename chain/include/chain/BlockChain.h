@@ -144,6 +144,8 @@ public:
 
     void init();
 
+    void pushSchedule();
+
     void initializeRollbackState();
 
     DatabaseController* getDBC() const { return m_dbc; }
@@ -246,5 +248,8 @@ private:
 
     mutable Mutex x_blockCache;
     BlockCacheMultiIndexType m_blockCache;
+
+    ProducerSnapshot m_prevPS;
+    ProducerSnapshot m_currentPS;
 };
 } // end namespace

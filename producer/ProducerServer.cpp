@@ -74,18 +74,15 @@ bool ProducerServer::checkProducer(int64_t timestamp) const
 {
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (PRODUCER_INTERVAL * NUM_DELEGATED_BLOCKS)) / (PRODUCER_INTERVAL);
-
-    const std::vector<Producer> producerList = m_schedule.getProducerList();
-    if (!producerList.empty()) {
-        if (m_key.getAddress() == producerList[producerPosition].getAddress()) {
-            if (((timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL > m_prevTimestamp) ||
-                ((1 + timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= m_prevTimestamp)) {
-                if (m_eventHandle->getBlockChainStatus() == chain::ProducerStatus) {
-                    return true;
-                }
+    if (m_key.getAddress() == m_schedule.getAddress(producerPosition)) {
+        if (((timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL > m_prevTimestamp) ||
+            ((1 + timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= m_prevTimestamp)) {
+            if (m_eventHandle->getBlockChainStatus() == chain::ProducerStatus) {
+                return true;
             }
         }
     }
+
     return false;
 }
 

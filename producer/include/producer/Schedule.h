@@ -37,7 +37,7 @@ public:
     std::vector<Address> m_producers;
 };
 
-// Up
+// down
 class ProducerCompareLess {
 public:
     bool operator()(Producer const& first, Producer const& second) { return first > second; }
@@ -72,7 +72,9 @@ public: // used by producer or block chain
 
     void producerSort();
 
-    ProducersConstRef getProducerList() const { return m_producerList; }
+    ProducersConstRef getProducerList() const { return m_currentProducerList; }
+
+    Address getAddress(unsigned idx) const;
 
     void schedule(ProducersConstRef producerList);
 
@@ -80,8 +82,11 @@ private:
     mutable Mutex x_activeProducers;
     Producers m_activeProducers;
 
-    mutable Mutex x_producerList;
-    Producers m_producerList;
+    mutable Mutex x_prevProducerList;
+    std::vector<Producer> m_prevProducerList;
+
+    mutable Mutex x_currentProducerList;
+    std::vector<Producer> m_currentProducerList;
 };
 
 }

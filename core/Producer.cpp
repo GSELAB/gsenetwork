@@ -10,6 +10,7 @@
  */
 
 #include <core/Producer.h>
+#include <core/CommonIO.h>
 
 namespace core {
 
@@ -108,13 +109,11 @@ void Producer::addVoter(Address const& voter, uint64_t value)
     // TODO: ADD
 }
 
-// @override
 bytes Producer::getKey()
 {
     return m_address.asBytes();
 }
 
-// @override
 bytes Producer::getRLPData()
 {
     RLPStream rlpStream;
@@ -122,4 +121,56 @@ bytes Producer::getRLPData()
     return rlpStream.out();
 }
 
+ProducerSnapshot::ProducerSnapshot(bytesConstRef data)
+{
+    populate(data);
+}
+
+ProducerSnapshot& ProducerSnapshot::operator=(ProducerSnapshot const& ps)
+{
+    if (this == &ps)
+        return *this;
+
+    m_timestamp = ps.getTimestamp();
+    for (auto i : ps.getProducers())
+        m_producers.push_back(i);
+    return *this;
+}
+
+void ProducerSnapshot::populate(bytesConstRef data)
+{
+    m_producers.clear();
+    try {
+        RLP rlp(data);
+        if (rlp.isList() && rlp.itemCount() > 0) {
+            m_timestamp = rlp[0].toInt<int64_t>();
+            for (unsigned i = 1; i < rlp.itemCount(); i++)
+                m_producers.push_back(Producer(rlp[i].data()));
+        }
+    } catch (...) {
+
+    }
+}
+
+void ProducerSnapshot::streamRLP(RLPStream& rlpStream) const
+{
+    rlpStream.appendList(1 + m_producers.size());
+    rlpStream << m_timestamp;
+    for (auto i : m_producers)
+        rlpStream.appendRaw(i.getRLPData());
+}
+
+bytes ProducerSnapshot::getKey()
+{
+    return toBytes(toString(m_timestamp));
+}
+
+bytes ProducerSnapshot::getRLPData()
+{
+    RLPStream rlpStream;
+    streamRLP(rlpStream);
+    return rlpStream.out();
+}
+
 } // end of producer
+

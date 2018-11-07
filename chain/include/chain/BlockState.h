@@ -68,9 +68,17 @@ private:
 
 class BlockState: public Object {
 public:
+    BlockState() {}
+
+    BlockState(BlockState const& bs);
+
+    BlockState(bytes const& bs);
+
     BlockState(core::Block& block);
 
     BlockState(bytesConstRef data);
+
+    BlockState& operator=(BlockState const& bs);
 
     BlockID const& getPrev() const { return m_block.getBlockHeader().getParentHash(); }
 
@@ -107,6 +115,8 @@ public:
 using BlockStatePtr = std::shared_ptr<BlockState>;
 
 extern BlockStatePtr EmptyBlockStatePtr;
+
+extern BlockState EmptyBlockState;
 
 using HeaderConfirmationPtr = std::shared_ptr<HeaderConfirmation>;
 

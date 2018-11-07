@@ -16,11 +16,13 @@
 #include <core/Exceptions.h>
 #include <crypto/Valid.h>
 #include <utils/Utils.h>
+#include <config/Constant.h>
 
 using namespace core;
 using namespace runtime::storage;
 using namespace runtime;
 using namespace utils;
+using namespace config;
 
 namespace chain {
 
@@ -53,6 +55,15 @@ void BlockChain::init()
     if (!m_head) {
         initializeRollbackState();
     }
+
+    m_prevPS.populate(ATTRIBUTE_PREV_PRODUCER_LIST.getData());
+    m_currentPS.populate(ATTRIBUTE_CURRENT_PRODUCER_LIST.getData());
+}
+
+void BlockChain::pushSchedule()
+{
+    m_messageFace->schedule(m_prevPS.getProducers());
+    m_messageFace->schedule(m_currentPS.getProducers());
 }
 
 BlockChain::MemoryItem* BlockChain::addMemoryItem(std::shared_ptr<Block> block)

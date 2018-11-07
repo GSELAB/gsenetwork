@@ -42,6 +42,7 @@ public:
         BlockStateType          = 0x0C,
         ProducerScheduleTypeType = 0x0D,
         StatusType              = 0x0E,
+        ProducerSnapshotType    = 0x0F,
         /* Add new type */
 
         UnknownType = 0xFFFF,
