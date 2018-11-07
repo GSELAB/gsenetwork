@@ -90,10 +90,8 @@ bool DatabaseController::initGenesis()
 
     put(genesis.m_genesisBlock);
     ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(0);
-    CINFO << "Before put!";
     putAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
     putAttribute(ATTRIBUTE_GENESIS_INITED);
-
     ATTRIBUTE_PREV_PRODUCER_LIST.setData(genesis.m_producerSnapshot.getRLPData());
     ATTRIBUTE_CURRENT_PRODUCER_LIST.setData(genesis.m_producerSnapshot.getRLPData());
     putAttribute(ATTRIBUTE_PREV_PRODUCER_LIST);
