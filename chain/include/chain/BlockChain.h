@@ -144,6 +144,8 @@ public:
 
     void init();
 
+    void pushSchedule();
+
     void initializeRollbackState();
 
     DatabaseController* getDBC() const { return m_dbc; }

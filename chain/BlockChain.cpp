@@ -58,6 +58,10 @@ void BlockChain::init()
 
     m_prevPS.populate(ATTRIBUTE_PREV_PRODUCER_LIST.getData());
     m_currentPS.populate(ATTRIBUTE_CURRENT_PRODUCER_LIST.getData());
+}
+
+void BlockChain::pushSchedule()
+{
     m_messageFace->schedule(m_prevPS.getProducers());
     m_messageFace->schedule(m_currentPS.getProducers());
 }

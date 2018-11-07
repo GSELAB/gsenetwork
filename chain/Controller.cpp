@@ -86,6 +86,7 @@ void Controller::init(crypto::GKey const& key)
     if (ARGs.m_producerON) {
         CINFO << "Start produce...";
         m_producerServer = new ProducerServer(m_key, this);
+        m_chain->pushSchedule();
         m_producerServer->start();
     }
 
