@@ -68,6 +68,7 @@ BlockStatePtr RollbackState::add(Block& block, bool trust)
         throw RollbackStateException("Block has exist!");
     }
 
+    CINFO << "RollbackState::add - item.size:" << item.size();
     auto parent = item.find(block.getBlockHeader().getParentHash());
     if (parent == item.end()) {
         CERROR << "Unlink block, id:" << block.getBlockHeader().getParentHash();
