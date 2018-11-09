@@ -376,8 +376,6 @@ trie::H256 Block::getTransactionMerkle()
         trxDigest.emplace_back(m_transactions[i].getHash());
 
     trie::H256 mklRoot = trie::merkle(move(trxDigest));
-
-
       //vector<digest_type> trx_digests;
       //const auto& trxs = pending->_pending_block_state->block->transactions;
       //trx_digests.reserve( trxs.size() );
@@ -385,6 +383,7 @@ trie::H256 Block::getTransactionMerkle()
          //trx_digests.emplace_back( a.digest() );
 
       //pending->_pending_block_state->header.transaction_mroot = merkle( move(trx_digests) );
+    return mklRoot;
 }
 
 void Block::setRoots()

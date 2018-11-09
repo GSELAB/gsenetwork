@@ -221,6 +221,9 @@ public:
 
 	void clear() { m_data.fill(0); }
 
+    void setLastBitZero() { m_data[N-1] &= 0xFE; }
+
+    void setLastBitOne() { m_data[N-1] |= 0x01; }
 private:
 	std::array<byte, N> m_data;		///< The binary data.
 };

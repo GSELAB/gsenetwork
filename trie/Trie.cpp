@@ -11,6 +11,7 @@ H256 makeTrieLeft(H256 const& value)
 {
     H256 ret;
 
+
     return ret;
 }
 
@@ -41,6 +42,7 @@ H256 merkle(std::vector<H256> ids) {
 
         for (int i = 0; i < ids.size() / 2; i++) {
             //ids[i] = H256::hash(makeTriePair(ids[2 * i], ids[(2 * i) + 1]));
+            //ids[i] = crypto::sha3(makeTriePair(ids[2 * i], ids[2 * i] + 1]);
         }
 
     ids.resize(ids.size() / 2);
