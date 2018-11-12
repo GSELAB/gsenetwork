@@ -54,7 +54,7 @@ void RollbackState::set(BlockStatePtr bsp)
     }
 }
 
-BlockStatePtr RollbackState::add(Block& block, bool trust)
+BlockStatePtr RollbackState::add(Block& block, ProducerSnapshot const& ps, bool trust)
 {
     if (!m_head) {
         CERROR << "Not set head block!";
@@ -81,6 +81,7 @@ BlockStatePtr RollbackState::add(Block& block, bool trust)
         throw RollbackStateException("Make shared block state failed!");
     }
 
+    bsp->setProducerSnapshot(ps);
     return add(bsp);
 }
 
@@ -92,10 +93,13 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
         throw RollbackStateException("Duplicate block state add!");
     }
 
-    m_head = *m_index.get<ByMultiBlockNumber>().begin();
-
-    uint64_t mutilNumber = m_head->m_dposIrreversibleBlockNumber;
-    BlockStatePtr oldest = *m_index.get<ByBlockNumber>().begin();
+    m_head = *m_index.get<ByBlockNumber>().begin();
+    CINFO << "add m_head:" << m_head->m_blockNumber << "\t hash:" << m_head->m_blockID;
+    // uint64_t mutilNumber = m_head->m_dposIrreversibleBlockNumber;
+    auto _head = *m_index.get<ByMultiBlockNumber>().begin();
+    uint64_t mutilNumber = _head->m_bftIrreversibleBlockNumber;
+    BlockStatePtr oldest = *m_index.get<ByUpBlockNumber>().begin();
+    CINFO << "Old block number:" << oldest->m_blockNumber << "   mutilNumber:" << mutilNumber;
     if (oldest->m_blockNumber < mutilNumber)
         prune(oldest);
     return nextBSP;
@@ -103,6 +107,7 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
 
 void RollbackState::remove(BlockID const& blockID)
 {
+    CINFO << "remove by blockID:" << blockID;
     std::vector<BlockID> removeQueue{blockID};
     for (unsigned i; i < removeQueue.size(); i++) {
         auto item = m_index.find(removeQueue[i]);
@@ -138,6 +143,7 @@ void RollbackState::add(HeaderConfirmation const& confirmation)
     }
 
     bsp->addConfirmation(confirmation);
+    CINFO << "Add confirmation - confirmation.size = " << bsp->getConfirmationsSize() << " (active size = " << bsp->m_activeProucers.size() << ")";
     if (bsp->m_bftIrreversibleBlockNumber < bsp->m_blockNumber && bsp->getConfirmationsSize() >= ((bsp->m_activeProucers.size() * 2) / 3)) {
         setBFTIrreversible(bsp->m_blockID);
     }
@@ -218,6 +224,7 @@ void RollbackState::markInCurrentChain(BlockStatePtr const& blockState, bool inC
 
 void RollbackState::prune(BlockStatePtr const& blockState)
 {
+    CINFO << "prune - number:" << blockState->m_blockNumber;
     uint64_t number = blockState->m_blockNumber;
     auto& numberIdx = m_index.get<ByBlockNumber>();
     for (auto itr = numberIdx.begin(); itr != numberIdx.end() && (*itr)->m_blockNumber < number;) {
@@ -227,8 +234,7 @@ void RollbackState::prune(BlockStatePtr const& blockState)
 
     auto _itr = m_index.find(blockState->m_blockID);
     if (_itr != m_index.end()) {
-        // notify
-
+        m_irreversible(*_itr);
         m_index.erase(_itr);
     }
 

@@ -152,6 +152,20 @@ void ProducerSnapshot::populate(bytesConstRef data)
     }
 }
 
+void ProducerSnapshot::addProducer(Producer const& producer)
+{
+    if (!isExist(producer.getAddress()))
+        m_producers.push_back(producer);
+}
+
+bool ProducerSnapshot::isExist(Address const& address) const
+{
+    for (auto i : m_producers)
+        if (i.getAddress() == address)
+            return true;
+    return false;
+}
+
 void ProducerSnapshot::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(1 + m_producers.size());

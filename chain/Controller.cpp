@@ -100,12 +100,14 @@ void Controller::init(crypto::GKey const& key)
 void Controller::exit()
 {
     CINFO << "Controller release the resource...";
+    if (ARGs.m_rpcON && m_rpcServer) delete m_rpcServer;
+    if (ARGs.m_producerON && m_producerServer) {
+        m_producerServer->stop();
+        delete m_producerServer;
+    }
     if (m_net) delete m_net;
     if (m_chain) delete m_chain;
     if (m_dbc) delete m_dbc;
-    if (ARGs.m_producerON && m_producerServer) delete m_producerServer;
-    if (ARGs.m_rpcON && m_rpcServer) delete m_rpcServer;
-
 }
 
 std::shared_ptr<TransactionReceipt> Controller::processTransaction(Transaction const& transaction, int64_t max_timestamp)

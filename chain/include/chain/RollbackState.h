@@ -23,8 +23,11 @@ typedef std::vector<BlockStatePtr> BranchType;
 
 struct ByBlockID;
 struct ByBlockNumber;
+struct ByUpBlockNumber;
 struct ByPrev;
 struct ByMultiBlockNumber;
+
+/*
 typedef boost::multi_index::multi_index_container<
     BlockStatePtr,
     indexed_by<
@@ -33,11 +36,34 @@ typedef boost::multi_index::multi_index_container<
         ordered_non_unique<tag<ByBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>>,
         ordered_non_unique<tag<ByMultiBlockNumber>,
             composite_key<BlockState,
-                member<BlockState, uint64_t,&BlockState::m_dposIrreversibleBlockNumber>,
+                // member<BlockState, uint64_t,&BlockState::m_dposIrreversibleBlockNumber>,
                 member<BlockState, uint64_t,&BlockState::m_bftIrreversibleBlockNumber>,
                 member<BlockState, uint64_t,&BlockState::m_blockNumber>
             >,
-            composite_key_compare<std::greater<uint64_t>, std::greater<uint64_t>, std::greater<uint64_t>>
+            composite_key_compare<
+                // std::greater<uint64_t>,
+                std::greater<uint64_t>,
+                std::greater<uint64_t>>
+        >
+    >
+> RollbackMultiIndexType;
+*/
+
+typedef boost::multi_index::multi_index_container<
+    BlockStatePtr,
+    indexed_by<
+        hashed_unique<tag<ByBlockID>, member<BlockState, BlockID, &BlockState::m_blockID>, std::hash<BlockID>>,
+        ordered_non_unique<tag<ByPrev>, const_mem_fun<BlockState, BlockID const&, &BlockState::getPrev>>,
+        ordered_non_unique<tag<ByBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>, std::greater<uint64_t>>,
+        ordered_non_unique<tag<ByUpBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>, std::less<uint64_t>>,
+        ordered_non_unique<tag<ByMultiBlockNumber>,
+            composite_key<BlockState,
+                member<BlockState, uint64_t,&BlockState::m_bftIrreversibleBlockNumber>,
+                member<BlockState, uint64_t,&BlockState::m_blockNumber>
+            >,
+            composite_key_compare<
+                std::greater<uint64_t>,
+                std::greater<uint64_t>>
         >
     >
 > RollbackMultiIndexType;
@@ -54,7 +80,7 @@ public:
 
     void set(BlockStatePtr bsp);
 
-    BlockStatePtr add(Block& block, bool trust = false);
+    BlockStatePtr add(Block& block, ProducerSnapshot const& ps, bool trust = false);
     BlockStatePtr add(BlockStatePtr nextBSP);
 
     void remove(BlockID const& blockID);

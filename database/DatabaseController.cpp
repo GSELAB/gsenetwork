@@ -52,10 +52,17 @@ DatabaseController::~DatabaseController()
 void DatabaseController::init()
 {
     if (checkGenesisExisted()) {
-        ATTRIBUTE_CURRENT_BLOCK_HEIGHT = getAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getKey());
-        ATTRIBUTE_PREV_PRODUCER_LIST = getAttribute(ATTRIBUTE_PREV_PRODUCER_LIST.getKey());
-        ATTRIBUTE_CURRENT_PRODUCER_LIST = getAttribute(ATTRIBUTE_CURRENT_PRODUCER_LIST.getKey());
-        CWARN << "Current block height : " << ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue();
+        try {
+            ATTRIBUTE_CURRENT_BLOCK_HEIGHT = getAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getKey());
+            ATTRIBUTE_PREV_PRODUCER_LIST = getAttribute(ATTRIBUTE_PREV_PRODUCER_LIST.getKey());
+            ATTRIBUTE_CURRENT_PRODUCER_LIST = getAttribute(ATTRIBUTE_CURRENT_PRODUCER_LIST.getKey());
+            ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST = getAttribute(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.getKey());
+            CWARN << "Current block height : " << ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue();
+        } catch (AttributeStateException& e) {
+            CERROR << e.what();
+        } catch (Exception& e) {
+            CERROR << e.what();
+        }
     } else {
         initGenesis();
     }

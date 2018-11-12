@@ -11,6 +11,8 @@ AttributeState ATTRIBUTE_PREV_PRODUCER_LIST(toBytes(ATTRIBUTE_PREV_PRODUCER_LIST
 
 AttributeState ATTRIBUTE_CURRENT_PRODUCER_LIST(toBytes(ATTRIBUTE_CURRENT_PRODUCER_LIST_KEY));
 
+AttributeState ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST(toBytes(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST_KEY));
+
 AttributeState::AttributeState(bytes const& key, bytesConstRef data): m_key(key)
 {
     try {

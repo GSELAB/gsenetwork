@@ -84,6 +84,8 @@ public:
 
     void addConfirmation(HeaderConfirmation const& confirmation);
 
+    void setProducerSnapshot(ProducerSnapshot const& ps) { m_activeProucers = ps; }
+
     size_t getConfirmationsSize() const { return m_confirmations.size(); }
 
     bool isExistInActiveProducers(Address const& address) { return m_activeProucers.isExist(address); }
@@ -101,13 +103,13 @@ public:
     uint64_t m_blockNumber;
     BlockID m_blockID;
 
-    uint64_t m_dposIrreversibleBlockNumber = 0;
+    // uint64_t m_dposIrreversibleBlockNumber = 0;
     uint64_t m_bftIrreversibleBlockNumber = 0;
 
     bool m_validated = false;
     bool m_inCurrentChain = false;
 
-    producer::ProducerScheduleType m_activeProucers;
+    ProducerSnapshot m_activeProucers;
     uint8_t m_confirmCount;
     std::vector<HeaderConfirmation> m_confirmations;
 };
