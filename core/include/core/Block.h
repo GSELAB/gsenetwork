@@ -59,7 +59,7 @@ public:
 
     void setParentHash(h256 const& parentHash) { m_parentHash = parentHash; }
 
-    void setRoots(trie::TrieType const& mkl, trie::TrieType const& t, trie::TrieType const& r);
+    void setRoots(trie::H256 const& mkl, trie::H256 const& t, trie::H256 const& r);
 
     void setNumber(uint64_t number) { m_number = number; }
 
@@ -79,11 +79,11 @@ public:
 
     h256 const& getParentHash() const { return m_parentHash; }
 
-    trie::TrieType const& getTrieRoot() const { return m_mklRoot; }
+    trie::H256 const& getTrieRoot() const { return m_mklRoot; }
 
-    trie::TrieType const& getTxRoot() const { return m_transactionsRoot; }
+    trie::H256 const& getTxRoot() const { return m_transactionsRoot; }
 
-    trie::TrieType const& getReceiptRoot() const { return m_receiptRoot; }
+    trie::H256 const& getReceiptRoot() const { return m_receiptRoot; }
 
     uint64_t getNumber() const { return m_number; }
 
@@ -110,9 +110,9 @@ private:
     chain::ChainID m_chainID = chain::DEFAULT_GSE_NETWORK;
     Address  m_producer;
     h256 m_parentHash;
-    trie::TrieType m_mklRoot;
-    trie::TrieType m_transactionsRoot;
-    trie::TrieType m_receiptRoot;
+    trie::H256 m_mklRoot;
+    trie::H256 m_transactionsRoot;
+    trie::H256 m_receiptRoot;
     uint64_t m_number;
     int64_t m_timestamp;
     bytes m_extra;
@@ -152,6 +152,8 @@ public:
     void addTransaction(Transaction const& transaction);
 
     void addTransactionReceipt(TransactionReceipt const& transactionReceipt);
+
+    trie::H256 getTransactionMerkle();
 
     void setRoots();
 
