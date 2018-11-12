@@ -38,6 +38,14 @@ BlockChain::~BlockChain()
     if (m_dispatcher) delete m_dispatcher;
     stop();
     terminate();
+    {
+        Guard l{x_memoryQueue};
+        while (!m_memoryQueue.empty()) {
+            auto i = m_memoryQueue.back();
+            m_memoryQueue.pop_back();
+            delete i;
+        }
+    }
 }
 
 void BlockChain::initializeRollbackState()
@@ -45,6 +53,7 @@ void BlockChain::initializeRollbackState()
     Block block = m_dbc->getBlock(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue());
 
     m_head = std::make_shared<BlockState>(block);
+    m_head->m_bftIrreversibleBlockNumber = block.getNumber();
     m_rollbackState.set(m_head);
 }
 
@@ -52,12 +61,15 @@ void BlockChain::init()
 {
     // CINFO << "Block chain init";
     m_rollbackState.m_irreversible.connect([&](auto bsp) {
+        CINFO << "Call onIrreversible - number:" << bsp->m_blockNumber;
         onIrreversible(bsp);
     });
 
     if (!m_head) {
         initializeRollbackState();
     }
+
+    m_currentActiveProducers.populate(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.getData());
 
     m_prevPS.populate(ATTRIBUTE_PREV_PRODUCER_LIST.getData());
     m_currentPS.populate(ATTRIBUTE_CURRENT_PRODUCER_LIST.getData());
@@ -71,7 +83,6 @@ void BlockChain::pushSchedule()
 
 BlockChain::MemoryItem* BlockChain::addMemoryItem(std::shared_ptr<Block> block)
 {
-    CINFO << toJson(*block).toStyledString();
     MemoryItem* mItem = new MemoryItem();
     {
         Guard g(x_memoryQueue);
@@ -92,7 +103,9 @@ BlockChain::MemoryItem* BlockChain::addMemoryItem(std::shared_ptr<Block> block)
 void BlockChain::cancelMemoryItem()
 {
     Guard g(x_memoryQueue);
+    auto i = m_memoryQueue.back();
     m_memoryQueue.pop_back();
+    delete i;
 }
 
 uint64_t BlockChain::getLastIrreversibleBlockNumber() const
@@ -122,6 +135,7 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
 {
     bool needCancel;
     MemoryItem* item;
+    CINFO << "BlockChain::doProcessBlock - number:" << block->getNumber();
     try {
         item = addMemoryItem(block);
         needCancel = true;
@@ -145,6 +159,16 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
     }
 }
 
+Producer BlockChain::getProducer(Address const& address)
+{
+    Guard g(x_memoryQueue);
+    if (m_memoryQueue.empty()) {
+        return getDBC()->getProducer(address);
+    } else {
+        return m_memoryQueue.back()->getRepository()->getProducer(address);
+    }
+}
+
 bool BlockChain::processBlock(std::shared_ptr<Block> block)
 {
     try {
@@ -153,10 +177,18 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
                 throw InvalidTransactionException("Invalid transaction signature!");
         }
 
-        // add block to rollback state
-        m_rollbackState.add(*block);
-        m_head = m_rollbackState.head();
+        m_currentActiveProducers.setTimestamp(block->getBlockHeader().getTimestamp());
+        m_currentActiveProducers.addProducer(getProducer(block->getBlockHeader().getProducer()));
+        m_rollbackState.add(*block, m_currentActiveProducers);
         checkBifurcation(block);
+        m_head = m_rollbackState.head();
+        {
+            HeaderConfirmation hc(m_chainID, block->getNumber(), block->getHash(), currentTimestamp(), m_key.getAddress());
+            hc.sign(m_key.getSecret());
+            m_rollbackState.add(hc);
+            m_messageFace->send(hc);
+        }
+
     } catch (InvalidTransactionException& e) {
         CERROR << "processBlock - " << e.what();
         return false;
@@ -179,13 +211,14 @@ bool BlockChain::processProducerBlock(std::shared_ptr<Block> block)
 
 bool BlockChain::processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem)
 {
+    CINFO << "BlockChain::processTransaction";
     try {
         Runtime runtime(transaction, block, mItem->getRepository());
         runtime.init();
         runtime.excute();
         runtime.finished();
     } catch (Exception e) {
-
+        CINFO << "Catch exception during process transaction - " << e.what();
     }
 
     return true;
@@ -200,6 +233,9 @@ bool BlockChain::processTransaction(Transaction const& transaction, MemoryItem* 
 bool BlockChain::checkBifurcation(std::shared_ptr<Block> block)
 {
     auto newItem = m_rollbackState.head();
+    CINFO << "checkBifurcation - newItem.number:" << newItem->m_blockNumber;
+    CINFO << "checkBifurcation - prev hash:" << newItem->getPrev();
+    CINFO << "checkBifurcation - head hash:" << m_head->m_blockID;
     if (newItem->getPrev() == m_head->m_blockID) {
         doProcessBlock(block);
     } else if (newItem->getPrev() != m_head->m_blockID) {
@@ -334,6 +370,7 @@ std::shared_ptr<core::Block> BlockChain::getBlockFromCache()
 
 void BlockChain::onIrreversible(BlockStatePtr bsp)
 {
+    bool sodility = false;
     Guard l(x_memoryQueue);
     MemoryItem* item = m_memoryQueue.front();
     while (item && bsp->m_blockNumber >= item->getBlockNumber()) {
@@ -344,7 +381,19 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
         if (!m_memoryQueue.empty())
             m_memoryQueue.front()->setParentEmpty();
         item = m_memoryQueue.front();
+
+        if (!sodility) {
+            ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(bsp->m_blockNumber);
+            m_dbc->putAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
+
+            ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.setData(bsp->m_activeProucers.getRLPData());
+            m_dbc->putAttribute(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST);
+
+            sodility = true;
+        }
     }
+
+
 }
 
 void BlockChain::start()

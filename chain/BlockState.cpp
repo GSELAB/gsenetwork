@@ -123,12 +123,11 @@ BlockState::BlockState(BlockState const& bs)
     m_block = bs.m_block;
     m_blockNumber = bs.m_blockNumber;
     m_blockID = bs.m_blockID;
-    m_dposIrreversibleBlockNumber = bs.m_dposIrreversibleBlockNumber;
+    // m_dposIrreversibleBlockNumber = bs.m_dposIrreversibleBlockNumber;
     m_bftIrreversibleBlockNumber = bs.m_bftIrreversibleBlockNumber;
     m_validated = bs.m_validated;
     m_inCurrentChain = bs.m_inCurrentChain;
-    for (auto producer : bs.m_activeProucers.m_producers)
-        m_activeProucers.m_producers.push_back(producer);
+    m_activeProucers = bs.m_activeProucers;
     m_confirmCount = bs.m_confirmCount;
     for (auto confirmation : bs.m_confirmations)
         m_confirmations.push_back(confirmation);
@@ -173,12 +172,11 @@ BlockState& BlockState::operator=(BlockState const& bs)
     m_block = bs.m_block;
     m_blockNumber = bs.m_blockNumber;
     m_blockID = bs.m_blockID;
-    m_dposIrreversibleBlockNumber = bs.m_dposIrreversibleBlockNumber;
+    // m_dposIrreversibleBlockNumber = bs.m_dposIrreversibleBlockNumber;
     m_bftIrreversibleBlockNumber = bs.m_bftIrreversibleBlockNumber;
     m_validated = bs.m_validated;
     m_inCurrentChain = bs.m_inCurrentChain;
-    for (auto producer : bs.m_activeProucers.m_producers)
-        m_activeProucers.m_producers.push_back(producer);
+    m_activeProucers = bs.m_activeProucers;
     m_confirmCount = bs.m_confirmCount;
     for (auto confirmation : bs.m_confirmations)
         m_confirmations.push_back(confirmation);
@@ -203,9 +201,9 @@ void BlockState::streamRLP(RLPStream& rlpStream) const
     rlpStream << m_blockNumber
               << m_blockID;
     {
-        RLPStream rlpStreamAPS;
-        m_activeProucers.streamRLP(rlpStreamAPS);
-        rlpStream.appendRaw(rlpStreamAPS.out());
+        RLPStream rlpPS;
+        m_activeProucers.streamRLP(rlpPS);
+        rlpStream.appendRaw(rlpPS.out());
     }
     rlpStream << m_confirmCount;
     for (auto i : m_confirmations) {
