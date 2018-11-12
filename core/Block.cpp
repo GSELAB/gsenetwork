@@ -376,13 +376,7 @@ trie::H256 Block::getTransactionMerkle()
         trxDigest.emplace_back(m_transactions[i].getHash());
 
     trie::H256 mklRoot = trie::merkle(move(trxDigest));
-      //vector<digest_type> trx_digests;
-      //const auto& trxs = pending->_pending_block_state->block->transactions;
-      //trx_digests.reserve( trxs.size() );
-      //for( const auto& a : trxs )
-         //trx_digests.emplace_back( a.digest() );
 
-      //pending->_pending_block_state->header.transaction_mroot = merkle( move(trx_digests) );
     return mklRoot;
 }
 
@@ -404,11 +398,7 @@ void Block::setRoots()
         //receiptsMap.insert(std::make_pair(rlpIndex.out(), rlpReceipt.out()));
     }
 
-    trie::H256 mklRoot;
-    {
-        // set mklRoot
-        mklRoot = getTransactionMerkle();
-    }
+    trie::H256 mklRoot = getTransactionMerkle();
     m_blockHeader.setRoots(mklRoot, trieHash256(transactionsMap), trieHash256(receiptsMap));
 }
 

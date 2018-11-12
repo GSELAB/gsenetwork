@@ -1,6 +1,9 @@
 #include <trie/Trie.h>
 #include <crypto/SHA3.h>
 
+#include <core/Log.h>
+using namespace core;
+
 using namespace crypto;
 
 namespace trie {
@@ -9,30 +12,32 @@ H256 EmptyTrie = sha3(rlp(""));
 
 H256 makeTrieLeft(H256 const& value)
 {
-    H256 ret;
-
+    H256 ret = value;
+    ret.unsetFirstBit();
 
     return ret;
 }
 
 H256 makeTrieRight(H256 const& value)
 {
-    H256 ret;
+    H256 ret = value;;
+    ret.setFirstBit();
 
     return ret;
 }
 
 bool isTrieLeft(H256 const& value)
 {
-    return true;
+    return (0 == value.checkFirstBit());
 }
 
 bool isTrieRight(H256 const& value)
 {
-    return true;
+    return (0 != value.checkFirstBit());
 }
 
 H256 merkle(std::vector<H256> ids) {
+
     if (0 == ids.size())
         return H256();
 
@@ -40,16 +45,15 @@ H256 merkle(std::vector<H256> ids) {
         if (ids.size() % 2)
            ids.push_back(ids.back());
 
-        for (int i = 0; i < ids.size() / 2; i++) {
-            //ids[i] = H256::hash(makeTriePair(ids[2 * i], ids[(2 * i) + 1]));
-            //ids[i] = crypto::sha3(makeTriePair(ids[2 * i], ids[2 * i] + 1]);
-        }
+        for (int i = 0; i < ids.size() / 2; i++)
+            ids[i] = sha3(makeTriePair(ids[2 * i], ids[(2 * i) + 1]));
 
     ids.resize(ids.size() / 2);
     }
 
     return ids.front();
 }
+
 // --------------------------------------------------------
 
 
