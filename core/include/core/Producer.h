@@ -103,9 +103,11 @@ public:
 
     void setTimestamp(int64_t timestamp) { m_timestamp = timestamp; }
 
-    void addProducer(Producer const& producer) { m_producers.push_back(producer); }
+    void addProducer(Producer const& producer);
 
     void streamRLP(RLPStream& rlpStream) const;
+
+    bool isExist(Address const& address) const;
 
     virtual bytes getKey() override;
 

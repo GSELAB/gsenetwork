@@ -62,10 +62,15 @@ extern AttributeState ATTRIBUTE_GENESIS_INITED;
 #define ATTRIBUTE_CURRENT_BLOCK_HEIGHT_KEY "attribute_current_block_height"
 extern AttributeState ATTRIBUTE_CURRENT_BLOCK_HEIGHT;
 
+// ATTRIBUTE_PREV_PRODUCER_LIST & ATTRIBUTE_CURRENT_PRODUCER_LIST used by producer server
 #define ATTRIBUTE_PREV_PRODUCER_LIST_KEY "attribute_prev_producer_list"
 extern AttributeState ATTRIBUTE_PREV_PRODUCER_LIST;
 
 #define ATTRIBUTE_CURRENT_PRODUCER_LIST_KEY "attribute_current_producer_list"
 extern AttributeState ATTRIBUTE_CURRENT_PRODUCER_LIST;
+
+// solidify active producer list
+#define ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST_KEY "attribute_solidify_active_producer_list"
+extern AttributeState ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST;
 
 }
