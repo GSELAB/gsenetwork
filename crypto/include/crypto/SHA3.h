@@ -1,6 +1,7 @@
 #pragma once
 
 #include <core/All.h>
+#include <core/Log.h>
 
 using namespace core;
 
@@ -19,6 +20,11 @@ template <unsigned N>
 inline h256 sha3(FixedHash<N> const& input) noexcept
 {
     return sha3(input.ref());
+}
+
+inline h256 sha3(std::pair<h256, h256> const& input) noexcept
+{
+    return sha3(bytesConstRef(toHex(input.first) + toHex(input.second)));
 }
 
 /// Calculate SHA3-256 hash of the given input (presented as a binary-filled string), returning as a 256-bit hash.

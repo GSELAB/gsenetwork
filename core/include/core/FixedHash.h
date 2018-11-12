@@ -221,6 +221,12 @@ public:
 
 	void clear() { m_data.fill(0); }
 
+    void setFirstBit() { m_data[0] |= 0x80; }
+
+    void unsetFirstBit() { m_data[0] &= 0x7F; }
+
+    unsigned checkFirstBit() const { return (m_data[0] & 0x80); }
+
 private:
 	std::array<byte, N> m_data;		///< The binary data.
 };
