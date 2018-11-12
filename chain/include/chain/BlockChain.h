@@ -96,7 +96,7 @@ typedef boost::multi_index::multi_index_container<
 typedef boost::multi_index::multi_index_container<
     BlockPtr,
     indexed_by<
-        ordered_unique<tag<ByBlockNumber>, const_mem_fun<Block, uint64_t, &Block::getNumber>>,
+        ordered_unique<tag<ByUpBlockNumber>, const_mem_fun<Block, uint64_t, &Block::getNumber>, std::less<uint64_t>>,
         hashed_non_unique<tag<ByBlockID>, mem_fun<Block, BlockID const&, &Block::getHash>, std::hash<BlockID>>
     >
 > BlockCacheMultiIndexType;

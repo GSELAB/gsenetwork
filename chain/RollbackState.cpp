@@ -68,7 +68,6 @@ BlockStatePtr RollbackState::add(Block& block, ProducerSnapshot const& ps, bool 
         throw RollbackStateException("Block has exist!");
     }
 
-    CINFO << "RollbackState::add - item.size:" << item.size();
     auto parent = item.find(block.getBlockHeader().getParentHash());
     if (parent == item.end()) {
         CERROR << "Unlink block, id:" << block.getBlockHeader().getParentHash();
@@ -94,12 +93,11 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
     }
 
     m_head = *m_index.get<ByBlockNumber>().begin();
-    CINFO << "add m_head:" << m_head->m_blockNumber << "\t hash:" << m_head->m_blockID;
     // uint64_t mutilNumber = m_head->m_dposIrreversibleBlockNumber;
     auto _head = *m_index.get<ByMultiBlockNumber>().begin();
     uint64_t mutilNumber = _head->m_bftIrreversibleBlockNumber;
     BlockStatePtr oldest = *m_index.get<ByUpBlockNumber>().begin();
-    CINFO << "Old block number:" << oldest->m_blockNumber << "   mutilNumber:" << mutilNumber;
+    CINFO << "Start-number:" << oldest->m_blockNumber << "   Irreversible-number:" << mutilNumber;
     if (oldest->m_blockNumber < mutilNumber)
         prune(oldest);
     return nextBSP;
@@ -224,7 +222,6 @@ void RollbackState::markInCurrentChain(BlockStatePtr const& blockState, bool inC
 
 void RollbackState::prune(BlockStatePtr const& blockState)
 {
-    CINFO << "prune - number:" << blockState->m_blockNumber;
     uint64_t number = blockState->m_blockNumber;
     auto& numberIdx = m_index.get<ByBlockNumber>();
     for (auto itr = numberIdx.begin(); itr != numberIdx.end() && (*itr)->m_blockNumber < number;) {

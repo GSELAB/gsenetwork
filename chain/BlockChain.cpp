@@ -61,7 +61,6 @@ void BlockChain::init()
 {
     // CINFO << "Block chain init";
     m_rollbackState.m_irreversible.connect([&](auto bsp) {
-        CINFO << "Call onIrreversible - number:" << bsp->m_blockNumber;
         onIrreversible(bsp);
     });
 
@@ -135,7 +134,7 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
 {
     bool needCancel;
     MemoryItem* item;
-    CINFO << "BlockChain::doProcessBlock - number:" << block->getNumber();
+    CINFO << "BlockChain::doProcessBlock - number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
     try {
         item = addMemoryItem(block);
         needCancel = true;
@@ -211,7 +210,6 @@ bool BlockChain::processProducerBlock(std::shared_ptr<Block> block)
 
 bool BlockChain::processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem)
 {
-    CINFO << "BlockChain::processTransaction";
     try {
         Runtime runtime(transaction, block, mItem->getRepository());
         runtime.init();
@@ -233,7 +231,6 @@ bool BlockChain::processTransaction(Transaction const& transaction, MemoryItem* 
 bool BlockChain::checkBifurcation(std::shared_ptr<Block> block)
 {
     auto newItem = m_rollbackState.head();
-    CINFO << "checkBifurcation - newItem.number:" << newItem->m_blockNumber;
     CINFO << "checkBifurcation - prev hash:" << newItem->getPrev();
     CINFO << "checkBifurcation - head hash:" << m_head->m_blockID;
     if (newItem->getPrev() == m_head->m_blockID) {
@@ -374,7 +371,6 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
     Guard l(x_memoryQueue);
     MemoryItem* item = m_memoryQueue.front();
     while (item && bsp->m_blockNumber >= item->getBlockNumber()) {
-        CINFO << "onIrreversible block number:" << bsp->m_blockNumber;
         m_memoryQueue.pop_front();
         item->commit();
         delete item;
@@ -383,12 +379,14 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
         item = m_memoryQueue.front();
 
         if (!sodility) {
+            CINFO << "onIrreversible block number:" << bsp->m_blockNumber;
             ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(bsp->m_blockNumber);
             m_dbc->putAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
 
             ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.setData(bsp->m_activeProucers.getRLPData());
             m_dbc->putAttribute(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST);
 
+            m_dbc->put(*bsp);
             sodility = true;
         }
     }
@@ -420,7 +418,8 @@ void BlockChain::doWork()
             empty = true;
         } else {
             empty = false;
-            auto itr = m_blockCache.begin();
+            auto itr = m_blockCache.get<ByUpBlockNumber>().begin();
+            // auto itr = m_blockCache.begin();
             block = *itr;
             m_blockCache.erase(m_blockCache.begin());
 
@@ -635,8 +634,11 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
             CINFO << "Recv from " << from <<  " ReplyHeight - " << status.getHeight() << ".";
             if (status.getHeight() > getLastBlockNumber()) {
                 CINFO << "Need sync from " << from;
+                m_blockChainStatus = SyncStatus;
                 Status _status(SyncBlocks, getLastBlockNumber() + 1, status.getHeight());
                 m_messageFace->send(from, _status);
+            } else {
+                m_blockChainStatus = ProducerStatus;
             }
             break;
         }
@@ -653,7 +655,9 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
         }
         case ReplyBlocks: {
             CINFO << "Recv from " << from << " ReplyBlocks - (" << status.getBlocks().size() << ").";
+            for (auto i : status.getBlocks()) {
 
+            }
             break;
         }
         default: {
