@@ -25,16 +25,20 @@ NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher, 
 NetController::~NetController()
 {
     CINFO << "NetController::~NetController";
+    m_client->stop();
+    m_host->stop();
+    delete m_host;
+    m_client.reset();
 }
 
 void NetController::init()
 {
     if (!m_inited) {
         if (m_dispatcher) m_host->setDispatcher(m_dispatcher);
-        auto hostCap = std::make_shared<Client>(*m_host, m_dispatcher);
-        m_host->registerCapability(hostCap);
+        m_client = std::make_shared<Client>(*m_host, m_dispatcher);
+        m_host->registerCapability(m_client);
         m_host->start();
-        hostCap->start();
+        m_client->start();
         m_inited = true;
         m_nodeIPEndpoint = NodeIPEndpoint(ARGs.m_local.m_address, ARGs.m_local.m_tcpPort, ARGs.m_local.m_udpPort);
         if (ARGs.m_neighbors.size() > 0)

@@ -71,6 +71,8 @@ private:
     NetworkConfig m_networkConfig;
     NodeIPEndpoint m_nodeIPEndpoint;
     Host* m_host;
+
+    std::shared_ptr<Client> m_client;
 };
 
 } // end of namespace
