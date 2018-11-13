@@ -15,12 +15,14 @@
 #include <core/Log.h>
 #include <config/Argument.h>
 #include <chain/Common.h>
+#include <utils/Utils.h>
 
 using namespace database;
 using namespace net;
 using namespace producer;
 using namespace rpc;
 using namespace core;
+using namespace utils;
 
 namespace chain {
 
@@ -69,29 +71,23 @@ do {    \
 void Controller::init(crypto::GKey const& key)
 {
     m_key = key;
-
-    CINFO << "Start database init...";
     m_dbc = new DatabaseController();
     m_dbc->init();
 
-    CINFO << "Start GSE Chain init...";
     m_chain = new BlockChain(key, m_dbc, this);
     m_chain->init();
     m_chain->start();
 
-    CINFO << "Start network init...";
     m_net = new NetController(m_key, m_chain->getDispatcher());
     m_net->init();
 
     if (ARGs.m_producerON) {
-        CINFO << "Start produce...";
         m_producerServer = new ProducerServer(m_key, this);
         m_chain->pushSchedule();
         m_producerServer->start();
     }
 
     if (ARGs.m_rpcON) {
-        CINFO << "Start rpc service ...";
         m_rpcServer = new RpcService(this);
         m_rpcServer->start();
     }
@@ -103,6 +99,7 @@ void Controller::exit()
     if (ARGs.m_rpcON && m_rpcServer) delete m_rpcServer;
     if (ARGs.m_producerON && m_producerServer) {
         m_producerServer->stop();
+        sleepMilliseconds(PRODUCER_SLEEP_INTERVAL * 2);
         delete m_producerServer;
     }
     if (m_net) delete m_net;

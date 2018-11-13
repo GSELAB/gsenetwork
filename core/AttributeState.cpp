@@ -62,9 +62,7 @@ bytes AttributeState::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
-    CINFO << "AttributeState::getRLPData size:" << rlpStream.out().size();
     return rlpStream.out();
 }
-
 
 }

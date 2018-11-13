@@ -111,7 +111,7 @@ bytes HeaderConfirmation::getKey()
 // @override
 bytes HeaderConfirmation::getRLPData()
 {
-    if (!m_hasSigned) CERROR << "Not signed!";
+    // if (!m_hasSigned) CERROR << "Not signed!";
     RLPStream rlpStream;
     streamRLP(rlpStream);
     return rlpStream.out();
