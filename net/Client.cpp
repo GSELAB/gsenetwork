@@ -48,9 +48,8 @@ void Client::doWork()
         } else {
             stopWorking();
         }
-
     } else {
-        sleepMilliseconds(200);
+        sleepMilliseconds(1000);
     }
 }
 
