@@ -17,6 +17,7 @@
 #include <crypto/Valid.h>
 #include <utils/Utils.h>
 #include <config/Constant.h>
+#include <config/Argument.h>
 
 using namespace core;
 using namespace runtime::storage;
@@ -46,6 +47,11 @@ BlockChain::~BlockChain()
             delete i;
         }
     }
+
+    if (ARGs.m_syncFlag && m_sync) {
+        m_sync->stop();
+        delete m_sync;
+    }
 }
 
 void BlockChain::initializeRollbackState()
@@ -72,6 +78,14 @@ void BlockChain::init()
 
     m_prevPS.populate(ATTRIBUTE_PREV_PRODUCER_LIST.getData());
     m_currentPS.populate(ATTRIBUTE_CURRENT_PRODUCER_LIST.getData());
+
+    if (ARGs.m_syncFlag) {
+        m_blockChainStatus = SyncStatus;
+        m_sync = new Sync(this);
+        m_sync->start();
+    } else {
+        m_blockChainStatus = ProducerStatus;
+    }
 }
 
 void BlockChain::pushSchedule()
@@ -314,29 +328,24 @@ Block BlockChain::getLastBlock() const
 
 Block BlockChain::getBlockByNumber(uint64_t number)
 {
-    Guard l(x_memoryQueue);
-    // CINFO << "m_memoryQueue size = " << m_memoryQueue.size();
-    if (!m_memoryQueue.empty()) {
-        auto itemS = m_memoryQueue.front();
-        auto itemE = m_memoryQueue.back();
-        // CINFO << "start: " << itemS->getBlockNumber() << " end:" << itemE->getBlockNumber();
-        if (number >= itemS->getBlockNumber() && number <= itemE->getBlockNumber()) {
-            for (Queue_t::iterator iter = m_memoryQueue.begin(); iter != m_memoryQueue.end(); iter++) {
-                if ((*iter)->getBlockNumber() == number) {
-                    // CINFO << "find " << (*iter)->getBlockNumber() << " --  " << (*iter)->getRepository()->getBlock().getNumber() << " block";
-                    return (*iter)->getRepository()->getBlock();
+    {
+        Guard l(x_memoryQueue);
+        if (!m_memoryQueue.empty()) {
+            auto itemS = m_memoryQueue.front();
+            auto itemE = m_memoryQueue.back();
+            if (number >= itemS->getBlockNumber() && number <= itemE->getBlockNumber()) {
+                for (Queue_t::iterator iter = m_memoryQueue.begin(); iter != m_memoryQueue.end(); iter++) {
+                    if ((*iter)->getBlockNumber() == number) {
+                        // CINFO << "find " << (*iter)->getBlockNumber() << " --  " << (*iter)->getRepository()->getBlock().getNumber() << " block";
+                        return (*iter)->getRepository()->getBlock();
+                    }
                 }
             }
         }
     }
 
-    // search level db
-    {
-
-    }
-
-    BlockHeader header(0xFFFFFFFFFFFFFFFF);
-    return Block(header);
+    Block ret = m_dbc->getBlock(number);
+    return ret;
 }
 
 std::shared_ptr<core::Transaction> BlockChain::getTransactionFromCache()
@@ -411,7 +420,7 @@ void BlockChain::stop()
 void BlockChain::doWork()
 {
     bool empty;
-    BlockPtr block;
+    BlockPtr block = nullptr;
     {
         Guard l{x_blockCache};
         if (m_blockCache.empty()) {
@@ -419,17 +428,26 @@ void BlockChain::doWork()
         } else {
             empty = false;
             auto itr = m_blockCache.get<ByUpBlockNumber>().begin();
-            // auto itr = m_blockCache.begin();
-            block = *itr;
-            m_blockCache.erase(m_blockCache.begin());
+            CINFO << "BlockChain - lastNumber:" << getLastBlockNumber() << "  cacheNumber:" << (*itr)->getNumber();
+            if ((*itr)->getNumber() > (getLastBlockNumber() + 1)) {
 
+            } else if ((*itr)->getNumber() == (getLastBlockNumber() + 1)) {
+                block = *itr;
+                m_blockCache.erase(m_blockCache.begin());
+            } else {
+                block = *itr;
+                m_blockCache.erase(m_blockCache.begin());
+            }
         }
     }
 
     if (empty) {
         sleepMilliseconds(100);
     } else {
-        processBlock(block);
+        if (block)
+            processBlock(block);
+        else
+            sleepMilliseconds(100);
     }
 }
 
@@ -543,7 +561,7 @@ bool BlockChain::isExist(Block& block)
         }
     }
 
-    CINFO << "Not find block from memoryDB & levelDB";
+    // CINFO << "Not find block from memoryDB & levelDB";
     return false;
 }
 
@@ -554,7 +572,6 @@ bool BlockChain::preProcessTx(bi::tcp::endpoint const& from, Transaction& tx)
 
 bool BlockChain::preProcessBlock(bi::tcp::endpoint const& from, Block& block)
 {
-    CINFO << "preProcessBlock";
     return true;
 }
 
@@ -587,28 +604,51 @@ void BlockChain::processTxMessage(bi::tcp::endpoint const& from, Transaction& tx
 void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block)
 {
     if (!crypto::isValidSig(block)) {
-        CINFO << "Recv block: invalid signature.";
+        CWARN << "Recv broadcast block - invalid signature";
         return;
     }
 
     if (isExist(block)) {
-        CINFO << "Recv block: repeat block.";
+        CWARN << "Recv broadcast block - repeat block";
         return;
     }
 
     if (!preProcessBlock(from, block)) {
-        CINFO << "Recv block: preProcess block failed.";
+        CWARN << "Recv broadcast block - preProcess block failed";
         return;
     }
 
     {
         Guard l{x_blockCache};
         auto ret = m_blockCache.insert(std::make_shared<Block>(block));
-        CINFO << "insert status:" << ret.second;
     }
 
     m_messageFace->broadcast(from, block);
-    CINFO << "Recv block:" << toJson(block).toStyledString();
+    CINFO << "Recv broadcast block:" << toJson(block).toStyledString();
+}
+
+void BlockChain::processSyncBlockMessage(bi::tcp::endpoint const& from, Block& block)
+{
+    if (!crypto::isValidSig(block)) {
+        CINFO << "Recv sync block - invalid signature";
+        return;
+    }
+
+    if (isExist(block)) {
+        CINFO << "Recv sync block - repeat block";
+        return;
+    }
+
+    if (!preProcessBlock(from, block)) {
+        CINFO << "Recv sync block - preProcess block failed";
+        return;
+    }
+
+    {
+        Guard l{x_blockCache};
+        auto ret = m_blockCache.insert(std::make_shared<Block>(block));
+    }
+    CINFO << "Process sync block - " << toJson(block).toStyledString();
 }
 
 void BlockChain::processConfirmationMessage(bi::tcp::endpoint const& from, HeaderConfirmation& confirmation)
@@ -625,25 +665,20 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
 {
     switch (status.getType()) {
         case GetHeight: {
-            CINFO << "Recv from " << from <<  " GetHeight.";
+            CINFO << "Recv status from " << from <<  " - get height";
             Status _status(ReplyHeight, getLastBlockNumber());
             m_messageFace->send(from, _status);
             break;
         }
         case ReplyHeight: {
-            CINFO << "Recv from " << from <<  " ReplyHeight - " << status.getHeight() << ".";
+            CINFO << "Recv status from " << from <<  " - reply height: " << status.getHeight() << " - current height:" << getLastBlockNumber();
             if (status.getHeight() > getLastBlockNumber()) {
-                CINFO << "Need sync from " << from;
-                m_blockChainStatus = SyncStatus;
-                Status _status(SyncBlocks, getLastBlockNumber() + 1, status.getHeight());
-                m_messageFace->send(from, _status);
-            } else {
-                m_blockChainStatus = ProducerStatus;
+                m_sync->update(from, status.getHeight());
             }
             break;
         }
         case SyncBlocks: {
-            CINFO << "Recv from " << from << " SyncBlocks - (" << status.getStart() << ", " << status.getEnd() << ").";
+            CINFO << "Recv status from " << from << " - sync blocks:(" << status.getStart() << ", " << status.getEnd() << ")";
             if (status.getStart() < status.getEnd() && status.getEnd() <= getLastBlockNumber()) {
                 Status _status(ReplyBlocks);
                 for (uint64_t i = status.getStart(); i <= status.getEnd(); i++) {
@@ -654,14 +689,14 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
             break;
         }
         case ReplyBlocks: {
-            CINFO << "Recv from " << from << " ReplyBlocks - (" << status.getBlocks().size() << ").";
+            CINFO << "Recv blocks from " << from << " - reply blocks size is " << status.getBlocks().size();
             for (auto i : status.getBlocks()) {
-
+                processSyncBlockMessage(from, i);
             }
             break;
         }
         default: {
-            CINFO << "Recv from " << from << " Unknown type.";
+            CINFO << "Recv status from " << from << " - Unknown type.";
             break;
         }
     }

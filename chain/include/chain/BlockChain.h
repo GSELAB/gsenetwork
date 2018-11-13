@@ -24,6 +24,7 @@
 #include <crypto/GKey.h>
 #include <core/Queue.h>
 #include <chain/RollbackState.h>
+#include <chain/Sync.h>
 
 using namespace net;
 using namespace core;
@@ -102,6 +103,7 @@ typedef boost::multi_index::multi_index_container<
 > BlockCacheMultiIndexType;
 
 class BlockChain: public Task {
+    friend class Sync;
 public:
     struct MemoryItem {
         MemoryItem(): m_isDone(false) {}
@@ -199,6 +201,8 @@ public: /// Used by network
 
     void processBlockMessage(bi::tcp::endpoint const& from, Block& block);
 
+    void processSyncBlockMessage(bi::tcp::endpoint const& from, Block& block);
+
     void processConfirmationMessage(bi::tcp::endpoint const& from, HeaderConfirmation& confirmation);
 
     void processStatusMessage(bi::tcp::endpoint const& from, Status& status);
@@ -235,6 +239,8 @@ private:
     ChainID m_chainID = GSE_UNKNOWN_NETWORK;
 
     DispatchFace* m_dispatcher;
+
+    Sync* m_sync = nullptr;
 
     mutable Mutex x_memoryQueue;
     Queue_t m_memoryQueue;
