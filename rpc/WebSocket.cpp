@@ -1,4 +1,5 @@
 #include <string>
+
 #include <rpc/WebSocket.h>
 #include <core/Log.h>
 #include <core/Transaction.h>
@@ -31,6 +32,92 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
+    addHandler("/get_account", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        std::string ret;
+        Json::Reader reader(Json::Features::strictMode());
+        Json::Value root;
+        if (reader.parse(body, root)) {
+            std::string addressString = root["address"].asString();
+            Address address(addressString);
+            CINFO << "Address:" << address;
+            Account account = m_face->getBalance(address);
+            ret = toJson(account).toStyledString();
+        } else {
+            ret = "Parse body failed, invalid format.\n";
+            CINFO << ret;
+        }
+
+        urlRC(URLCode::Default, ret);
+    });
+
+    addHandler("/get_producer", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        std::string ret;
+        Json::Reader reader(Json::Features::strictMode());
+        Json::Value root;
+        if (reader.parse(body, root)) {
+            std::string addressString = root["address"].asString();
+            Address address(addressString);
+            CINFO << "Address:" << address;
+            Producer producer = m_face->getProducer(address);
+            ret = toJson(producer).toStyledString();
+        } else {
+            ret = "Parse body failed, invalid format.\n";
+            CINFO << ret;
+        }
+
+        urlRC(URLCode::Default, ret);
+    });
+
+    addHandler("/get_balance", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        std::string ret;
+        Json::Reader reader(Json::Features::strictMode());
+        Json::Value root;
+        if (reader.parse(body, root)) {
+            std::string addressString = root["address"].asString();
+            Address address(addressString);
+            CINFO << "Address:" << address;
+            uint64_t balance = m_face->getBalance(address);
+            ret = toJson("balance", balance).toStyledString();
+        } else {
+            ret = "Parse body failed, invalid format.\n";
+            CINFO << ret;
+        }
+
+        urlRC(URLCode::Default, ret);
+    });
+
+    addHandler("/get_height", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        std::string ret;
+        uint64_t height = m_face->getHeight();
+        ret = toJson("height", height).toStyledString();
+        urlRC(URLCode::Default, ret);
+    });
+
+    addHandler("/get_ solidify_height", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        std::string ret;
+        uint64_t height = m_face->getSolidifyHeight();
+        ret = toJson("solidify-height", height).toStyledString();
+        urlRC(URLCode::Default, ret);
+    });
+
+    addHandler("/get_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        std::string ret;
+        Json::Reader reader(Json::Features::strictMode());
+        Json::Value root;
+        if (reader.parse(body, root)) {
+            std::string hashString = root["txHash"].asString();
+            TxID txID(hashString);
+            CINFO << "Tx hash:" << txID;
+            Transaction tx = m_face->getTransaction(txID);
+            ret = toJson(tx).toStyledString();
+        } else {
+            ret = "Parse body failed, invalid format.\n";
+            CINFO << ret;
+        }
+
+        urlRC(URLCode::Default, ret);
+    });
+
     addHandler("/get_block", [&](std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         Json::Reader reader(Json::Features::strictMode());
@@ -49,8 +136,6 @@ void WebSocket::registerUrlHandlers()
     });
 
     addHandler("/push_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
-        CINFO << "/push_transaction";
-        // TODO: Add content here
         std::string ret;
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
@@ -71,8 +156,6 @@ void WebSocket::registerUrlHandlers()
     });
 
     addHandler("/create_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
-        CINFO << "/create_transaction";
-        // TODO: Add content here
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
         std::string ret;
@@ -127,34 +210,31 @@ void WebSocket::registerUrlHandlers()
         }
         urlRC(URLCode::Default, ret);
     });
-    addHandler("/create_vote", [&](std::string, std::string body, URLRequestCallback urlRC){
-    CINFO << "/create_vote";
+    addHandler("/vote", [&](std::string, std::string body, URLRequestCallback urlRC){
+        Json::Reader reader(Json::Features::strictMode());
+        Json::Value root;
+        std::string ret;
+        if(reader.parse(body, root))
+        {
+            std::string str_sender = root["sender"].asString();
+            std::string str_data = root["data"].asString();
+            bytes data;
+            data.insert(data.begin(), str_data.begin(), str_data.end());
 
-    Json::Reader reader(Json::Features::strictMode());
-    Json::Value root;
-    std::string ret;
-    if(reader.parse(body, root))
-    {
-        // to do
-        std::string str_sender = root["sender"].asString();
-        std::string str_data = root["data"].asString();
-        bytes data;
-        data.insert(data.begin(), str_data.begin(), str_data.end());
+            Transaction transaction;
+            transaction.setChainID(DEFAULT_GSE_NETWORK);
+            transaction.setType(Transaction::VoteType);
+            transaction.setSender(Address(str_sender));
+            transaction.setData(data);
 
-        Transaction transaction;
-        transaction.setChainID(DEFAULT_GSE_NETWORK);
-        transaction.setType(Transaction::VoteType);
-        transaction.setSender(Address(str_sender));
-        transaction.setData(data);
-
-        bytes tem = transaction.getRLPData();
-        ret.insert(ret.begin(), tem.begin(), tem.end());
-        ret = toJson("producer", ret).toStyledString();
-    }else{
-        ret = "Parse body failed, invalid format.\n";
-        CINFO << ret;
-    }
-    urlRC(URLCode::Default, ret);
+            bytes tem = transaction.getRLPData();
+            ret.insert(ret.begin(), tem.begin(), tem.end());
+            ret = toJson("producer", ret).toStyledString();
+        }else{
+            ret = "Parse body failed, invalid format.\n";
+            CINFO << ret;
+        }
+        urlRC(URLCode::Default, ret);
     });
 }
 

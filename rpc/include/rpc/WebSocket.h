@@ -19,7 +19,6 @@ namespace bi = boost::asio::ip;
 using URLRequestCallback = std::function<void(int, std::string)>;
 using URLHandler = std::function<void(std::string, std::string, URLRequestCallback)>;
 
-
 class WebSocketEventHandlerFace {
 public:
     virtual ~WebSocketEventHandlerFace() {}
@@ -32,6 +31,17 @@ public:
 
     virtual Block getBlockByNumber(uint64_t number) = 0;
 
+    virtual Transaction getTransaction(TxID const& txID) = 0;
+
+    virtual Producer getProducer(Address const& address) = 0;
+
+    virtual Account getAccount(Address const& address) = 0;
+
+    virtual uint64_t getBalance(Address const& address) = 0;
+
+    virtual uint64_t getHeight() const = 0;
+
+    virtual uint64_t getSolidifyHeight() const = 0;
 };
 
 struct AsioStubConfig: public websocketpp::config::asio {
