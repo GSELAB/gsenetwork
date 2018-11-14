@@ -48,6 +48,11 @@ void Sync::doWork()
         }
     }
 
+    if (heights.empty()) {
+        m_chain->m_blockChainStatus = SyncStatus;
+        return;
+    }
+
     bool needSync = false;
     uint64_t currentHeight = m_chain->getLastBlockNumber();
     for (auto i : heights) {
