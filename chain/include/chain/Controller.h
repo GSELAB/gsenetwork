@@ -63,6 +63,18 @@ public: // RPC Handle
 
     virtual Block getBlockByNumber(uint64_t number) override;
 
+    virtual Transaction getTransaction(TxID const& txID) override { return m_chain->getTx(txID); }
+
+    virtual Producer getProducer(Address const& address) override { return m_chain->getProducer(address); }
+
+    virtual Account getAccount(Address const& address) override { return m_chain->getAccount(address); }
+
+    virtual uint64_t getBalance(Address const& address) override { return m_chain->getBalance(address); }
+
+    virtual uint64_t getHeight() const override { return m_chain->getHeight(); }
+
+    virtual uint64_t getSolidifyHeight() const override { return m_chain->getSolidifyHeight(); }
+
 public: // Producer Handle
     virtual void broadcast(std::shared_ptr<Block> block) override;
 

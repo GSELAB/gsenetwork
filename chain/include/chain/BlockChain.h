@@ -192,11 +192,22 @@ public:
 
     Address getExpectedProducer(int64_t timestamp) const;
 
+    Producer getProducer(Address const& address);
+
 public: /// used by rpc
     bool preProcessTx(Transaction& tx);
 
     bool addRPCTx(Transaction& tx);
 
+    Transaction getTx(TxID const& txID);
+
+    Account getAccount(Address const& address);
+
+    uint64_t getBalance(Address const& address);
+
+    uint64_t getHeight() const;
+
+    uint64_t getSolidifyHeight() const;
 
 public: /// Used by network
     bool preProcessTx(bi::tcp::endpoint const& from, Transaction& tx);
@@ -225,8 +236,6 @@ private:
     void popBlockState();
 
     void doProcessBlock(std::shared_ptr<Block> block);
-
-    Producer getProducer(Address const& address);
 
 public:
     void start();
