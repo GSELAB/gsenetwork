@@ -46,11 +46,11 @@ do {    \
 
 Account Repository::getAccount(Address const& address)
 {
-    Account account(EmptyAccount);
+    Account account;
     GET_FROM_CURRENT_RETURN(Account, address, account);
     GET_FROM_PARENT_RETURN(Account, address, account);
     GET_FROM_DBC_RETURN(Account, address, account);
-    return EmptyAccount;
+    return account;
 }
 
 void Repository::put(Account const& account)
@@ -68,19 +68,27 @@ bool Repository::transfer(Address const& from, Address const& to, uint64_t value
 {
     Account _from = getAccount(from);
     Account _to = getAccount(to);
-
     if (_from == EmptyAccount) {
-        //std::count << "from account is null";
+        CWARN << "Address - " << from << " is not exist";
         return false;
     }
 
-    if (_from.getBalance() < value || _to.getBalance() + value < value)
+    if (_to == EmptyAccount) {
+        Account account(to, 0, m_block->getBlockHeader().getTimestamp());
+        _to = account;
+        CINFO << "Create account - " << to;
+    }
+
+    if (_from.getBalance() < value || _to.getBalance() + value < value) {
+        CWARN << "Address - " << from << " not enough balance or overflow";
         return false;
+    }
 
     _from.setBalance(_from.getBalance() - value);
     _to.setBalance(_to.getBalance() + value);
     put(_from);
     put(_to);
+    CWARN << "Repository::transfer - from.value:" << _from.getBalance() << " to.value:" << _to.getBalance();
     return true;
 }
 
