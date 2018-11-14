@@ -65,10 +65,10 @@ bool HeaderConfirmation::operator!=(HeaderConfirmation const& confirmation) cons
 void HeaderConfirmation::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(HEADER_CONFIRMATION_FIELDS_ALL);
-    rlpStream << m_chainID
-              << m_number
+    rlpStream << (bigint)m_chainID
+              << (bigint)m_number
               << m_blockID
-              << m_timestamp
+              << (bigint)m_timestamp
               << m_producer;
 
     rlpStream << *(Signature*)&m_signature;
@@ -77,10 +77,10 @@ void HeaderConfirmation::streamRLP(RLPStream& rlpStream) const
 void HeaderConfirmation::streamRLPContent(core::RLPStream& rlpStream) const
 {
     rlpStream.appendList(HEADER_CONFIRMATION_FIELDS_WITHOUT_SIG);
-    rlpStream << m_chainID
-              << m_number
+    rlpStream << (bigint)m_chainID
+              << (bigint)m_number
               << m_blockID
-              << m_timestamp
+              << (bigint)m_timestamp
               << m_producer;
 }
 
@@ -198,7 +198,7 @@ void BlockState::addConfirmation(HeaderConfirmation const& confirmation)
 void BlockState::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(4 + m_confirmations.size());
-    rlpStream << m_blockNumber
+    rlpStream << (bigint)m_blockNumber
               << m_blockID;
     {
         RLPStream rlpPS;

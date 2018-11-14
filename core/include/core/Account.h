@@ -21,11 +21,13 @@ using namespace config;
 
 namespace core {
 
-#define ACCOUNT_COMMON_FIELDS (4)
+#define ACCOUNT_COMMON_FIELDS (7)
 
 class Account: public Object {
 public:
     Account() {}
+
+    Account(Account const& account);
 
     Account(Address const& address, uint64_t balance, int64_t timestamp = GENESIS_TIMESTAMP);
 
@@ -43,44 +45,43 @@ public:
 
     void streamRLP(RLPStream& rlpStream) const;
 
-    void setAddress(Address const& address);
+    void setAddress(Address const& address) { m_address = address; }
 
-    void setAlive(bool status);
+    void setAlive(bool status) { m_alive = status; }
 
-    void setBalance(uint64_t balance);
+    void setBalance(uint64_t balance) { m_balance = balance; }
 
-    void addContractAddress(Address const& address);
+    void addContractAddress(Address const& address) {}
 
-    Address const& getAddress() const;
+    Address const& getAddress() const { return m_address; }
 
-    bool isAlive() const;
+    bool isAlive() const { return m_alive; }
 
-    uint64_t getBalance() const;
+    uint64_t getBalance() const { return m_balance; }
 
-    int64_t getTimestamp() const;
+    int64_t getTimestamp() const { return m_timestamp; }
 
-    Addresses const& getContractAddresses() const;
+    Addresses const& getContractAddresses() const { return m_contractAddresses; }
 
-    // @override
-    bytes getKey();
+    std::map<Address, uint64_t> const& getCandidates() const { return m_candidates; }
 
-    // @override
-    bytes getRLPData();
+    uint64_t getVotes() const { return m_votes; }
 
-    // @override
-    Object::ObjectType getObjectType() const { return Object::AccountType; }
+    virtual bytes getKey() override { return m_address.asBytes(); }
+
+    virtual bytes getRLPData() override;
+
+    virtual Object::ObjectType getObjectType() const override { return Object::AccountType; }
 
 private:
-    Public m_public;
     Address m_address;
     bool m_alive = false;
     uint64_t m_balance;
     int64_t m_timestamp;
     Addresses m_contractAddresses;
-    std::map<Address, uint64_t> m_candidateMap;
     uint64_t m_votes;
+    std::map<Address, uint64_t> m_candidates;
 
-    h256 m_hash;
 };
 
 extern Account EmptyAccount;
