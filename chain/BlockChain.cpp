@@ -182,12 +182,28 @@ Producer BlockChain::getProducer(Address const& address)
     }
 }
 
+Address const& BlockChain::getExpectedProducer(int64_t timestamp) const
+{
+    unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
+                (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
+
+    ProducersConstRef producers = m_messageFace->getSchedule();
+    if (producerPosition >= producers.size()) {
+        return ZeroAddress;
+    }
+    return producers[producerPosition].getAddress();
+}
+
 bool BlockChain::processBlock(std::shared_ptr<Block> block)
 {
     try {
         for (auto& i : block->getTransactions()) {
             if (!crypto::isValidSig(*const_cast<Transaction*>(&i)))
                 throw InvalidTransactionException("Invalid transaction signature!");
+        }
+
+        if (block->getProducer() != getExpectedProducer(block->getBlockHeader().getTimestamp())) {
+            throw InvalidProducerException("Invalid block producer!");
         }
 
         m_currentActiveProducers.setTimestamp(block->getBlockHeader().getTimestamp());
@@ -203,6 +219,9 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
         }
 
     } catch (InvalidTransactionException& e) {
+        CERROR << "processBlock - " << e.what();
+        return false;
+    } catch (InvalidProducerException& e) {
         CERROR << "processBlock - " << e.what();
         return false;
     } catch (RollbackStateException& e) {
