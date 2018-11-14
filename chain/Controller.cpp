@@ -81,9 +81,9 @@ void Controller::init(crypto::GKey const& key)
     m_net = new NetController(m_key, m_chain->getDispatcher());
     m_net->init();
 
+    m_producerServer = new ProducerServer(m_key, this);
+    m_chain->pushSchedule();
     if (ARGs.m_producerON) {
-        m_producerServer = new ProducerServer(m_key, this);
-        m_chain->pushSchedule();
         m_producerServer->start();
     }
 
