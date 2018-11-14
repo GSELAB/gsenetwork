@@ -148,7 +148,7 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
 {
     bool needCancel;
     MemoryItem* item;
-    // CINFO << "BlockChain::doProcessBlock - number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
+    CINFO << "BlockChain::doProcessBlock - number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
     try {
         item = addMemoryItem(block);
         needCancel = true;
@@ -198,9 +198,11 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
                 throw InvalidTransactionException("Invalid transaction signature!");
         }
 
+        /*
         if (block->getProducer() != getExpectedProducer(block->getBlockHeader().getTimestamp())) {
             throw InvalidProducerException("Invalid block producer!");
         }
+        */
 
         m_currentActiveProducers.setTimestamp(block->getBlockHeader().getTimestamp());
         m_currentActiveProducers.addProducer(getProducer(block->getBlockHeader().getProducer()));
