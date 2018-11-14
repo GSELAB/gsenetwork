@@ -47,9 +47,9 @@ SubChain::~SubChain()
 void SubChain::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(SUB_CHAIN_FIELDS);
-    rlpStream << m_chainID
+    rlpStream << (bigint) m_chainID
               << m_creator
-              << m_timestamp;
+              << (bigint) m_timestamp;
 }
 
 bool SubChain::operator==(SubChain const& subChain)

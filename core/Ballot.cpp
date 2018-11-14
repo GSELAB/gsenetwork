@@ -31,7 +31,7 @@ Candidate::Candidate(bytesConstRef data)
 void Candidate::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(2);
-    rlpStream << m_address << m_value;
+    rlpStream << m_address << (bigint) m_value;
 }
 
 Candidate& Candidate::operator=(Candidate const& candidate)

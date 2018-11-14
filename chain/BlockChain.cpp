@@ -186,6 +186,8 @@ Address BlockChain::getExpectedProducer(int64_t timestamp) const
 {
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
+    CINFO << "Producer position idx = " << producerPosition;
+    CINFO << "EXPECTED TIMESTAMP: " << timestamp;
 
     return m_messageFace->getProducerAddress(producerPosition);
 }
@@ -198,11 +200,12 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
                 throw InvalidTransactionException("Invalid transaction signature!");
         }
 
-        /*
+        CINFO << "Block producer: " << block->getProducer();
+        CINFO << "Expected producer: " << getExpectedProducer(block->getBlockHeader().getTimestamp());
+
         if (block->getProducer() != getExpectedProducer(block->getBlockHeader().getTimestamp())) {
             throw InvalidProducerException("Invalid block producer!");
         }
-        */
 
         m_currentActiveProducers.setTimestamp(block->getBlockHeader().getTimestamp());
         m_currentActiveProducers.addProducer(getProducer(block->getBlockHeader().getProducer()));

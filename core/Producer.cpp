@@ -95,8 +95,8 @@ void Producer::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(PRODUCER_FIELDS);
     rlpStream << m_address
-              << m_timestamp
-              << m_votes;
+              << (bigint) m_timestamp
+              << (bigint) m_votes;
 }
 
 void Producer::setVotes(uint64_t votes)
@@ -169,7 +169,7 @@ bool ProducerSnapshot::isExist(Address const& address) const
 void ProducerSnapshot::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(1 + m_producers.size());
-    rlpStream << m_timestamp;
+    rlpStream << (bigint) m_timestamp;
     for (auto i : m_producers)
         rlpStream.appendRaw(i.getRLPData());
 }
