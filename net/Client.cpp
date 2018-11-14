@@ -39,7 +39,7 @@ void Client::doWork()
     if (current > m_lastTimestamp + 2000) {
         // do check height
         m_lastTimestamp = current;
-        CINFO << "Client - try to beat " << peerSessions().size() << " peers";
+        // CINFO << "Client - try to beat " << peerSessions().size() << " peers";
         if (ARGs.m_syncFlag) {
             for (auto i : peerSessions()) {
                 auto gsePeer = capabilityFromSession<GSEPeer>(*i.first);
