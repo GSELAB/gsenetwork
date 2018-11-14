@@ -19,7 +19,7 @@
 
 namespace core {
 
-#define PRODUCER_FIELDS (3)
+#define PRODUCER_FIELDS (4)
 
 class Producer: public Object {
 public:
@@ -51,7 +51,7 @@ public:
 
     int64_t getTimestamp() const { return m_timestamp; }
 
-    std::map<Address, uint64_t> const& getVotersMap() const { return m_votersMap; }
+    std::map<Address, uint64_t> const& getVoters() const { return m_voters; }
 
     uint64_t getVotes() const { return m_votes; }
 
@@ -64,8 +64,8 @@ public:
 private:
     Address m_address;
     int64_t m_timestamp;
-    std::map<Address, uint64_t> m_votersMap;
     uint64_t m_votes;
+    std::map<Address, uint64_t> m_voters;
 };
 
 extern Producer EmptyProducer;

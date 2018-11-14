@@ -88,7 +88,7 @@ Json::Value toJson(Producer const& producer)
     ret["address"] = toJS(producer.getAddress());
     ret["timestamp"] = toJS(producer.getTimestamp());
     Json::Value voters;
-    for (auto i : producer.getVotersMap()) {
+    for (auto i : producer.getVoters()) {
         voters[toString(i.first)] = toJS(i.second);
     }
     ret["voters"] = voters;
