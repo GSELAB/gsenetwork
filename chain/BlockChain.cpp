@@ -148,7 +148,7 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
 {
     bool needCancel;
     MemoryItem* item;
-    CINFO << "BlockChain::doProcessBlock - number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
+    //CINFO << "BlockChain::doProcessBlock - number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
     try {
         item = addMemoryItem(block);
         needCancel = true;
@@ -264,8 +264,8 @@ bool BlockChain::processTransaction(Transaction const& transaction, MemoryItem* 
 bool BlockChain::checkBifurcation(std::shared_ptr<Block> block)
 {
     auto newItem = m_rollbackState.head();
-    CINFO << "checkBifurcation - prev hash:" << newItem->getPrev();
-    CINFO << "checkBifurcation - head hash:" << m_head->m_blockID;
+    //CINFO << "checkBifurcation - prev hash:" << newItem->getPrev();
+    //CINFO << "checkBifurcation - head hash:" << m_head->m_blockID;
     if (newItem->getPrev() == m_head->m_blockID) {
         doProcessBlock(block);
     } else if (newItem->getPrev() != m_head->m_blockID) {
@@ -447,7 +447,7 @@ void BlockChain::doWork()
         } else {
             empty = false;
             auto itr = m_blockCache.get<ByUpBlockNumber>().begin();
-            CINFO << "BlockChain - lastNumber:" << getLastBlockNumber() << "  cacheNumber:" << (*itr)->getNumber();
+            //CINFO << "BlockChain - lastNumber:" << getLastBlockNumber() << "  cacheNumber:" << (*itr)->getNumber();
             if ((*itr)->getNumber() > (getLastBlockNumber() + 1)) {
 
             } else if ((*itr)->getNumber() == (getLastBlockNumber() + 1)) {
@@ -684,20 +684,20 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
 {
     switch (status.getType()) {
         case GetHeight: {
-            CINFO << "Recv status from " << from <<  " - get height";
+            //CINFO << "Recv status from " << from <<  " - get height";
             Status _status(ReplyHeight, getLastBlockNumber());
             m_messageFace->send(from, _status);
             break;
         }
         case ReplyHeight: {
-            CINFO << "Recv status from " << from <<  " - reply height: " << status.getHeight() << " - current height:" << getLastBlockNumber();
+            //CINFO << "Recv status from " << from <<  " - reply height: " << status.getHeight() << " - current height:" << getLastBlockNumber();
             if (status.getHeight() > getLastBlockNumber()) {
                 m_sync->update(from, status.getHeight());
             }
             break;
         }
         case SyncBlocks: {
-            CINFO << "Recv status from " << from << " - sync blocks:(" << status.getStart() << ", " << status.getEnd() << ")";
+            //CINFO << "Recv status from " << from << " - sync blocks:(" << status.getStart() << ", " << status.getEnd() << ")";
             if (status.getStart() < status.getEnd() && status.getEnd() <= getLastBlockNumber()) {
                 Status _status(ReplyBlocks);
                 for (uint64_t i = status.getStart(); i <= status.getEnd(); i++) {
@@ -708,7 +708,7 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
             break;
         }
         case ReplyBlocks: {
-            CINFO << "Recv blocks from " << from << " - reply blocks size is " << status.getBlocks().size();
+            //CINFO << "Recv blocks from " << from << " - reply blocks size is " << status.getBlocks().size();
             for (auto i : status.getBlocks()) {
                 processSyncBlockMessage(from, i);
             }
