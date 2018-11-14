@@ -76,6 +76,23 @@ using namespace js_util;
 Json::Value toJson(Account const& account)
 {
     Json::Value ret;
+    ret["address"] = toJS(account.getAddress());
+    ret["balance"] = toJS(account.getBalance());
+    ret["timestamp"] = toJS(account.getTimestamp());
+    return ret;
+}
+
+Json::Value toJson(Producer const& producer)
+{
+    Json::Value ret;
+    ret["address"] = toJS(producer.getAddress());
+    ret["timestamp"] = toJS(producer.getTimestamp());
+    Json::Value voters;
+    for (auto i : producer.getVotersMap()) {
+        voters[toString(i.first)] = toJS(i.second);
+    }
+    ret["voters"] = voters;
+    ret["total-votes"] = toJS(producer.getVotes());
     return ret;
 }
 
@@ -136,6 +153,13 @@ Json::Value toJson(std::string const& key, std::string const& value)
 {
     Json::Value ret;
     ret[key] = value;
+    return ret;
+}
+
+Json::Value toJson(std::string const& key, uint64_t value)
+{
+    Json::Value ret;
+    ret[key] = toJS(value);
     return ret;
 }
 

@@ -10,6 +10,7 @@
 #include <core/Block.h>
 #include <core/Account.h>
 #include <core/Transaction.h>
+#include <core/Producer.h>
 
 namespace core {
 
@@ -111,6 +112,7 @@ inline int jsToInt(std::string const& str)
 
 // Object to Json
 Json::Value toJson(Account const& account);
+Json::Value toJson(Producer const& producer);
 Json::Value toJson(BlockHeader const& header);
 Json::Value toJson(Block& block); // maybe changge hash
 Json::Value toJson(Transaction& transaction);
@@ -118,7 +120,7 @@ Json::Value blockNumberToJson(uint64_t blockNumber);
 
 Json::Value toJson(std::string const& key, std::string const& value);
 
-
+Json::Value toJson(std::string const& key, uint64_t value);
 
 // Json to String
 
