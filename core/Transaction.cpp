@@ -141,7 +141,6 @@ void Transaction::sign(Secret const& secret)
     auto signature = crypto::sign(secret, sha3(&rlpStream.out()));
     SignatureStruct sig = *(SignatureStruct const*)&signature;
     if (sig.isValid()) {
-        CINFO << "Transaction sing sucess!";
         m_signature = sig;
     }
 }

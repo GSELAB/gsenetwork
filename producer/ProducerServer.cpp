@@ -111,7 +111,6 @@ void ProducerServer::doWork()
         tx.sign(m_key.getSecret());
         block->addTransaction(tx);
     }
-    CINFO << "Added to block";
 
     // set receipts
     {
