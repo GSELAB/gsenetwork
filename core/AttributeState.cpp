@@ -52,7 +52,7 @@ void AttributeState::streamRLP(RLPStream& rlpStream) const
     rlpStream.appendList(2);
     rlpStream << m_type;
     if (m_type == Uint64Type) {
-        rlpStream << m_value;
+        rlpStream << (bigint) m_value;
     } else if (m_type == BytesType) {
         rlpStream.appendRaw(m_data);
     }
