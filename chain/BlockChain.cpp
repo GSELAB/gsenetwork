@@ -182,16 +182,12 @@ Producer BlockChain::getProducer(Address const& address)
     }
 }
 
-Address const& BlockChain::getExpectedProducer(int64_t timestamp) const
+Address BlockChain::getExpectedProducer(int64_t timestamp) const
 {
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
 
-    ProducersConstRef producers = m_messageFace->getSchedule();
-    if (producerPosition >= producers.size()) {
-        return ZeroAddress;
-    }
-    return producers[producerPosition].getAddress();
+    return m_messageFace->getProducerAddress(producerPosition);
 }
 
 bool BlockChain::processBlock(std::shared_ptr<Block> block)
@@ -202,7 +198,8 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
                 throw InvalidTransactionException("Invalid transaction signature!");
         }
 
-        if (block->getProducer() != getExpectedProducer(block->getBlockHeader().getTimestamp())) {
+        int64_t timestamp = block->getBlockHeader().getTimestamp();
+        if (block->getProducer() != getExpectedProducer(timestamp)) {
             throw InvalidProducerException("Invalid block producer!");
         }
 
@@ -217,6 +214,9 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
             m_rollbackState.add(hc);
             m_messageFace->send(hc);
         }
+
+        //if (((timestamp - GENESIS_TIMESTAMP) % TIME_PER_ROUND) >= (TIME_PER_ROUND - PRODUCER_INTERVAL) && ((timestamp - GENESIS_TIMESTAMP) % TIME_PER_ROUND) < TIME_PER_ROUND)
+
 
     } catch (InvalidTransactionException& e) {
         CERROR << "processBlock - " << e.what();
