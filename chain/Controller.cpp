@@ -216,6 +216,11 @@ void Controller::schedule(ProducersConstRef producerList)
     m_producerServer->schedule(producerList);
 }
 
+ProducersConstRef Controller::getSchedule() const
+{
+    return m_producerServer->getSchedule();
+}
+
 Controller controller(DEFAULT_GSE_NETWORK);
 
 } /* end namespace */

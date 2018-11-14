@@ -80,6 +80,8 @@ public:
 public:
     void schedule(ProducersConstRef producerList) { m_schedule.schedule(producerList); }
 
+    ProducersConstRef getSchedule() { return m_schedule.getProducerList(); }
+
 private:
     chain::ChainID m_chainID;
     crypto::GKey m_key;

@@ -50,4 +50,10 @@ namespace config {
 // 2 second = 2000 ms
 #define PRODUCER_INTERVAL (2000)
 
+// Time per round
+#define TIME_PER_ROUND ((PRODUCER_INTERVAL) * (NUM_DELEGATED_BLOCKS))
+
+// Schedule list get updated every 500 rounds
+#define SCHEDULE_UPDATE_INTERVAL ((500) * (TIME_PER_ROUND))
+
 } // end namespace

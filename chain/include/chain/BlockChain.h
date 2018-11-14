@@ -76,6 +76,8 @@ public:
     virtual void send(bi::tcp::endpoint const& to, StatusPtr status) = 0;
 
     virtual void schedule(ProducersConstRef producerList) = 0;
+
+    virtual ProducersConstRef getSchedule() const = 0;
 };
 
 enum BlockChainStatus {
@@ -185,6 +187,8 @@ public:
     std::shared_ptr<Block> getBlockFromCache();
 
     void onIrreversible(BlockStatePtr bsp);
+
+    Address const& getExpectedProducer(int64_t timestamp) const;
 
 public: /// used by rpc
     bool preProcessTx(Transaction& tx);
