@@ -127,8 +127,8 @@ void BlockHeader::streamRLP(RLPStream& rlpStream) const
               << m_mklRoot
               << m_transactionsRoot
               << m_receiptRoot
-              << m_number
-              << m_timestamp
+              << (bigint) m_number
+              << (biging) m_timestamp
               << m_extra;
 
     rlpStream << m_signature.v
@@ -145,8 +145,8 @@ void BlockHeader::streamRLPContent(RLPStream& rlpStream) const
               << m_mklRoot
               << m_transactionsRoot
               << m_receiptRoot
-              << m_number
-              << m_timestamp
+              << (bigint) m_number
+              << (bigint) m_timestamp
               << m_extra;
 }
 

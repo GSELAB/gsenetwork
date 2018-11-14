@@ -99,9 +99,9 @@ void Transaction::streamRLP(RLPStream& rlpStream) const
               << m_type
               << m_sender
               << m_recipient
-              << m_timestamp
+              << (bigint) m_timestamp
               << m_data
-              << m_value;
+              << (bigint) m_value;
 
     rlpStream << m_signature.v
               << (u256)m_signature.r
@@ -115,9 +115,9 @@ void Transaction::streamRLPContent(RLPStream& rlpStream) const
               << m_type
               << m_sender
               << m_recipient
-              << m_timestamp
+              << (bigint) m_timestamp
               << m_data
-              << m_value;
+              << (bigint) m_value;
 }
 
 // the sha3 of the transaction not include signature

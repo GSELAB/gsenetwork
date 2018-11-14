@@ -24,8 +24,8 @@ using namespace core;
 
 namespace config {
 
-// Genesis block time stamp is 2018-10-01 UTC 00:00:00 (1538352000)
-#define GENESIS_TIMESTAMP (0x5BB16380)
+// Genesis block time stamp is 2018-10-01 UTC 00:00:00
+#define GENESIS_TIMESTAMP (1538352000000)
 
 //
 #define MAX_TRANSACTION_QUEUE_SIZE  (1024 * 128)

@@ -30,13 +30,13 @@ void Status::streamRLP(RLPStream& rlpStream) const
         case ReplyHeight:
             rlpStream.appendList(2);
             rlpStream << static_cast<uint8_t>(m_type);
-            rlpStream << m_height;
+            rlpStream << (bigint) m_height;
             break;
         case SyncBlocks:
             rlpStream.appendList(3);
             rlpStream << static_cast<uint8_t>(m_type);
-            rlpStream << m_start;
-            rlpStream << m_end;
+            rlpStream << (bigint) m_start;
+            rlpStream << (bigint) m_end;
             break;
         case ReplyBlocks:
             rlpStream.appendList(1 + m_blocks.size());
