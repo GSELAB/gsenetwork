@@ -115,6 +115,8 @@ public: // used by block chain
 
     virtual ProducersConstRef getSchedule() const override;
 
+    virtual Address getProducerAddress(unsigned idx) const override;
+
 private:
     chain::ChainID m_chainID;
     crypto::GKey m_key;

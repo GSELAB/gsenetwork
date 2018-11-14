@@ -148,7 +148,7 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
 {
     bool needCancel;
     MemoryItem* item;
-    CINFO << "Process block - number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
+    // CINFO << "BlockChain::doProcessBlock - number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
     try {
         item = addMemoryItem(block);
         needCancel = true;
@@ -182,16 +182,12 @@ Producer BlockChain::getProducer(Address const& address)
     }
 }
 
-Address const& BlockChain::getExpectedProducer(int64_t timestamp) const
+Address BlockChain::getExpectedProducer(int64_t timestamp) const
 {
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
 
-    ProducersConstRef producers = m_messageFace->getSchedule();
-    if (producerPosition >= producers.size()) {
-        return ZeroAddress;
-    }
-    return producers[producerPosition].getAddress();
+    return m_messageFace->getProducerAddress(producerPosition);
 }
 
 bool BlockChain::processBlock(std::shared_ptr<Block> block)
@@ -202,11 +198,9 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
                 throw InvalidTransactionException("Invalid transaction signature!");
         }
 
-        /*
         if (block->getProducer() != getExpectedProducer(block->getBlockHeader().getTimestamp())) {
             throw InvalidProducerException("Invalid block producer!");
         }
-        */
 
         m_currentActiveProducers.setTimestamp(block->getBlockHeader().getTimestamp());
         m_currentActiveProducers.addProducer(getProducer(block->getBlockHeader().getProducer()));
@@ -219,6 +213,9 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
             m_rollbackState.add(hc);
             m_messageFace->send(hc);
         }
+
+        //if (((timestamp - GENESIS_TIMESTAMP) % TIME_PER_ROUND) >= (TIME_PER_ROUND - PRODUCER_INTERVAL) && ((timestamp - GENESIS_TIMESTAMP) % TIME_PER_ROUND) < TIME_PER_ROUND)
+
 
     } catch (InvalidTransactionException& e) {
         CERROR << "processBlock - " << e.what();
@@ -728,15 +725,15 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
             break;
         }
         case ReplyHeight: {
+            // CINFO << "Recv status from " << from <<  " - reply height: " << status.getHeight() << " - current height:" << getLastBlockNumber();
             if (status.getHeight() > getLastBlockNumber()) {
-                CINFO << "Recv status from " << from <<  " - reply height: " << status.getHeight() << " - current height:" << getLastBlockNumber();
                 m_sync->update(from, status.getHeight());
             }
             break;
         }
         case SyncBlocks: {
+            // CINFO << "Recv status from " << from << " - sync blocks:(" << status.getStart() << ", " << status.getEnd() << ")";
             if (status.getStart() < status.getEnd() && status.getEnd() <= getLastBlockNumber()) {
-                CINFO << "Recv status from " << from << " - sync blocks:(" << status.getStart() << ", " << status.getEnd() << ")";
                 Status _status(ReplyBlocks);
                 for (uint64_t i = status.getStart(); i <= status.getEnd(); i++) {
                     _status.addBlock(getBlockByNumber(i));

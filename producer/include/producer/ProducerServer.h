@@ -82,6 +82,8 @@ public:
 
     ProducersConstRef getSchedule() { return m_schedule.getProducerList(); }
 
+    Address getProducerAddress(unsigned idx) const { return m_schedule.getAddress(idx); }
+
 private:
     chain::ChainID m_chainID;
     crypto::GKey m_key;

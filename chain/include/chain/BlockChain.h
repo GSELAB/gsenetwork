@@ -78,6 +78,8 @@ public:
     virtual void schedule(ProducersConstRef producerList) = 0;
 
     virtual ProducersConstRef getSchedule() const = 0;
+
+    virtual Address getProducerAddress(unsigned idx) const = 0;
 };
 
 enum BlockChainStatus {
@@ -188,7 +190,7 @@ public:
 
     void onIrreversible(BlockStatePtr bsp);
 
-    Address const& getExpectedProducer(int64_t timestamp) const;
+    Address getExpectedProducer(int64_t timestamp) const;
 
     Producer getProducer(Address const& address);
 
