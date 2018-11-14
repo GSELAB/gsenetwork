@@ -23,19 +23,25 @@ Producer::Producer(Address const& address, int64_t timestamp): m_address(address
 
 Producer::Producer(bytesConstRef data)
 {
-    unsigned index = 0;
     try {
         RLP rlp(data);
         if (rlp.isList() && rlp.itemCount() == PRODUCER_FIELDS) {
-            m_address = rlp[index++].toHash<Address>(RLP::VeryStrict);
-            m_timestamp = rlp[index++].toInt<int64_t>();
-            m_votes = rlp[index++].toInt<uint64_t>();
+            m_address = rlp[0].toHash<Address>(RLP::VeryStrict);
+            m_timestamp = rlp[1].toInt<int64_t>();
+            m_votes = rlp[2].toInt<uint64_t>();
+            bytesConstRef vBytes = rlp[3].data();
+            RLP rlpVoters(vBytes);
+            if (rlpVoters.isList() && rlpVoters.itemCount() > 0) {
+                for (unsigned i = 0; i < rlpVoters.itemCount(); ) {
+                    Address address = rlpVoters[i++].toHash<Address>(RLP::VeryStrict);
+                    uint64_t vote = rlpVoters[i++].toInt<uint64_t>();
+                    m_voters[address] = vote;
+                }
+            }
         } else {
             BOOST_THROW_EXCEPTION(std::range_error("Producer RLP is not list or not PRODUCER_FIELDS!"));
         }
     } catch (Exception e) {
-        //e << errinfo_name("Invalid producer format!");
-        //throw;
         BOOST_THROW_EXCEPTION(e);
     }
 }
@@ -51,8 +57,8 @@ Producer& Producer::operator=(Producer const& producer)
     m_address = producer.getAddress();
     m_timestamp = producer.getTimestamp();
     m_votes = producer.getVotes();
-    for (auto const& i : producer.getVotersMap()) {
-        m_votersMap.insert(i);
+    for (auto& i : producer.getVoters()) {
+        m_voters[i.first] = i.second;
     }
 
     return *this;
@@ -60,8 +66,7 @@ Producer& Producer::operator=(Producer const& producer)
 
 bool Producer::operator==(Producer const& producer) const
 {
-    return (m_address == producer.getAddress()) && (m_timestamp == producer.getTimestamp()) &&
-        (m_votes == producer.getVotes()) && (m_votersMap == producer.getVotersMap());
+    return (m_address == producer.getAddress()) && (m_timestamp == producer.getTimestamp());
 }
 
 bool Producer::operator!=(Producer const& producer) const
@@ -97,6 +102,11 @@ void Producer::streamRLP(RLPStream& rlpStream) const
     rlpStream << m_address
               << (bigint) m_timestamp
               << (bigint) m_votes;
+    RLPStream votersRLPStream;
+    votersRLPStream.appendList(m_voters.size() * 2);
+    for (auto i : m_voters)
+        votersRLPStream << i.first << (bigint)i.second;
+    rlpStream.appendRaw(votersRLPStream.out());
 }
 
 void Producer::setVotes(uint64_t votes)
@@ -106,7 +116,7 @@ void Producer::setVotes(uint64_t votes)
 
 void Producer::addVoter(Address const& voter, uint64_t value)
 {
-    // TODO: ADD
+    m_voters[voter] = value;
 }
 
 bytes Producer::getKey()
