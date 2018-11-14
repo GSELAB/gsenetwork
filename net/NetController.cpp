@@ -117,7 +117,7 @@ void NetController::send(bytes const& data, ProtocolPacketType packetType)
             prepare(rlpStream, packetType, 1).appendRaw(data);
             session->sealAndSend(rlpStream);
         } else {
-            CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
+            // CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
         }
     }
 }
@@ -135,7 +135,7 @@ void NetController::send(bytes const& data, ProtocolPacketType packetType, bi::t
             prepare(rlpStream, packetType, 1).appendRaw(data);
             session->sealAndSend(rlpStream);
         } else {
-            CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
+            // CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
         }
     }
 }
@@ -152,7 +152,7 @@ void NetController::send(bytes const& data, bi::tcp::endpoint const& to, chain::
                 prepare(rlpStream, packetType, 1).appendRaw(data);
                 session->sealAndSend(rlpStream);
             } else {
-                CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
+                //  CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
             }
             break;
         }

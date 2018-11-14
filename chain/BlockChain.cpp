@@ -148,7 +148,7 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
 {
     bool needCancel;
     MemoryItem* item;
-    // CINFO << "BlockChain::doProcessBlock - number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
+    CINFO << "BlockChain::doProcessBlock - number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
     try {
         item = addMemoryItem(block);
         needCancel = true;
@@ -202,6 +202,7 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
 
         CINFO << "Block producer: " << block->getProducer();
         CINFO << "Expected producer: " << getExpectedProducer(block->getBlockHeader().getTimestamp());
+
         if (block->getProducer() != getExpectedProducer(block->getBlockHeader().getTimestamp())) {
             throw InvalidProducerException("Invalid block producer!");
         }
