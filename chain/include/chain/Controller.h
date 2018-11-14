@@ -101,6 +101,8 @@ public: // used by block chain
 
     virtual void schedule(ProducersConstRef producerList) override;
 
+    virtual ProducersConstRef getSchedule() const override;
+
 private:
     chain::ChainID m_chainID;
     crypto::GKey m_key;
