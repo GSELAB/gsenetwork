@@ -98,14 +98,11 @@ public:
 
     SignatureStruct const& getSignature() const { return m_signature; }
 
-    // @override
-    bytes getKey();
+    virtual bytes getKey() override;
 
-    // @override
-    bytes getRLPData();
+    virtual bytes getRLPData() override;
 
-    // @override
-    Object::ObjectType getObjectType() const { return Object::TransactionType; }
+    virtual Object::ObjectType getObjectType() const override { return Object::TransactionType; }
 
 private:
     chain::ChainID m_chainID;

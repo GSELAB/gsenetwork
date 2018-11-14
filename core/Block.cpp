@@ -121,14 +121,14 @@ bool BlockHeader::operator!=(BlockHeader const& header) const
 void BlockHeader::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(BLOCK_HEADER_FIELDS_ALL);
-    rlpStream << m_chainID
+    rlpStream << (bigint)m_chainID
               << m_producer
               << m_parentHash
               << m_mklRoot
               << m_transactionsRoot
               << m_receiptRoot
               << (bigint) m_number
-              << (biging) m_timestamp
+              << (bigint) m_timestamp
               << m_extra;
 
     rlpStream << m_signature.v
@@ -139,7 +139,7 @@ void BlockHeader::streamRLP(RLPStream& rlpStream) const
 void BlockHeader::streamRLPContent(RLPStream& rlpStream) const
 {
     rlpStream.appendList(BLOCK_HEADER_FIELDS_WITHOUT_SIG);
-    rlpStream << m_chainID
+    rlpStream << (bigint)m_chainID
               << m_producer
               << m_parentHash
               << m_mklRoot

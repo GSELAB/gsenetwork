@@ -95,7 +95,7 @@ void Transaction::streamRLP(RLPStream& rlpStream) const
     */
 
     rlpStream.appendList(TRANSACTION_FIELDS_ALL);
-    rlpStream << m_chainID
+    rlpStream << (bigint) m_chainID
               << m_type
               << m_sender
               << m_recipient
@@ -111,7 +111,7 @@ void Transaction::streamRLP(RLPStream& rlpStream) const
 void Transaction::streamRLPContent(RLPStream& rlpStream) const
 {
     rlpStream.appendList(TRANSACTION_FIELDS_WITHOUT_SIG);
-    rlpStream << m_chainID
+    rlpStream << (bigint) m_chainID
               << m_type
               << m_sender
               << m_recipient
@@ -123,11 +123,6 @@ void Transaction::streamRLPContent(RLPStream& rlpStream) const
 // the sha3 of the transaction not include signature
 h256 const& Transaction::getHash()
 {
-    /*
-    if (m_hash)
-        return m_hash;
-    */
-
     RLPStream rlpStream;
     streamRLPContent(rlpStream);
     m_hash = sha3(&rlpStream.out());
