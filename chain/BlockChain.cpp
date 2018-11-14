@@ -202,9 +202,11 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
                 throw InvalidTransactionException("Invalid transaction signature!");
         }
 
+        /*
         if (block->getProducer() != getExpectedProducer(block->getBlockHeader().getTimestamp())) {
             throw InvalidProducerException("Invalid block producer!");
         }
+        */
 
         m_currentActiveProducers.setTimestamp(block->getBlockHeader().getTimestamp());
         m_currentActiveProducers.addProducer(getProducer(block->getBlockHeader().getProducer()));
@@ -511,6 +513,42 @@ bool BlockChain::addRPCTx(Transaction& tx)
     }
 
     return true;
+}
+
+Transaction BlockChain::getTx(TxID const& txID)
+{
+    Guard g(x_memoryQueue);
+    if (m_memoryQueue.empty()) {
+        return getDBC()->getTransaction(txID);
+    } else {
+        return m_memoryQueue.back()->getRepository()->getTransaction(txID);
+    }
+}
+
+Account BlockChain::getAccount(Address const& address)
+{
+    Guard g(x_memoryQueue);
+    if (m_memoryQueue.empty()) {
+        return getDBC()->getAccount(address);
+    } else {
+        return m_memoryQueue.back()->getRepository()->getAccount(address);
+    }
+}
+
+uint64_t BlockChain::getBalance(Address const& address)
+{
+    Account account = getAccount(address);
+    return account.getBalance();
+}
+
+uint64_t BlockChain::getHeight() const
+{
+    return getLastBlockNumber();
+}
+
+uint64_t BlockChain::getSolidifyHeight() const
+{
+    return ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue();
 }
 
 bool BlockChain::isExist(Transaction& tx)
