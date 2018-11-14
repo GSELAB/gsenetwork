@@ -97,7 +97,7 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
     auto _head = *m_index.get<ByMultiBlockNumber>().begin();
     uint64_t mutilNumber = _head->m_bftIrreversibleBlockNumber;
     BlockStatePtr oldest = *m_index.get<ByUpBlockNumber>().begin();
-    CINFO << "Start-number:" << oldest->m_blockNumber << "   Irreversible-number:" << mutilNumber;
+    // CINFO << "Start-number:" << oldest->m_blockNumber << "   Irreversible-number:" << mutilNumber;
     if (oldest->m_blockNumber < mutilNumber)
         prune(oldest);
     return nextBSP;
@@ -136,12 +136,12 @@ void RollbackState::add(HeaderConfirmation const& confirmation)
 {
     BlockStatePtr bsp = getBlock(confirmation.getBlockID());
     if (!bsp) {
-        CERROR << "Confirmation block id:" << confirmation.getBlockID() << " not found!";
+        // CERROR << "Confirmation block id:" << confirmation.getBlockID() << " not found!";
         throw RollbackStateException("Confirmation block id not found!");
     }
 
     bsp->addConfirmation(confirmation);
-    CINFO << "Add confirmation - confirmation.size = " << bsp->getConfirmationsSize() << " (active size = " << bsp->m_activeProucers.size() << ")";
+    // CINFO << "Add confirmation - confirmation.size = " << bsp->getConfirmationsSize() << " (active size = " << bsp->m_activeProucers.size() << ")";
     if (bsp->m_bftIrreversibleBlockNumber < bsp->m_blockNumber && bsp->getConfirmationsSize() >= ((bsp->m_activeProucers.size() * 2) / 3)) {
         setBFTIrreversible(bsp->m_blockID);
     }
