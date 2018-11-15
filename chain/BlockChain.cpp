@@ -65,7 +65,7 @@ void BlockChain::initializeRollbackState()
 
 void BlockChain::init()
 {
-    m_rollbackState.m_irreversible.connect([&](auto bsp) {
+    m_rollbackState.m_irreversible.connect([&](BlockStatePtr bsp) {
         onIrreversible(bsp);
     });
 

@@ -91,25 +91,25 @@ public: // Producer Handle
     virtual BlockChainStatus getBlockChainStatus() const override { return m_chain->getBlockChainStatus(); };
 
 public: // used by block chain
-    virtual void broadcast(bi::tcp::endpoint const& from, Block& block) override;
+    virtual void broadcast(boost::asio::ip::tcp::endpoint const& from, Block& block) override;
 
-    virtual void broadcast(bi::tcp::endpoint const& from, BlockPtr block) override;
+    virtual void broadcast(boost::asio::ip::tcp::endpoint const& from, BlockPtr block) override;
 
-    virtual void broadcast(bi::tcp::endpoint const& from, Transaction& tx) override;
+    virtual void broadcast(boost::asio::ip::tcp::endpoint const& from, Transaction& tx) override;
 
-    virtual void broadcast(bi::tcp::endpoint const& from, TransactionPtr tx) override;
+    virtual void broadcast(boost::asio::ip::tcp::endpoint const& from, TransactionPtr tx) override;
 
-    virtual void broadcast(bi::tcp::endpoint const& from, HeaderConfirmation& hc) override;
+    virtual void broadcast(boost::asio::ip::tcp::endpoint const& from, HeaderConfirmation& hc) override;
 
-    virtual void broadcast(bi::tcp::endpoint const& from, HeaderConfirmationPtr hcp) override;
+    virtual void broadcast(boost::asio::ip::tcp::endpoint const& from, HeaderConfirmationPtr hcp) override;
 
     virtual void send(HeaderConfirmation& hc) override;
 
     virtual void send(HeaderConfirmationPtr hcp) override;
 
-    virtual void send(bi::tcp::endpoint const& to, Status& status) override;
+    virtual void send(boost::asio::ip::tcp::endpoint const& to, Status& status) override;
 
-    virtual void send(bi::tcp::endpoint const& to, StatusPtr status) override;
+    virtual void send(boost::asio::ip::tcp::endpoint const& to, StatusPtr status) override;
 
     virtual void schedule(ProducersConstRef producerList) override;
 
