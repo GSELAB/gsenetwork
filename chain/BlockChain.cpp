@@ -172,6 +172,28 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
     }
 }
 
+Producers BlockChain::getProducerListFromRepo() const
+{
+    Guard l(x_memoryQueue);
+    if (m_memoryQueue.empty()) {
+        return m_dbc->getProducerList();
+    } else {
+        return m_memoryQueue.back()->getRepository()->getProducerList();
+    }
+}
+
+void BlockChain::schedule(int64_t timestamp) {
+
+    Producers latestSchedule = getProducerListFromRepo();
+
+    pushSchedule();
+
+    // TODO: modify producerSnapshot
+
+    m_prevPS.populate(ATTRIBUTE_PREV_PRODUCER_LIST.setData());
+    m_currentPS.populate(ATTRIBUTE_CURRENT_PRODUCER_LIST.setData());
+}
+
 Producer BlockChain::getProducer(Address const& address)
 {
     Guard g(x_memoryQueue);
@@ -186,8 +208,6 @@ Address BlockChain::getExpectedProducer(int64_t timestamp) const
 {
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
-    CINFO << "Producer position idx = " << producerPosition;
-    CINFO << "EXPECTED TIMESTAMP: " << timestamp;
 
     return m_messageFace->getProducerAddress(producerPosition);
 }
@@ -200,10 +220,8 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
                 throw InvalidTransactionException("Invalid transaction signature!");
         }
 
-        CINFO << "Block producer: " << block->getProducer();
-        CINFO << "Expected producer: " << getExpectedProducer(block->getBlockHeader().getTimestamp());
-
-        if (block->getProducer() != getExpectedProducer(block->getBlockHeader().getTimestamp())) {
+        int64_t timestamp = block->getBlockHeader().getTimestamp();
+        if (block->getProducer() != getExpectedProducer(timestamp)) {
             throw InvalidProducerException("Invalid block producer!");
         }
 
@@ -219,7 +237,11 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
             m_messageFace->send(hc);
         }
 
-        //if (((timestamp - GENESIS_TIMESTAMP) % TIME_PER_ROUND) >= (TIME_PER_ROUND - PRODUCER_INTERVAL) && ((timestamp - GENESIS_TIMESTAMP) % TIME_PER_ROUND) < TIME_PER_ROUND)
+        if (((timestamp - GENESIS_TIMESTAMP) % (SCHEDULE_UPDATE_INTERVAL) >= (SCHEDULE_UPDATE_INTERVAL - TIME_PER_ROUND) && ((timestamp - GENESIS_TIMESTAMP) % (SCHEDULE_UPDATE_INTERVAL)) < SCHEDULE_UPDATE_INTERVAL)) {
+            Producers latestSchedule = getProducerListFromRepo();
+
+            pushSchedule();
+        }
 
 
     } catch (InvalidTransactionException& e) {

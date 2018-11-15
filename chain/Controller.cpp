@@ -217,11 +217,6 @@ void Controller::schedule(ProducersConstRef producerList)
     m_producerServer->schedule(producerList);
 }
 
-ProducersConstRef Controller::getSchedule() const
-{
-    return m_producerServer->getSchedule();
-}
-
 Address Controller::getProducerAddress(unsigned idx) const
 {
     return m_producerServer->getProducerAddress(idx);
