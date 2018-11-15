@@ -221,6 +221,11 @@ Address Controller::getProducerAddress(unsigned idx) const
     return m_producerServer->getProducerAddress(idx);
 }
 
+ProducersConstRef Controller::getSortedProducerList() const
+{
+    return m_producerServer->getSchedule();
+}
+
 Controller controller(DEFAULT_GSE_NETWORK);
 
 } /* end namespace */

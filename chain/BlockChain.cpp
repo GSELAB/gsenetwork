@@ -237,7 +237,8 @@ void BlockChain::updateActiveProducers(std::shared_ptr<Block> block)
 
     m_currentActiveProducers.addProducer(getProducer(block->getBlockHeader().getProducer()));
 
-    ProducersConstRef producerList = m_currentPS.getProducers();
+    ProducersConstRef producerList = m_messageFace->getSortedProducerList();
+
     if (prevProducerIndex < currentProducerIndex) {
         for (int i = prevProducerIndex + 1; i < currentProducerIndex; ++i)
             m_currentActiveProducers.deleteProducer(producerList[i]);
@@ -282,6 +283,7 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
 
         if (((timestamp - GENESIS_TIMESTAMP) % (SCHEDULE_UPDATE_INTERVAL)) / (TIME_PER_ROUND) >= (SCHEDULE_UPDATE_ROUNDS - 1)) {
             schedule(timestamp);
+            m_currentActiveProducers.clear();
         }
 
 
