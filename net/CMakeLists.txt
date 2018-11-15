@@ -7,7 +7,7 @@ SET(net_source
     NodeTablex.cpp
     Common.cpp
     Network.cpp
-    UPnp.cpp
+    UPnP.cpp
     PeerCapability.cpp
     Peer.cpp
     Session.cpp
