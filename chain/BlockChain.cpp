@@ -65,7 +65,6 @@ void BlockChain::initializeRollbackState()
 
 void BlockChain::init()
 {
-    // CINFO << "Block chain init";
     m_rollbackState.m_irreversible.connect([&](auto bsp) {
         onIrreversible(bsp);
     });
@@ -76,8 +75,12 @@ void BlockChain::init()
 
     m_currentActiveProducers.populate(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.getData());
 
+    Block solidifyBlock = m_dbc->getBlock(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue());
     m_prevPS.populate(ATTRIBUTE_PREV_PRODUCER_LIST.getData());
     m_currentPS.populate(ATTRIBUTE_CURRENT_PRODUCER_LIST.getData());
+    if (m_currentPS.getTimestamp() > solidifyBlock.getTimestamp()) {
+        m_currentPS.populate(ATTRIBUTE_PREV_PRODUCER_LIST.getData());
+    }
 
     if (ARGs.m_syncFlag) {
         m_blockChainStatus = SyncStatus;
