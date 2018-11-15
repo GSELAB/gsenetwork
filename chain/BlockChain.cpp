@@ -196,7 +196,7 @@ void BlockChain::schedule(int64_t timestamp) {
     }
     m_currentPS.setTimestamp(timestamp);
 
-    pushSchedule();
+    m_messageFace->schedule(m_currentPS.getProducers());
 
     ATTRIBUTE_PREV_PRODUCER_LIST.setData(m_prevPS.getRLPData());
     m_dbc->putAttribute(ATTRIBUTE_PREV_PRODUCER_LIST);
