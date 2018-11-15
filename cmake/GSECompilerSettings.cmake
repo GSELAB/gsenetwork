@@ -43,8 +43,8 @@ IF(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
 
     # Check GCC compiler version.
     IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-        IF("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 4.8)
-            MESSAGE(FATAL_ERROR "This compiler ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} is not supported. GCC 4.8 or newer is required.")
+        IF("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 5)
+            MESSAGE(FATAL_ERROR "This compiler ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} is not supported. GCC 5 or newer is required.")
         ENDIF()
 
     # Stop if buggy clang compiler detected.
