@@ -171,6 +171,10 @@ public:
 
     uint64_t getNumber() const { return m_blockHeader.getNumber(); }
 
+    int64_t getTimestamp() const { return m_blockHeader.getTimestamp(); }
+
+    h256 getParentHash() const { return m_blockHeader.getParentHash(); }
+
     h256 const& getHash() { return m_blockHeader.getHash(); }
 
     SignatureStruct const& getSignature() const { return m_blockHeader.getSignature(); }
