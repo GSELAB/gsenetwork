@@ -187,14 +187,21 @@ Producers BlockChain::getProducerListFromRepo() const
 
 void BlockChain::schedule(int64_t timestamp) {
 
-    Producers latestSchedule = getProducerListFromRepo();
+    Producers updatedSchedule = getProducerListFromRepo();
+
+    m_prevPS = m_currentPS;
+    m_currentPS.clear();
+    for (auto i : updatedSchedule) {
+        m_currentPS.addProducer(i);
+    }
+    m_currentPS.setTimestamp(timestamp);
 
     pushSchedule();
 
-    // TODO: modify producerSnapshot
-
-    m_prevPS.populate(ATTRIBUTE_PREV_PRODUCER_LIST.setData());
-    m_currentPS.populate(ATTRIBUTE_CURRENT_PRODUCER_LIST.setData());
+    ATTRIBUTE_PREV_PRODUCER_LIST.setData(m_prevPS.getRLPData());
+    m_dbc->putAttribute(ATTRIBUTE_PREV_PRODUCER_LIST);
+    ATTRIBUTE_CURRENT_PRODUCER_LIST.setData(m_currentPS.getRLPData());
+    m_dbc->putAttribute(ATTRIBUTE_CURRENT_PRODUCER_LIST);
 }
 
 Producer BlockChain::getProducer(Address const& address)
@@ -240,10 +247,8 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
             m_messageFace->send(hc);
         }
 
-        if (((timestamp - GENESIS_TIMESTAMP) % (SCHEDULE_UPDATE_INTERVAL) >= (SCHEDULE_UPDATE_INTERVAL - TIME_PER_ROUND) && ((timestamp - GENESIS_TIMESTAMP) % (SCHEDULE_UPDATE_INTERVAL)) < SCHEDULE_UPDATE_INTERVAL)) {
-            Producers latestSchedule = getProducerListFromRepo();
-
-            pushSchedule();
+        if (((timestamp - GENESIS_TIMESTAMP) % (SCHEDULE_UPDATE_INTERVAL)) / (TIME_PER_ROUND) >= (SCHEDULE_UPDATE_ROUNDS - 1)) {
+            schedule(timestamp);
         }
 
 

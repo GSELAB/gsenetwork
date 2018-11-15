@@ -15,7 +15,6 @@
 #include <leveldb/db.h>
 #include <database/Database.h>
 #include <core/Log.h>
-#include <core/Producer.h>
 #include <utils/Utils.h>
 #include <core/Common.h>
 
@@ -64,14 +63,14 @@ public:
         leveldb::Status status = m_db->Delete(leveldb::WriteOptions(), toString(key));
     }
 
-    std::vector<Producer> getProducerList() const {
-        std::vector<Producer> producerList;
+    std::vector<bytes> getAll() const {
+        std::vector<bytes> producerList;
         leveldb::Iterator* itr = m_db->NewIterator(leveldb::ReadOptions());
         for (itr->SeekToFirst(); itr->Valid(); itr->Next())
         {
             std::string value = itr->value().ToString();
             bytes bytesValue = toBytes(value);
-            producerList.push_back(Producer(bytesConstRef(&bytesValue)));
+            producerList.push_back(bytesValue);
         }
         return producerList;
     }
@@ -131,8 +130,8 @@ void Database::del(bytes const& key)
     m_impl->del(key);
 }
 
-std::vector<Producer> Database::getProducerList() const
+std::vector<bytes> Database::getAll() const
 {
-    return m_impl->getProducerList();
+    return m_impl->getAll();
 }
 } // endof namespace

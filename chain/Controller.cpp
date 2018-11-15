@@ -135,7 +135,6 @@ void Controller::setChainID(chain::ChainID chainID)
 /// Producer interface
 void Controller::broadcast(std::shared_ptr<Block> block)
 {
-    CINFO << "BROADCAST TIMESTMP:" << block->getBlockHeader().getTimestamp();
     m_chain->processProducerBlock(block);
     m_net->broadcast(block);
 }
