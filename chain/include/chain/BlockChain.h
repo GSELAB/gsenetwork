@@ -78,6 +78,8 @@ public:
     virtual void schedule(ProducersConstRef producerList) = 0;
 
     virtual Address getProducerAddress(unsigned idx) const = 0;
+
+    virtual ProducersConstRef getSortedProducerList() const = 0;
 };
 
 enum BlockChainStatus {
