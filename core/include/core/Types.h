@@ -37,6 +37,6 @@ using                               std::tie;
 using                               std::move;
 using                               std::forward;
 //using                               std::to_string;
-using                               std::all_of;
+// using                               std::all_of;
 
 } // end of namespace

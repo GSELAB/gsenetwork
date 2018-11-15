@@ -46,7 +46,10 @@ bool core::isHex(string const& _s) noexcept
 	auto it = _s.begin();
 	if (_s.compare(0, 2, "0x") == 0)
 		it += 2;
-	return std::all_of(it, _s.end(), [](char c){ return fromHexChar(c) != -1; });
+	for (; it != _s.end(); it++)
+	    if (fromHexChar(*it) == -1)
+	        return false;
+	return true;
 }
 
 std::string core::escaped(std::string const& _s, bool _all)
