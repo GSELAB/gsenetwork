@@ -169,6 +169,14 @@ void ProducerSnapshot::addProducer(Producer const& producer)
         m_producers.push_back(producer);
 }
 
+void ProducerSnapshot::deleteProducer(Producer const& producer)
+{
+    Producers::iterator itr;
+    itr = std::find(m_producers.begin(), m_producers.end(), producer);
+    if (itr != m_producers.end())
+        m_producers.erase(itr);
+}
+
 bool ProducerSnapshot::isExist(Address const& address) const
 {
     for (auto i : m_producers)

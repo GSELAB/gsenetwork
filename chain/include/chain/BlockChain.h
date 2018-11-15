@@ -196,6 +196,8 @@ public:
 
     void schedule(int64_t timestamp);
 
+    void updateActiveProducers(std::shared_ptr<Block> block);
+
 public: /// used by rpc
     bool preProcessTx(Transaction& tx);
 
