@@ -161,32 +161,32 @@ Block Controller::getBlockByNumber(uint64_t number)
     return m_chain->getBlockByNumber(number);
 }
 
-void Controller::broadcast(bi::tcp::endpoint const& from, Block& block)
+void Controller::broadcast(boost::asio::ip::tcp::endpoint const& from, Block& block)
 {
     RLP_STREAM_SEND_EXCEPT(block, BlockPacket, from);
 }
 
-void Controller::broadcast(bi::tcp::endpoint const& from, BlockPtr block)
+void Controller::broadcast(boost::asio::ip::tcp::endpoint const& from, BlockPtr block)
 {
     RLP_STREAM_PTR_SEND_EXCEPT(block, BlockPacket, from);
 }
 
-void Controller::broadcast(bi::tcp::endpoint const& from, Transaction& tx)
+void Controller::broadcast(boost::asio::ip::tcp::endpoint const& from, Transaction& tx)
 {
     RLP_STREAM_SEND_EXCEPT(tx, TransactionPacket, from);
 }
 
-void Controller::broadcast(bi::tcp::endpoint const& from, TransactionPtr tx)
+void Controller::broadcast(boost::asio::ip::tcp::endpoint const& from, TransactionPtr tx)
 {
     RLP_STREAM_PTR_SEND_EXCEPT(tx, TransactionPacket, from);
 }
 
-void Controller::broadcast(bi::tcp::endpoint const& from, HeaderConfirmation& hc)
+void Controller::broadcast(boost::asio::ip::tcp::endpoint const& from, HeaderConfirmation& hc)
 {
     RLP_STREAM_SEND_EXCEPT(hc, ConfirmationPacket, from);
 }
 
-void Controller::broadcast(bi::tcp::endpoint const& from, HeaderConfirmationPtr hcp)
+void Controller::broadcast(boost::asio::ip::tcp::endpoint const& from, HeaderConfirmationPtr hcp)
 {
     RLP_STREAM_PTR_SEND_EXCEPT(hcp, ConfirmationPacket, from);
 }
@@ -201,12 +201,12 @@ void Controller::send(HeaderConfirmationPtr hcp)
     RLP_STREAM_PTR_SEND(hcp, ConfirmationPacket);
 }
 
-void Controller::send(bi::tcp::endpoint const& to, Status& status)
+void Controller::send(boost::asio::ip::tcp::endpoint const& to, Status& status)
 {
     RLP_STREAM_SEND_TO(status, StatusPacket, to);
 }
 
-void Controller::send(bi::tcp::endpoint const& to, StatusPtr status)
+void Controller::send(boost::asio::ip::tcp::endpoint const& to, StatusPtr status)
 {
     RLP_STREAM_PTR_SEND_TO(status, StatusPacket, to);
 }
