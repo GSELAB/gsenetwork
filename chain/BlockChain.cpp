@@ -175,6 +175,35 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
     }
 }
 
+Producers BlockChain::getProducerListFromRepo() const
+{
+    Guard l(x_memoryQueue);
+    if (m_memoryQueue.empty()) {
+        return m_dbc->getProducerList();
+    } else {
+        return m_memoryQueue.back()->getRepository()->getProducerList();
+    }
+}
+
+void BlockChain::schedule(int64_t timestamp) {
+
+    Producers updatedSchedule = getProducerListFromRepo();
+
+    m_prevPS = m_currentPS;
+    m_currentPS.clear();
+    for (auto i : updatedSchedule) {
+        m_currentPS.addProducer(i);
+    }
+    m_currentPS.setTimestamp(timestamp);
+
+    m_messageFace->schedule(m_currentPS.getProducers());
+
+    ATTRIBUTE_PREV_PRODUCER_LIST.setData(m_prevPS.getRLPData());
+    m_dbc->putAttribute(ATTRIBUTE_PREV_PRODUCER_LIST);
+    ATTRIBUTE_CURRENT_PRODUCER_LIST.setData(m_currentPS.getRLPData());
+    m_dbc->putAttribute(ATTRIBUTE_CURRENT_PRODUCER_LIST);
+}
+
 Producer BlockChain::getProducer(Address const& address)
 {
     Guard g(x_memoryQueue);
@@ -189,8 +218,6 @@ Address BlockChain::getExpectedProducer(int64_t timestamp) const
 {
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
-    CINFO << "Producer position idx = " << producerPosition;
-    CINFO << "EXPECTED TIMESTAMP: " << timestamp;
 
     return m_messageFace->getProducerAddress(producerPosition);
 }
@@ -203,10 +230,8 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
                 throw InvalidTransactionException("Invalid transaction signature!");
         }
 
-        CINFO << "Block producer: " << block->getProducer();
-        CINFO << "Expected producer: " << getExpectedProducer(block->getBlockHeader().getTimestamp());
-
-        if (block->getProducer() != getExpectedProducer(block->getBlockHeader().getTimestamp())) {
+        int64_t timestamp = block->getBlockHeader().getTimestamp();
+        if (block->getProducer() != getExpectedProducer(timestamp)) {
             throw InvalidProducerException("Invalid block producer!");
         }
 
@@ -222,7 +247,9 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
             m_messageFace->send(hc);
         }
 
-        //if (((timestamp - GENESIS_TIMESTAMP) % TIME_PER_ROUND) >= (TIME_PER_ROUND - PRODUCER_INTERVAL) && ((timestamp - GENESIS_TIMESTAMP) % TIME_PER_ROUND) < TIME_PER_ROUND)
+        if (((timestamp - GENESIS_TIMESTAMP) % (SCHEDULE_UPDATE_INTERVAL)) / (TIME_PER_ROUND) >= (SCHEDULE_UPDATE_ROUNDS - 1)) {
+            schedule(timestamp);
+        }
 
 
     } catch (InvalidTransactionException& e) {

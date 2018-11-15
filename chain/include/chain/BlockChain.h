@@ -77,8 +77,6 @@ public:
 
     virtual void schedule(ProducersConstRef producerList) = 0;
 
-    virtual ProducersConstRef getSchedule() const = 0;
-
     virtual Address getProducerAddress(unsigned idx) const = 0;
 };
 
@@ -194,6 +192,10 @@ public:
 
     Producer getProducer(Address const& address);
 
+    Producers getProducerListFromRepo() const;
+
+    void schedule(int64_t timestamp);
+
 public: /// used by rpc
     bool preProcessTx(Transaction& tx);
 
@@ -208,6 +210,7 @@ public: /// used by rpc
     uint64_t getHeight() const;
 
     uint64_t getSolidifyHeight() const;
+
 
 public: /// Used by network
     bool preProcessTx(bi::tcp::endpoint const& from, Transaction& tx);

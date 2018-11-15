@@ -113,8 +113,6 @@ public: // used by block chain
 
     virtual void schedule(ProducersConstRef producerList) override;
 
-    virtual ProducersConstRef getSchedule() const override;
-
     virtual Address getProducerAddress(unsigned idx) const override;
 
 private:
