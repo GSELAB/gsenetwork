@@ -53,7 +53,10 @@ namespace config {
 // Time per round
 #define TIME_PER_ROUND ((PRODUCER_INTERVAL) * (NUM_DELEGATED_BLOCKS))
 
-// Schedule list get updated every 500 rounds
-#define SCHEDULE_UPDATE_INTERVAL ((500) * (TIME_PER_ROUND))
+// Schedule list gets updated every 500 rounds
+#define SCHEDULE_UPDATE_ROUNDS (500)
+
+// Time period that schedule gets updated
+#define SCHEDULE_UPDATE_INTERVAL ((SCHEDULE_UPDATE_ROUNDS) * (TIME_PER_ROUND))
 
 } // end namespace

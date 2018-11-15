@@ -92,7 +92,6 @@ void ProducerServer::doWork()
         blockHeader.setParentHash(prevBlock.getHash());
     }
 
-    CINFO << "ORIGINAL TIMESTAMP: " <<  timestamp;
     blockHeader.setTimestamp(timestamp);
     //blockHeader.setExtra();
 
