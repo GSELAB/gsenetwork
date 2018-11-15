@@ -105,6 +105,8 @@ public:
 
     void addProducer(Producer const& producer);
 
+    void clear() { m_producers.clear(); }
+
     void streamRLP(RLPStream& rlpStream) const;
 
     bool isExist(Address const& address) const;

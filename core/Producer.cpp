@@ -141,6 +141,7 @@ ProducerSnapshot& ProducerSnapshot::operator=(ProducerSnapshot const& ps)
     if (this == &ps)
         return *this;
 
+    m_producers.clear();
     m_timestamp = ps.getTimestamp();
     for (auto i : ps.getProducers())
         m_producers.push_back(i);
