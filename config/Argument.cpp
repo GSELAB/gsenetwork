@@ -53,7 +53,7 @@ void initArgument()
     }
 
     ARGs.m_syncFlag = node["sync"].asBool();
-    initGenesis(ARGs.m_genesis, genesis);
+    chain::initGenesis(ARGs.m_genesis, genesis);
 
     fin.close();
 }

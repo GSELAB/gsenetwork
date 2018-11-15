@@ -5,4 +5,4 @@ SET(config_source
 
 ADD_LIBRARY(config ${config_source})
 TARGET_LINK_LIBRARIES(config
-    utils ${GSE_BOOST_LIBS})
+    utils chain ${GSE_BOOST_LIBS})
