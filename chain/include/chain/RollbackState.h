@@ -94,9 +94,9 @@ public:
     std::pair<BranchType, BranchType> fetchBranchFrom(BlockID const& first, BlockID const& second) const;
 
     // The invalid block would be removed,
-    void setValidity(BlockStatePtr const& blockState, bool valid);
-    void markInCurrentChain(BlockStatePtr const& blockState, bool inCurrentChain);
-    void prune(BlockStatePtr const& blockState);
+    void setValidity(BlockStatePtr const& bsp, bool valid);
+    void markInCurrentChain(BlockStatePtr const& bsp, bool inCurrentChain);
+    void prune(BlockStatePtr const& bsp);
 
 public:
     boost::signals2::signal<void(BlockStatePtr)> m_irreversible;

@@ -220,8 +220,14 @@ void RollbackState::markInCurrentChain(BlockStatePtr const& blockState, bool inC
     });
 }
 
-void RollbackState::prune(BlockStatePtr const& blockState)
+void RollbackState::prune(BlockStatePtr const& bsp)
 {
+    auto _bsp = m_index.find(bsp->m_blockID);
+    if (_bsp != m_index.end()) {
+        m_irreversible(*_bsp);
+    }
+
+    /*
     uint64_t number = blockState->m_blockNumber;
     auto& numberIdx = m_index.get<ByBlockNumber>();
     for (auto itr = numberIdx.begin(); itr != numberIdx.end() && (*itr)->m_blockNumber < number;) {
@@ -241,6 +247,7 @@ void RollbackState::prune(BlockStatePtr const& blockState)
         ++numItr;
         remove((*removeItem)->m_blockID);
     }
+    */
 }
 
 void RollbackState::setBFTIrreversible(BlockID blockID)
