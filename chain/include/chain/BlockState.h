@@ -21,7 +21,7 @@ public:
 
     HeaderConfirmation(HeaderConfirmation const& confirmation):
         m_chainID(confirmation.getChainID()), m_number(confirmation.getNumber()),
-        m_blockID(confirmation.getBlockID()), m_timestamp(getTimestamp()), m_producer(confirmation.getProducer()), m_signature(confirmation.getSignature()) {}
+        m_blockID(confirmation.getBlockID()), m_timestamp(confirmation.getTimestamp()), m_producer(confirmation.getProducer()), m_signature(confirmation.getSignature()) {}
 
     HeaderConfirmation& operator=(HeaderConfirmation const& confirmation);
 
@@ -49,11 +49,11 @@ public:
 
     core::h256 getHash();
 
-    bytes getKey() override;
+    virtual bytes getKey() override;
 
-    bytes getRLPData() override;
+    virtual bytes getRLPData() override;
 
-    Object::ObjectType getObjectType() const override { return Object::HeaderConfirmationType; }
+    virtual Object::ObjectType getObjectType() const override { return Object::HeaderConfirmationType; }
 
 private:
     ChainID m_chainID;
@@ -62,8 +62,6 @@ private:
     int64_t m_timestamp;
     core::Address m_producer;
     crypto::SignatureStruct m_signature;
-
-    bool m_hasSigned = false;
 };
 
 class BlockState: public Object {
