@@ -122,7 +122,7 @@ void RollbackState::remove(BlockID const& blockID)
         remove(prevBlockID);
 
     CINFO << "Remove block state - " << blockID;
-    m_head = *m_index.get<ByMultiBlockNumber>().begin();
+    // m_head = *m_index.get<ByMultiBlockNumber>().begin();
     m_index.erase(itr);
 }
 
