@@ -33,8 +33,13 @@ BlockStatePtr RollbackState::getBlock(BlockID const& blockID) const
 BlockStatePtr RollbackState::getBlock(uint64_t number) const
 {
     auto const& numberIdx = m_index.get<ByBlockNumber>();
+    /*
     auto itr = numberIdx.lower_bound(number);
     if (itr != numberIdx.end() && (*itr)->m_blockNumber == number && (*itr)->m_inCurrentChain == true)
+        return *itr;
+    */
+    auto itr = numberIdx.find(number);
+    if (itr != numberIdx.end())
         return *itr;
     return EmptyBlockStatePtr;
 }
@@ -97,31 +102,28 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
     auto _head = *m_index.get<ByMultiBlockNumber>().begin();
     uint64_t mutilNumber = _head->m_bftIrreversibleBlockNumber;
     BlockStatePtr oldest = *m_index.get<ByUpBlockNumber>().begin();
-    // CINFO << "Start-number:" << oldest->m_blockNumber << "   Irreversible-number:" << mutilNumber;
-    if (oldest->m_blockNumber < mutilNumber)
-        prune(oldest);
+    CINFO << "Start-number:" << oldest->m_blockNumber << "   Irreversible-number:" << mutilNumber;
+    if (oldest->m_blockNumber < mutilNumber) {
+        auto solidifyBSP = getBlock(mutilNumber);
+        prune(solidifyBSP);
+    }
     return nextBSP;
 }
 
 void RollbackState::remove(BlockID const& blockID)
 {
-    CINFO << "remove by blockID:" << blockID;
-    std::vector<BlockID> removeQueue{blockID};
-    for (unsigned i; i < removeQueue.size(); i++) {
-        auto item = m_index.find(removeQueue[i]);
-        if (item != m_index.end()) {
-            m_index.erase(item);
-        }
+    auto itr = m_index.find(blockID);
+    if (itr == m_index.end())
+        return;
 
-        auto& prevIdx = m_index.get<ByPrev>();
-        auto prevItr = prevIdx.lower_bound(removeQueue[i]);
-        while (prevItr != prevIdx.end() && (*prevItr)->getPrev() == removeQueue[i]) {
-            removeQueue.push_back((*prevItr)->m_blockID);
-            prevItr++;
-        }
-    }
+    auto prevBlockID = (*itr)->getPrev();
+    auto prevItr = m_index.find(prevBlockID);
+    if (prevItr != m_index.end())
+        remove(prevBlockID);
 
+    CINFO << "Remove block state - " << blockID;
     m_head = *m_index.get<ByMultiBlockNumber>().begin();
+    m_index.erase(itr);
 }
 
 void RollbackState::remove(uint64_t number)
@@ -220,8 +222,14 @@ void RollbackState::markInCurrentChain(BlockStatePtr const& blockState, bool inC
     });
 }
 
-void RollbackState::prune(BlockStatePtr const& blockState)
+void RollbackState::prune(BlockStatePtr const& bsp)
 {
+    auto _bsp = m_index.find(bsp->m_blockID);
+    if (_bsp != m_index.end()) {
+        m_irreversible(*_bsp);
+    }
+
+    /*
     uint64_t number = blockState->m_blockNumber;
     auto& numberIdx = m_index.get<ByBlockNumber>();
     for (auto itr = numberIdx.begin(); itr != numberIdx.end() && (*itr)->m_blockNumber < number;) {
@@ -241,6 +249,7 @@ void RollbackState::prune(BlockStatePtr const& blockState)
         ++numItr;
         remove((*removeItem)->m_blockID);
     }
+    */
 }
 
 void RollbackState::setBFTIrreversible(BlockID blockID)
