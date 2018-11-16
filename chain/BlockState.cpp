@@ -54,7 +54,7 @@ bool HeaderConfirmation::operator==(HeaderConfirmation const& confirmation) cons
             (m_number == confirmation.getNumber()) &&
             (m_blockID == confirmation.getBlockID()) &&
             (m_timestamp == confirmation.getTimestamp()) &&
-            (m_producer == confirmation.getProducer()) ;
+            (m_producer == confirmation.getProducer());
 }
 
 bool HeaderConfirmation::operator!=(HeaderConfirmation const& confirmation) const
@@ -92,7 +92,6 @@ void HeaderConfirmation::sign(Secret const& privKey)
         m_signature = _sig;
         m_hasSigned = true;
     }
-
 }
 
 h256 HeaderConfirmation::getHash()
@@ -102,22 +101,18 @@ h256 HeaderConfirmation::getHash()
     return sha3(rlpStream.out());
 }
 
-// @override
 bytes HeaderConfirmation::getKey()
 {
     return getHash().asBytes();
 }
 
-// @override
 bytes HeaderConfirmation::getRLPData()
 {
-    // if (!m_hasSigned) CERROR << "Not signed!";
     RLPStream rlpStream;
     streamRLP(rlpStream);
     return rlpStream.out();
 }
 
-// #########################################################
 BlockState::BlockState(BlockState const& bs)
 {
     m_block = bs.m_block;
@@ -191,8 +186,24 @@ void BlockState::addConfirmation(HeaderConfirmation const& confirmation)
     if (!m_activeProucers.isExist(confirmation.getProducer()))
         return;
 
-    m_confirmCount++;
-    m_confirmations.push_back(confirmation);
+    auto itr = std::find(m_confirmations.begin(), m_confirmations.end(), confirmation);
+    if (itr == m_confirmations.end()) {
+        CINFO << "addConfirmation before - chainID:" <<  confirmation.getChainID()
+            << " number:" << confirmation.getNumber()
+            << " \nproducer:" << confirmation.getProducer()
+            << " \nID" << confirmation.getBlockID()
+            << " \nSig:" << *(Signature*)&(confirmation.getSignature());
+        m_confirmCount++;
+        m_confirmations.push_back(confirmation);
+
+        auto _itr = std::find(m_confirmations.begin(), m_confirmations.end(), confirmation);
+        if (_itr != m_confirmations.end())
+            CINFO << "addConfirmation before - chainID:" <<  _itr->getChainID()
+                << " number:" << _itr->getNumber()
+                << " \nproducer:" << _itr->getProducer()
+                << " \nID" << _itr->getBlockID()
+                << " \nSig:" << *(Signature*)&(_itr->getSignature());
+    }
 }
 
 void BlockState::streamRLP(RLPStream& rlpStream) const
