@@ -78,6 +78,8 @@ public:
     virtual void schedule(ProducersConstRef producerList) = 0;
 
     virtual Address getProducerAddress(unsigned idx) const = 0;
+
+    virtual ProducersConstRef getSortedProducerList() const = 0;
 };
 
 enum BlockChainStatus {
@@ -195,6 +197,8 @@ public:
     Producers getProducerListFromRepo() const;
 
     void schedule(int64_t timestamp);
+
+    void updateActiveProducers(std::shared_ptr<Block> block);
 
 public: /// used by rpc
     bool preProcessTx(Transaction& tx);

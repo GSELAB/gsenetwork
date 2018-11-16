@@ -222,6 +222,41 @@ Address BlockChain::getExpectedProducer(int64_t timestamp) const
     return m_messageFace->getProducerAddress(producerPosition);
 }
 
+void BlockChain::updateActiveProducers(std::shared_ptr<Block> block)
+{
+    int64_t currentTimestamp = block->getBlockHeader().getTimestamp();
+    unsigned currentProducerIndex = ((currentTimestamp - GENESIS_TIMESTAMP) %
+                (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
+
+    Block prevBlock(getBlockByNumber(block->getBlockHeader().getNumber() - 1));
+    int64_t prevTimestamp = prevBlock.getBlockHeader().getTimestamp();
+    unsigned prevProducerIndex = ((prevTimestamp - GENESIS_TIMESTAMP) %
+                (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
+
+    m_currentActiveProducers.setTimestamp(currentTimestamp);
+
+    m_currentActiveProducers.addProducer(getProducer(block->getBlockHeader().getProducer()));
+
+    ProducersConstRef producerList = m_messageFace->getSortedProducerList();
+
+    if (prevProducerIndex < currentProducerIndex) {
+        for (int i = prevProducerIndex + 1; i < currentProducerIndex; ++i)
+            m_currentActiveProducers.deleteProducer(producerList[i]);
+    } else if (prevProducerIndex == currentProducerIndex) {
+        for (int i = 0; i < producerList.size(); ++i) {
+            if (i == currentProducerIndex)
+                continue;
+            m_currentActiveProducers.deleteProducer(producerList[i]);
+        }
+    } else {
+        for (int i = 0; i < currentProducerIndex; ++i)
+            m_currentActiveProducers.deleteProducer(producerList[i]);
+
+        for (int j = prevProducerIndex + 1; j < producerList.size(); ++j)
+            m_currentActiveProducers.deleteProducer(producerList[j]);
+    }
+}
+
 bool BlockChain::processBlock(std::shared_ptr<Block> block)
 {
     try {
@@ -235,13 +270,12 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
             throw InvalidProducerException("Invalid block producer!");
         }
 
-        m_currentActiveProducers.setTimestamp(block->getBlockHeader().getTimestamp());
-        m_currentActiveProducers.addProducer(getProducer(block->getBlockHeader().getProducer()));
+        updateActiveProducers(block);
         m_rollbackState.add(*block, m_currentActiveProducers);
         checkBifurcation(block);
         m_head = m_rollbackState.head();
         {
-            HeaderConfirmation hc(m_chainID, block->getNumber(), block->getHash(), currentTimestamp(), m_key.getAddress());
+            HeaderConfirmation hc(m_chainID, block->getNumber(), block->getHash(), timestamp, m_key.getAddress());
             hc.sign(m_key.getSecret());
             m_rollbackState.add(hc);
             m_messageFace->send(hc);
@@ -249,6 +283,7 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
 
         if (((timestamp - GENESIS_TIMESTAMP) % (SCHEDULE_UPDATE_INTERVAL)) / (TIME_PER_ROUND) >= (SCHEDULE_UPDATE_ROUNDS - 1)) {
             schedule(timestamp);
+            m_currentActiveProducers.clear();
         }
 
 
