@@ -49,11 +49,11 @@ public:
 
     core::h256 getHash();
 
-    bytes getKey() override;
+    virtual bytes getKey() override;
 
-    bytes getRLPData() override;
+    virtual bytes getRLPData() override;
 
-    Object::ObjectType getObjectType() const override { return Object::HeaderConfirmationType; }
+    virtual Object::ObjectType getObjectType() const override { return Object::HeaderConfirmationType; }
 
 private:
     ChainID m_chainID;
