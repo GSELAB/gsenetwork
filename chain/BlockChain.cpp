@@ -429,29 +429,26 @@ std::shared_ptr<core::Block> BlockChain::getBlockFromCache()
 
 void BlockChain::onIrreversible(BlockStatePtr bsp)
 {
-    bool sodility = false;
     Guard l(x_memoryQueue);
     MemoryItem* item = m_memoryQueue.front();
     while (item && bsp->m_blockNumber >= item->getBlockNumber()) {
         m_memoryQueue.pop_front();
         item->commit();
+        CINFO << "onIrreversible block number:" << item->getBlockNumber();
+        BlockStatePtr solidifyBSP = m_rollbackState.getBlock(item->getBlockNumber());
+        if (solidifyBSP == EmptyBlockStatePtr)
+            throw BlockChainException("onIrreversible - block state not found");
+        ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(solidifyBSP->m_blockNumber);
+        m_dbc->putAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
+        ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.setData(solidifyBSP->m_activeProucers.getRLPData());
+        m_dbc->putAttribute(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST);
+        m_dbc->put(*solidifyBSP);
         delete item;
+        CINFO << "onIrreversible end!";
+
         if (!m_memoryQueue.empty())
             m_memoryQueue.front()->setParentEmpty();
         item = m_memoryQueue.front();
-
-        if (!sodility) {
-            CINFO << "onIrreversible block number:" << bsp->m_blockNumber;
-            ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(bsp->m_blockNumber);
-            m_dbc->putAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
-
-            ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.setData(bsp->m_activeProucers.getRLPData());
-            m_dbc->putAttribute(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST);
-
-            m_dbc->put(*bsp);
-            CINFO << "onIrreversible end!";
-            sodility = true;
-        }
     }
 
 
