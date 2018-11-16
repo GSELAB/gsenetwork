@@ -451,8 +451,6 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
             m_memoryQueue.front()->setParentEmpty();
         item = m_memoryQueue.front();
     }
-
-
 }
 
 void BlockChain::start()

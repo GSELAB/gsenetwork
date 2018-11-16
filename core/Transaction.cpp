@@ -66,7 +66,7 @@ Transaction::Transaction(bytesConstRef data)
         m_type = rlp[index = 1].toInt<uint32_t>();
         m_sender = rlp[index = 2].toHash<Address>(RLP::VeryStrict) ;
         m_recipient = rlp[index = 3].toHash<Address>(RLP::VeryStrict);
-        m_timestamp = rlp[index = 4].toInt<uint64_t>();
+        m_timestamp = rlp[index = 4].toInt<int64_t>();
         m_data = rlp[index = 5].toBytes();
         m_value = rlp[index = 6].toInt<uint64_t>();
 

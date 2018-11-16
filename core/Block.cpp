@@ -54,7 +54,7 @@ BlockHeader::BlockHeader(bytesConstRef data)
             m_transactionsRoot = rlp[index = 4].toHash<h256>(RLP::VeryStrict);
             m_receiptRoot = rlp[index = 5].toHash<h256>(RLP::VeryStrict);
             m_number = rlp[index = 6].toPositiveInt64();
-            m_timestamp = rlp[index = 7].toPositiveInt64();
+            m_timestamp = rlp[index = 7].toInt<int64_t>();
             m_extra = rlp[index = 8].toBytes();
 
             int v = rlp[index = 9].toInt<int>();
@@ -163,7 +163,7 @@ void BlockHeader::populate(bytesConstRef data)
             m_transactionsRoot = rlp[index = 4].toHash<h256>(RLP::VeryStrict);
             m_receiptRoot = rlp[index = 5].toHash<h256>(RLP::VeryStrict);
             m_number = rlp[index = 6].toPositiveInt64();
-            m_timestamp = rlp[index = 7].toPositiveInt64();
+            m_timestamp = rlp[index = 7].toInt<int64_t>();
             m_extra = rlp[index = 8].toBytes();
 
             int v = rlp[index = 9].toInt<int>();
