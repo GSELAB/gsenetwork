@@ -19,7 +19,7 @@ HeaderConfirmation::HeaderConfirmation(bytesConstRef data)
             m_chainID = rlp[0].toInt<ChainID>();
             m_number = rlp[1].toInt<uint64_t>();
             m_blockID = rlp[2].toHash<BlockID>(RLP::VeryStrict);
-            m_timestamp = rlp[3].toInt<uint64_t>();
+            m_timestamp = rlp[3].toInt<int64_t>();
             m_producer = rlp[4].toHash<Address>(RLP::VeryStrict);
             Signature sig = rlp[5].toHash<Signature>(RLP::VeryStrict);
             m_signature = *(SignatureStruct*)&sig;
@@ -223,7 +223,5 @@ bytes BlockState::getRLPData()
     streamRLP(rlpStream);
     return rlpStream.out();
 }
-
-
 }
 
