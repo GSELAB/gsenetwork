@@ -477,7 +477,8 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
         m_dbc->putAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
         ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.setData(solidifyBSP->m_activeProucers.getRLPData());
         m_dbc->putAttribute(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST);
-        m_dbc->put(*solidifyBSP);
+        BlockState solidifyBS = *solidifyBSP;
+        m_dbc->put(solidifyBS);
         m_rollbackState.remove(solidifyBSP->m_blockID);
         delete item;
 
