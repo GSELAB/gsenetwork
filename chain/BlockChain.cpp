@@ -275,7 +275,7 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
         checkBifurcation(block);
         m_head = m_rollbackState.head();
         {
-            HeaderConfirmation hc(m_chainID, block->getNumber(), block->getHash(), currentTimestamp(), m_key.getAddress());
+            HeaderConfirmation hc(m_chainID, block->getNumber(), block->getHash(), timestamp, m_key.getAddress());
             hc.sign(m_key.getSecret());
             m_rollbackState.add(hc);
             m_messageFace->send(hc);
