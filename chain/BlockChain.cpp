@@ -449,7 +449,7 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
             m_dbc->putAttribute(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST);
 
             m_dbc->put(*bsp);
-            CINFO << "onIrreversible end!"
+            CINFO << "onIrreversible end!";
             sodility = true;
         }
     }
