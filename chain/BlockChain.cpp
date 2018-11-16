@@ -445,7 +445,6 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
         m_dbc->put(*solidifyBSP);
         m_rollbackState.remove(solidifyBSP->m_blockID);
         delete item;
-        CINFO << "onIrreversible end!";
 
         if (!m_memoryQueue.empty())
             m_memoryQueue.front()->setParentEmpty();
