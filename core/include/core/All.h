@@ -1,9 +1,17 @@
-#ifndef __CORE_ALL_HEADER__
-#define __CORE_ALL_HEADER__
+/*
+ * Copyright (c) 2018 GSENetwork
+ *
+ * This file is part of GSENetwork.
+ *
+ * GSENetwork is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or any later version.
+ *
+ */
 
-#include "core/Types.h"
-#include "core/Account.h"
-#include "core/Transaction.h"
-#include "core/Block.h"
+#pragma once
 
-#endif
+#include <core/FixedHash.h>
+#include <core/Common.h>
+#include <core/Exceptions.h>
+#include <core/Log.h>

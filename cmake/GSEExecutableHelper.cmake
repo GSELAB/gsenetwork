@@ -1,0 +1,62 @@
+#
+# this function requires the following variables to be specified:
+# GSE_VERSION
+# PROJECT_NAME
+# PROJECT_VERSION
+# PROJECT_COPYRIGHT_YEAR
+# PROJECT_VENDOR
+# PROJECT_DOMAIN_SECOND
+# PROJECT_DOMAIN_FIRST
+# SRC_LIST
+# HEADERS
+#
+# params:
+# ICON
+#
+
+MACRO(gse_copy_dll EXECUTABLE DLL)
+	# dlls must be unsubstitud list variable (without ${}) in format
+	# optimized;path_to_dll.dll;debug;path_to_dlld.dll
+	IF(DEFINED MSVC)
+		LIST(GET ${DLL} 1 DLL_RELEASE)
+		LIST(GET ${DLL} 3 DLL_DEBUG)
+		ADD_CUSTOM_COMMAND(TARGET ${EXECUTABLE}
+			PRE_BUILD
+			COMMAND ${CMAKE_COMMAND} ARGS
+			-DDLL_RELEASE="${DLL_RELEASE}"
+			-DDLL_DEBUG="${DLL_DEBUG}"
+			-DCONF="$<CONFIGURATION>"
+			-DDESTINATION="${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}"
+			-P "${ETH_SCRIPTS_DIR}/copydlls.cmake"
+		)
+	ENDIF()
+ENDMACRO()
+
+MACRO(gse_copy_dlls EXECUTABLE)
+    FOREACH(dll ${ARGN})
+		gse_copy_dll(${EXECUTABLE} ${dll})
+	ENDFOREACH(dll)
+ENDMACRO()
+
+MACRO(jsonrpcstub_create EXECUTABLE SPEC SERVERNAME SERVERDIR SERVERFILENAME CLIENTNAME CLIENTDIR CLIENTFILENAME)
+	IF(ETH_JSON_RPC_STUB)
+	    ADD_CUSTOM_TARGET(${SPEC}stub)
+	    ADD_CUSTOM_COMMAND(
+            TARGET ${SPEC}stub
+            POST_BUILD
+            DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${SPEC}"
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMAND ${CMAKE_COMMAND} -DETH_SPEC_PATH="${CMAKE_CURRENT_SOURCE_DIR}/${SPEC}" -DETH_SOURCE_DIR="${CMAKE_SOURCE_DIR}" -DETH_CMAKE_DIR="${ETH_CMAKE_DIR}"
+                -DETH_CLIENT_DIR="${CLIENTDIR}"
+                -DETH_CLIENT_NAME=${CLIENTNAME}
+                -DETH_CLIENT_FILENAME=${CLIENTFILENAME}
+                -DETH_SERVER_DIR="${SERVERDIR}"
+                -DETH_SERVER_NAME=${SERVERNAME}
+                -DETH_SERVER_FILENAME=${SERVERFILENAME}
+                -DETH_JSON_RPC_STUB="${ETH_JSON_RPC_STUB}"
+                -P "${ETH_SCRIPTS_DIR}/jsonrpcstub.cmake"
+		)
+	    ADD_DEPENDENCIES(${EXECUTABLE} ${SPEC}stub)
+	ENDIF ()
+endmacro()
+

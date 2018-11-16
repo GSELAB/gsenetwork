@@ -1,0 +1,110 @@
+{
+    "rpc": {
+        "ip_port": "127.0.0.1:50505"
+    },
+
+    "local": {
+        "local_ip_port": "127.0.0.1:60606"
+    },
+
+    "net": {
+        "node_list": [
+
+        ],
+
+        "trust_node_list": [
+            "127.0.0.1:60607"
+        ]
+    },
+
+    "genesis": {
+        "timestamp": 1538352000,
+
+        "init_accounts": [
+            {
+                "address": "A49C7baBB4C9c46fdEd6b057fE6Ef9E1fd1543Fb",
+                "balance": 10000000000
+            },
+            {
+                "address": "BEd51df7591E02f83a5cfBbDdF3416e6C552Aa7D",
+                "balance": 20000000000
+            },
+            {
+                "address": "bcE59aEb58B680721B2CD16b209692391A40d1D4",
+                "balance": 20000000000
+            },
+            {
+                "address": "5dE601604Bab4079685A6E16Af89158261007636",
+                "balance": 5000000000
+            },
+            {
+                "address": "0B4D3022d2B0242a32ec67a4A5c7753AA7841f78",
+                "balance": 5000000000
+            },
+            {
+                "address": "E126456f1F0B12670b8831cb5B1231b76aB99168",
+                "balance": 10000000000
+            },
+            {
+                "address": "D3198FE90EdFBfB7965605F37a1913C10F856eA2",
+                "balance": 10000000000
+            },
+            {
+                "address": "06D43b520Ac63b9179d3b6170FcdFDEd947aE44c",
+                "balance": 20000000000
+            }
+        ],
+
+        "init_producers": [
+            {
+                "address": "06D43b520Ac63b9179d3b6170FcdFDEd947aE44c",
+                "vote": 100
+            },
+            {
+                "address": "0B4D3022d2B0242a32ec67a4A5c7753AA7841f78",
+                "vote": 200
+            },
+            {
+                "address": "A49C7baBB4C9c46fdEd6b057fE6Ef9E1fd1543Fb",
+                "vote": 200
+            },
+            {
+                "address": "BEd51df7591E02f83a5cfBbDdF3416e6C552Aa7D",
+                "vote": 300
+            },
+            {
+                "address": "bcE59aEb58B680721B2CD16b209692391A40d1D4",
+                "vote": 300
+            },
+            {
+                "address": "5dE601604Bab4079685A6E16Af89158261007636",
+                "vote": 400
+            },
+            {
+                "address": "E126456f1F0B12670b8831cb5B1231b76aB99168",
+                "vote": 500
+            }
+        ],
+
+        "genesis_block": {
+            "chainID": 16,
+            "producer": "A49C7baBB4C9c46fdEd6b057fE6Ef9E1fd1543Fb",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "merkle": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "txRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "receiptRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "number": 0,
+            "timestamp": 1538352000,
+            "extra": "gse-genesis",
+            "signature": "0xcd34ec9542deb2de14318d6726103039f81162caa829c8b948bf7760ac8126ad4868d61932ee33c69e7f695b6be32571e5bf469c0d9dbd4408b6ec226253c4e601"
+        }
+    },
+
+    "key": {
+        "secret": ""
+    },
+
+    "node": {
+        "sync": true
+    }
+}

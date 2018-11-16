@@ -1,10 +1,15 @@
-/**
- *  @author guoygang <hero.gariker@gmail.com>
- *  @date 2018
+/*
+ * Copyright (c) 2018 GSENetwork
+ *
+ * This file is part of GSENetwork.
+ *
+ * GSENetwork is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or any later version.
+ *
  */
 
-#ifndef __TIMESTAMP_HEADER__
-#define __TIMESTAMP_HEADER__
+#pragma once
 
 namespace core {
 
@@ -59,8 +64,7 @@ public:
     }
 
 private:
-    int64_t m_timestamp;
+    const int64_t m_timestamp;
 };
 
 } /* end of namespace */
-#endif
