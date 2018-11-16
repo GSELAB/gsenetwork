@@ -23,7 +23,6 @@ HeaderConfirmation::HeaderConfirmation(bytesConstRef data)
             m_producer = rlp[4].toHash<Address>(RLP::VeryStrict);
             Signature sig = rlp[5].toHash<Signature>(RLP::VeryStrict);
             m_signature = *(SignatureStruct*)&sig;
-            m_hasSigned = true;
         } else {
             throw DeserializeException("Deserialize HeaderConfirmation failed!");
         }
@@ -44,7 +43,6 @@ HeaderConfirmation& HeaderConfirmation::operator=(HeaderConfirmation const& conf
     m_timestamp = confirmation.getTimestamp();
     m_producer = confirmation.getProducer();
     m_signature = confirmation.getSignature();
-    m_hasSigned = true;
     return *this;
 }
 
@@ -90,7 +88,6 @@ void HeaderConfirmation::sign(Secret const& privKey)
     SignatureStruct _sig = *(SignatureStruct*)&sig;
     if (_sig.isValid()) {
         m_signature = _sig;
-        m_hasSigned = true;
     }
 }
 
@@ -188,21 +185,8 @@ void BlockState::addConfirmation(HeaderConfirmation const& confirmation)
 
     auto itr = std::find(m_confirmations.begin(), m_confirmations.end(), confirmation);
     if (itr == m_confirmations.end()) {
-        CINFO << "addConfirmation before - chainID:" <<  confirmation.getChainID()
-            << " number:" << confirmation.getNumber()
-            << " \nproducer:" << confirmation.getProducer()
-            << " \nID" << confirmation.getBlockID()
-            << " \nSig:" << *(Signature*)&(confirmation.getSignature());
         m_confirmCount++;
         m_confirmations.push_back(confirmation);
-
-        auto _itr = std::find(m_confirmations.begin(), m_confirmations.end(), confirmation);
-        if (_itr != m_confirmations.end())
-            CINFO << "addConfirmation before - chainID:" <<  _itr->getChainID()
-                << " number:" << _itr->getNumber()
-                << " \nproducer:" << _itr->getProducer()
-                << " \nID" << _itr->getBlockID()
-                << " \nSig:" << *(Signature*)&(_itr->getSignature());
     }
 }
 
