@@ -249,7 +249,8 @@ Block::Block(Block const& block)
 {
     m_blockHeader = block.getBlockHeader();
     m_transactions.assign(block.getTransactions().begin(), block.getTransactions().end());
-    m_transactionReceipts.assign(block.getTransactionReceipts().begin(), block.getTransactionReceipts().end()) ;
+    m_transactionReceipts.assign(block.getTransactionReceipts().begin(), block.getTransactionReceipts().end());
+    m_syncBlock = block.isSyncBlock();
 }
 
 Block::Block(bytesConstRef data)
@@ -335,7 +336,8 @@ Block& Block::operator=(Block const& block)
     if (this == &block) return *this;
     m_blockHeader = block.getBlockHeader();
     m_transactions.assign(block.getTransactions().begin(), block.getTransactions().end());
-    m_transactionReceipts.assign(block.getTransactionReceipts().begin(), block.getTransactionReceipts().end()) ;
+    m_transactionReceipts.assign(block.getTransactionReceipts().begin(), block.getTransactionReceipts().end());
+    m_syncBlock = block.isSyncBlock();
     return *this;
 }
 
