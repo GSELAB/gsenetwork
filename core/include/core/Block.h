@@ -159,6 +159,10 @@ public:
 
     void sign(Secret const& priv) { m_blockHeader.sign(priv); }
 
+    void setSyncBlock() { m_syncBlock = true; }
+
+    bool isSyncBlock() const { return m_syncBlock; }
+
     Address const& getProducer() const { return m_blockHeader.getProducer(); }
 
     BlockHeader const& getBlockHeader() const { return m_blockHeader; }
@@ -179,21 +183,20 @@ public:
 
     SignatureStruct const& getSignature() const { return m_blockHeader.getSignature(); }
 
-    // @override
-    bytes getKey();
+    virtual bytes getKey() override;
 
-    // @override
-    bytes getRLPData();
+    virtual bytes getRLPData() override;
 
-    // @override
-    Object::ObjectType getObjectType() const { return Object::BlockType; }
+    virtual Object::ObjectType getObjectType() const override { return Object::BlockType; }
 
 private:
     BlockHeader m_blockHeader;
+
     Transactions m_transactions;
+
     TransactionReceipts m_transactionReceipts;
 
-    //h256 m_hash;
+    bool m_syncBlock = false;
 };
 
 using BlockID = h256;

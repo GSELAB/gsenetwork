@@ -59,7 +59,7 @@ void BlockChain::initializeRollbackState()
     Block block = m_dbc->getBlock(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue());
 
     m_head = std::make_shared<BlockState>(block);
-    m_head->m_bftIrreversibleBlockNumber = block.getNumber();
+    m_head->m_bftSolidifyBlockNumber = block.getNumber();
     m_rollbackState.set(m_head);
 }
 
@@ -151,7 +151,7 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
 {
     bool needCancel;
     MemoryItem* item;
-    CINFO << "BlockChain::doProcessBlock - number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
+    CINFO << "Process block number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
     try {
         item = addMemoryItem(block);
         needCancel = true;
@@ -274,7 +274,8 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
         m_rollbackState.add(*block, m_currentActiveProducers);
         checkBifurcation(block);
         m_head = m_rollbackState.head();
-        {
+        CINFO << "Block number is sync:" << block->isSyncBlock();
+        if (!block->isSyncBlock()) {
             HeaderConfirmation hc(m_chainID, block->getNumber(), block->getHash(), timestamp, m_key.getAddress());
             hc.sign(m_key.getSecret());
             m_rollbackState.add(hc);
@@ -436,6 +437,17 @@ Block BlockChain::getBlockByNumber(uint64_t number)
     return ret;
 }
 
+BlockState BlockChain::getBlockStateByNumber(uint64_t number)
+{
+    if (number >= m_rollbackState.getSolidifyNumber()) {
+        auto bsp = m_rollbackState.getBlock(number);
+        if (bsp != EmptyBlockStatePtr)
+            return *bsp;
+    }
+
+    return m_dbc->getBlockState(number);
+}
+
 std::shared_ptr<core::Transaction> BlockChain::getTransactionFromCache()
 {
     std::shared_ptr<core::Transaction> ret = nullptr;
@@ -480,6 +492,7 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
         BlockState solidifyBS = *solidifyBSP;
         m_dbc->put(solidifyBS);
         m_rollbackState.remove(solidifyBSP->m_blockID);
+        m_rollbackState.setSolidifyNumber(item->getBlockNumber());
         delete item;
 
         if (!m_memoryQueue.empty())
@@ -745,7 +758,7 @@ void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block
     }
 
     m_messageFace->broadcast(from, block);
-    CINFO << "Recv broadcast block:" << toJson(block).toStyledString();
+    CINFO << "Recv broadcast block number:" << block.getNumber(); // toJson(block).toStyledString();
 }
 
 void BlockChain::processSyncBlockMessage(bi::tcp::endpoint const& from, Block& block)
@@ -769,14 +782,13 @@ void BlockChain::processSyncBlockMessage(bi::tcp::endpoint const& from, Block& b
         Guard l{x_blockCache};
         auto ret = m_blockCache.insert(std::make_shared<Block>(block));
     }
-    CINFO << "Process sync block - " << toJson(block).toStyledString();
+    CINFO << "Recv sync block number:" << block.getNumber(); // toJson(block).toStyledString();
 }
 
 void BlockChain::processConfirmationMessage(bi::tcp::endpoint const& from, HeaderConfirmation& confirmation)
 {
     try {
         m_rollbackState.add(confirmation);
-
     } catch (RollbackStateException) {
 
     }
@@ -802,16 +814,30 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
             // CINFO << "Recv status from " << from << " - sync blocks:(" << status.getStart() << ", " << status.getEnd() << ")";
             if (status.getStart() < status.getEnd() && status.getEnd() <= getLastBlockNumber()) {
                 Status _status(ReplyBlocks);
+                BlockState _bs(EmptyBlockState);
                 for (uint64_t i = status.getStart(); i <= status.getEnd(); i++) {
                     _status.addBlock(getBlockByNumber(i));
+                    BlockState bs;
+                    if (i < 11) {
+                        bs =  getBlockStateByNumber(i);
+                    } else {
+                        bs =  getBlockStateByNumber(i - 10);
+                    }
+                    if (bs != EmptyBlockState && bs.isSolidified()) {
+                        _bs = bs;
+                    }
                 }
                 m_messageFace->send(from, _status);
+                if (_bs != EmptyBlockState) {
+                    m_messageFace->send(from, _bs);
+                }
             }
             break;
         }
         case ReplyBlocks: {
             // CINFO << "Recv blocks from " << from << " - reply blocks size is " << status.getBlocks().size();
             for (auto i : status.getBlocks()) {
+                i.setSyncBlock();
                 processSyncBlockMessage(from, i);
             }
             break;
@@ -823,9 +849,14 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
     }
 }
 
+void BlockChain::processBlockStateMessage(bi::tcp::endpoint const& from, BlockState const& bs)
+{
+    m_rollbackState.addSyncBlockState(bs);
+}
+
 void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
 {
-    m_chain->processObject(interpretObject(from, msg));
+    CWARN << "Not support - process BytesPacket.";
 }
 
 bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP const& rlp)
@@ -857,10 +888,9 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
             case chain::TransactionsPacket: {
                 return true;
             }
-            case chain::BlockBodiesPacket: {
-                return true;
-            }
-            case chain::NewBlockPacket: {
+            case chain::BlockStatePacket: {
+                BlockState bs(data);
+                m_chain->processBlockStateMessage(from, bs);
                 return true;
             }
             default:
@@ -887,46 +917,7 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
 
 bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, bytes const& data)
 {
-
     return false;
 }
 
-/*
- * 0x01: Transactoon
- * 0x02: BlockHeader
- * 0x03: Block
- * 0x04: Account
- * 0x05: Producer
- * 0x06: SubChain
- *
- */
-std::unique_ptr<core::Object> Dispatch::interpretObject(bi::tcp::endpoint const& from, BytesPacket const& msg)
-{
-    unique_ptr<Object> object;
-    switch (msg.cap()) {
-        case 0x01: // Transaction
-            object.reset(new Transaction(bytesConstRef(&msg.data())));
-            break;
-        case 0x02: // BlockHeader
-            object.reset(new BlockHeader(bytesConstRef(&msg.data())));
-            break;
-        case 0x03:
-            object.reset(new Block(bytesConstRef(&msg.data())));
-            break;
-        case 0x04:
-            object.reset(new Account(bytesConstRef(&msg.data())));
-            break;
-        case 0x05:
-            object.reset(new Producer(bytesConstRef(&msg.data())));
-            break;
-        case 0x06:
-            object.reset(new SubChain(bytesConstRef(&msg.data())));
-            break;
-        default:
-            THROW_GSEXCEPTION("Unknown object type -> interpretObject");
-            break;
-    }
-
-    return object;
 }
-} // end namespace
