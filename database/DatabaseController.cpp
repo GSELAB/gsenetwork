@@ -221,7 +221,7 @@ chain::BlockState DatabaseController::getBlockState(bytes const& key) const
 
 chain::BlockState DatabaseController::getBlockState(uint64_t key) const
 {
-    bytes data = m_blockStateStore->get(key);
+    bytes data = m_blockStateIndexStore->get(key);
     if (data == EmptyBytes) return chain::EmptyBlockState;
     return chain::BlockState(data);
 }
