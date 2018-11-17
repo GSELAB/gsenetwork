@@ -45,8 +45,6 @@ public:
 
     bool processMsg(bi::tcp::endpoint const& from, unsigned type, bytes const& data);
 
-    static std::unique_ptr<core::Object> interpretObject(bi::tcp::endpoint const& from, BytesPacket const& msg);
-
 private:
     BlockChain *m_chain;
 };
@@ -74,6 +72,10 @@ public:
     virtual void send(bi::tcp::endpoint const& to, Status& status) = 0;
 
     virtual void send(bi::tcp::endpoint const& to, StatusPtr status) = 0;
+
+    virtual void send(bi::tcp::endpoint const& to, BlockState const& bs) = 0;
+
+    virtual void send(bi::tcp::endpoint const& to, BlockStatePtr const& bsp) = 0;
 
     virtual void schedule(ProducersConstRef producerList) = 0;
 
@@ -184,6 +186,8 @@ public:
 
     Block getBlockByNumber(uint64_t number);
 
+    BlockState getBlockStateByNumber(uint64_t number);
+
     std::shared_ptr<Transaction> getTransactionFromCache();
 
     std::shared_ptr<Block> getBlockFromCache();
@@ -230,6 +234,8 @@ public: /// Used by network
     void processConfirmationMessage(bi::tcp::endpoint const& from, HeaderConfirmation& confirmation);
 
     void processStatusMessage(bi::tcp::endpoint const& from, Status& status);
+
+    void processBlockStateMessage(bi::tcp::endpoint const& from, BlockState const& bs);
 
     bool isExist(Transaction& tx);
 

@@ -35,6 +35,7 @@ void Sync::doWork()
     int64_t ct = currentTimestamp();
     if (m_chain->getBlockChainStatus() == BlockChainStatus::SyncStatus || ((ct - m_prevTimestamp) >= SYNC_INTERVAL)) {
         m_prevTimestamp = ct;
+        sleepMilliseconds(SYNC_INTERVAL / 10);
     } else {
         sleepMilliseconds(SYNC_INTERVAL);
         return;
@@ -59,8 +60,8 @@ void Sync::doWork()
         if (i.second > currentHeight) {
             uint64_t requestStart, requestEnd;
             requestStart = currentHeight + 1;
-            if (i.second - currentHeight > 50) {
-                requestEnd = currentHeight + 50;
+            if (i.second - currentHeight > 10) {
+                requestEnd = currentHeight + 10;
             } else {
                 requestEnd = i.second;
             }

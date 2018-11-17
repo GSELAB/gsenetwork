@@ -17,9 +17,7 @@ RollbackState::~RollbackState()
 
 void RollbackState::close()
 {
-    if (m_index.size() == 0)
-        return;
-
+    if (m_index.size() == 0) return;
     m_index.clear();
 }
 
@@ -33,11 +31,6 @@ BlockStatePtr RollbackState::getBlock(BlockID const& blockID) const
 BlockStatePtr RollbackState::getBlock(uint64_t number) const
 {
     auto const& numberIdx = m_index.get<ByBlockNumber>();
-    /*
-    auto itr = numberIdx.lower_bound(number);
-    if (itr != numberIdx.end() && (*itr)->m_blockNumber == number && (*itr)->m_inCurrentChain == true)
-        return *itr;
-    */
     auto itr = numberIdx.find(number);
     if (itr != numberIdx.end())
         return *itr;
@@ -98,11 +91,10 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
     }
 
     m_head = *m_index.get<ByBlockNumber>().begin();
-    // uint64_t mutilNumber = m_head->m_dposIrreversibleBlockNumber;
     auto _head = *m_index.get<ByMultiBlockNumber>().begin();
-    uint64_t mutilNumber = _head->m_bftIrreversibleBlockNumber;
+    uint64_t mutilNumber = _head->m_bftSolidifyBlockNumber;
     BlockStatePtr oldest = *m_index.get<ByUpBlockNumber>().begin();
-    CINFO << "Start-number:" << oldest->m_blockNumber << "   Irreversible-number:" << mutilNumber;
+    CINFO << "Old number:" << oldest->m_blockNumber << "\tirreversible number:" << mutilNumber;
     if (oldest->m_blockNumber < mutilNumber) {
         auto solidifyBSP = getBlock(mutilNumber);
         prune(solidifyBSP);
@@ -122,7 +114,6 @@ void RollbackState::remove(BlockID const& blockID)
         remove(prevBlockID);
 
     CINFO << "Remove block state - " << blockID;
-    // m_head = *m_index.get<ByMultiBlockNumber>().begin();
     m_index.erase(itr);
 }
 
@@ -138,14 +129,30 @@ void RollbackState::add(HeaderConfirmation const& confirmation)
 {
     BlockStatePtr bsp = getBlock(confirmation.getBlockID());
     if (!bsp) {
-        // CERROR << "Confirmation block id:" << confirmation.getBlockID() << " not found!";
-        throw RollbackStateException("Confirmation block id not found!");
+        // throw RollbackStateException("Confirmation block id not found!");
+        return;
     }
 
     bsp->addConfirmation(confirmation);
-    // CINFO << "Add confirmation - confirmation.size = " << bsp->getConfirmationsSize() << " (active size = " << bsp->m_activeProucers.size() << ")";
-    if (bsp->m_bftIrreversibleBlockNumber < bsp->m_blockNumber && bsp->getConfirmationsSize() >= ((bsp->m_activeProucers.size() * 2) / 3)) {
-        setBFTIrreversible(bsp->m_blockID);
+    CINFO << "Add confirmation - number:" << confirmation.getNumber() << " size = " << bsp->getConfirmationsSize() << " active-p(" << bsp->m_activeProucers.size() << ")";
+    if (bsp->m_bftSolidifyBlockNumber < bsp->m_blockNumber && bsp->getConfirmationsSize() >= ((bsp->m_activeProucers.size() * 2) / 3)) {
+        setBFTSolidify(bsp->m_blockID);
+    }
+}
+
+void RollbackState::setSolidifyNumber(uint64_t number)
+{
+    m_solidifyNumber = number;
+}
+
+void RollbackState::addSyncBlockState(BlockState const& bs)
+{
+    CINFO << "RollbackState recv block state - " << bs.m_blockNumber << "\tsolidifyNumber is " << m_solidifyNumber;
+    if (bs.m_blockNumber <= m_solidifyNumber)
+        return;
+
+    for (auto i : bs.getConfirmations()) {
+        add(i);
     }
 }
 
@@ -228,39 +235,17 @@ void RollbackState::prune(BlockStatePtr const& bsp)
     if (_bsp != m_index.end()) {
         m_irreversible(*_bsp);
     }
-
-    /*
-    uint64_t number = blockState->m_blockNumber;
-    auto& numberIdx = m_index.get<ByBlockNumber>();
-    for (auto itr = numberIdx.begin(); itr != numberIdx.end() && (*itr)->m_blockNumber < number;) {
-        prune(*itr);
-        numberIdx.begin();
-    }
-
-    auto _itr = m_index.find(blockState->m_blockID);
-    if (_itr != m_index.end()) {
-        m_irreversible(*_itr);
-        m_index.erase(_itr);
-    }
-
-    auto& numIdx = m_index.get<ByBlockNumber>();
-    for (auto numItr = numIdx.lower_bound(number); numItr != numIdx.end() && (*numItr)->m_blockNumber == number;) {
-        auto removeItem = numItr;
-        ++numItr;
-        remove((*removeItem)->m_blockID);
-    }
-    */
 }
 
-void RollbackState::setBFTIrreversible(BlockID blockID)
+void RollbackState::setBFTSolidify(BlockID blockID)
 {
     auto& idx = m_index.get<ByBlockID>();
     auto itr = idx.find(blockID);
     uint64_t number = (*itr)->m_blockNumber;
     idx.modify(itr, [&](auto& bsp) {
-        bsp->m_bftIrreversibleBlockNumber = bsp->m_blockNumber;
+        bsp->m_bftSolidifyBlockNumber = bsp->m_blockNumber;
     });
-
+    /*
     auto update = [&](std::vector<BlockID> const& in) {
         std::vector<BlockID> updated;
         for (auto const& i : in) {
@@ -285,5 +270,6 @@ void RollbackState::setBFTIrreversible(BlockID blockID)
     while (queue.size()) {
         queue = update(queue);
     }
+    */
 }
 }
