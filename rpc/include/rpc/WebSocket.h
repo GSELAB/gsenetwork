@@ -42,6 +42,8 @@ public:
     virtual uint64_t getHeight() const = 0;
 
     virtual uint64_t getSolidifyHeight() const = 0;
+
+    virtual Producers getCurrentProducerList() const = 0;
 };
 
 struct AsioStubConfig: public websocketpp::config::asio {

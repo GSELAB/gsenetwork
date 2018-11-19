@@ -82,6 +82,8 @@ public:
 
     ProducersConstRef getSchedule() { return m_schedule.getProducerList(); }
 
+    Producers getCurrentProducerList() const { return m_schedule.getCurrentProducerList(); }
+
     Address getProducerAddress(unsigned idx) const { return m_schedule.getAddress(idx); }
 
 private:

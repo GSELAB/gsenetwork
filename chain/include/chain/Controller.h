@@ -75,6 +75,8 @@ public: // RPC Handle
 
     virtual uint64_t getSolidifyHeight() const override { return m_chain->getSolidifyHeight(); }
 
+    virtual Producers getCurrentProducerList() const override;
+
 public: // Producer Handle
     virtual void broadcast(std::shared_ptr<Block> block) override;
 

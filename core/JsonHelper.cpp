@@ -96,6 +96,18 @@ Json::Value toJson(Producer const& producer)
     return ret;
 }
 
+Json::Value toJson(Producers const& producerList)
+{
+    Json::Value ret;
+    for (auto i : producerList) {
+        std::string str_address = toJS(i.getAddress());
+        std::string str_vote = toJS(i.getVotes());
+        ret["producer_list"].append(str_address + ": " + str_vote);
+    }
+
+    return ret;
+}
+
 Json::Value toJson(BlockHeader const& header)
 {
     Json::Value ret;

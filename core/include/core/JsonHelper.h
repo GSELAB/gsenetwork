@@ -113,6 +113,7 @@ inline int jsToInt(std::string const& str)
 // Object to Json
 Json::Value toJson(Account const& account);
 Json::Value toJson(Producer const& producer);
+Json::Value toJson(Producers const& producerList);
 Json::Value toJson(BlockHeader const& header);
 Json::Value toJson(Block& block); // maybe changge hash
 Json::Value toJson(Transaction& transaction);
