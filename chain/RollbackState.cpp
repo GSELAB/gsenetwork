@@ -204,7 +204,6 @@ std::pair<BranchType, BranchType> RollbackState::fetchBranchFrom(BlockID const& 
     return ret;
 }
 
-// The invalid block would be removed,
 void RollbackState::setValidity(BlockStatePtr const& blockState, bool valid)
 {
     if (valid) {
@@ -245,31 +244,5 @@ void RollbackState::setBFTSolidify(BlockID blockID)
     idx.modify(itr, [&](auto& bsp) {
         bsp->m_bftSolidifyBlockNumber = bsp->m_blockNumber;
     });
-    /*
-    auto update = [&](std::vector<BlockID> const& in) {
-        std::vector<BlockID> updated;
-        for (auto const& i : in) {
-            auto& prevIdx = m_index.get<ByPrev>();
-            auto prevItr = prevIdx.lower_bound(i);
-            auto prevEItr = prevIdx.upper_bound(i);
-            while (prevItr != prevEItr) {
-                prevIdx.modify(prevItr, [&](auto& bsp) {
-                    if (bsp->m_bftIrreversibleBlockNumber < number) {
-                        bsp->m_bftIrreversibleBlockNumber = number;
-                        updated.push_back(bsp->m_blockID);
-                    }
-                });
-                ++prevItr;
-            }
-        }
-
-        return updated;
-    };
-
-    std::vector<BlockID> queue{blockID};
-    while (queue.size()) {
-        queue = update(queue);
-    }
-    */
 }
 }
