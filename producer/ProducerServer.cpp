@@ -129,9 +129,5 @@ void ProducerServer::doWork()
     CINFO << "Generate block - idx:" << producerPosition  << toJson(*block);
 
     m_eventHandle->broadcast(block);
-
-
-
-
 }
 } // end of namespace
