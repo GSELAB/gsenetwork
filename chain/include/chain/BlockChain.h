@@ -73,9 +73,9 @@ public:
 
     virtual void send(bi::tcp::endpoint const& to, StatusPtr status) = 0;
 
-    virtual void send(bi::tcp::endpoint const& to, BlockState const& bs) = 0;
+    virtual void send(bi::tcp::endpoint const& to, BlockState& bs) = 0;
 
-    virtual void send(bi::tcp::endpoint const& to, BlockStatePtr const& bsp) = 0;
+    virtual void send(bi::tcp::endpoint const& to, BlockStatePtr bsp) = 0;
 
     virtual void schedule(ProducersConstRef producerList) = 0;
 
