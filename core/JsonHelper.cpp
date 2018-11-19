@@ -163,4 +163,21 @@ Json::Value toJson(std::string const& key, uint64_t value)
     return ret;
 }
 
+Transaction toTransaction(Json::Value const& root)
+{
+    chain::ChainID chainID = std::stoll(root["ChainID"].asString(), 0, 16);
+    uint32_t type = std::stol(root["type"].asString(), 0, 16);
+    Address sender = Address(root["sender"].asString());
+    Address recipient = Address(root["recipient"].asString());
+    int64_t timestamp = std::stoll(root["timestamp"].asString(), 0, 16);
+    std::string dataString = root["data"].asString();
+    uint64_t value = std::stoll(root["value"].asString(), 0, 16);
+    std::string sigString = root["signature"].asString();
+    Transaction tx(chainID, type, sender, recipient, timestamp, toBytes(dataString), value);
+    Signature sig(sigString);
+    SignatureStruct ss(sig);
+    tx.setSignature(ss);
+    return tx;
+}
+
 } // namespace core
