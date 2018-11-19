@@ -122,7 +122,16 @@ void ProducerServer::doWork()
 
     block->setRoots();
     block->sign(m_key.getSecret());
-    CINFO << "Generate block:" << toJson(*block);
+
+    // Just for testing
+    unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
+                (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
+    CINFO << "Generate block - idx:" << producerPosition  << toJson(*block);
+
     m_eventHandle->broadcast(block);
+
+
+
+
 }
 } // end of namespace
