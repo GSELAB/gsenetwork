@@ -113,9 +113,9 @@ public: // used by block chain
 
     virtual void send(boost::asio::ip::tcp::endpoint const& to, StatusPtr status) override;
 
-    virtual void send(bi::tcp::endpoint const& to, BlockState const& bs) override;
+    virtual void send(boost::asio::ip::tcp::endpoint const& to, BlockState& bs) override;
 
-    virtual void send(bi::tcp::endpoint const& to, BlockStatePtr const& bsp) override;
+    virtual void send(boost::asio::ip::tcp::endpoint const& to, BlockStatePtr bsp) override;
 
     virtual void schedule(ProducersConstRef producerList) override;
 

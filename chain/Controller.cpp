@@ -211,12 +211,12 @@ void Controller::send(boost::asio::ip::tcp::endpoint const& to, StatusPtr status
     RLP_STREAM_PTR_SEND_TO(status, StatusPacket, to);
 }
 
-void Controller::send(bi::tcp::endpoint const& to, BlockState const& bs)
+void Controller::send(boost::asio::ip::tcp::endpoint const& to, BlockState& bs)
 {
     RLP_STREAM_SEND_TO(bs, BlockStatePacket, to);
 }
 
-void Controller::send(bi::tcp::endpoint const& to, BlockStatePtr const& bsp)
+void Controller::send(boost::asio::ip::tcp::endpoint const& to, BlockStatePtr bsp)
 {
     RLP_STREAM_PTR_SEND_TO(bsp, BlockStatePacket, to);
 }

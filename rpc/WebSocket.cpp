@@ -93,7 +93,7 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/get_ solidify_height", [&](std::string, std::string body, URLRequestCallback urlRC) {
+    addHandler("/get_solidify_height", [&](std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         uint64_t height = m_face->getSolidifyHeight();
         ret = toJson("solidify-height", height).toStyledString();
@@ -123,7 +123,7 @@ void WebSocket::registerUrlHandlers()
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
         if (reader.parse(body, root)) {
-            uint64_t number = root["blockNumber"].asInt();
+            uint64_t number = std::stoll(root["blockNumber"].asString(), 0, 16);
             CINFO << "get_block " << number;
             Block block = m_face->getBlockByNumber(number);
             ret = toJson(block).toStyledString();
@@ -139,15 +139,9 @@ void WebSocket::registerUrlHandlers()
         std::string ret;
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
-        if (reader.parse(body, root))
-        {
-            // body to rlp transaction
-            std::string str_transaction = root["transaction"].asString();
-            bytes data;
-            data.insert(data.begin(), str_transaction.begin(), str_transaction.end());
-
-            Transaction transaction(data);
-            m_face->broadcast(transaction);
+        if (reader.parse(body, root)) {
+            Transaction tx(toTransaction(root));
+            m_face->broadcast(tx);
         } else {
             ret = "Parse body failed, invalid format.\n";
             CINFO << ret;
@@ -159,25 +153,19 @@ void WebSocket::registerUrlHandlers()
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
         std::string ret;
-        if(reader.parse(body, root))
-        {
-            // body to json
+        if (reader.parse(body, root)) {
             std::string str_sender = root["sender"].asString();
             std::string str_recipient = root["recipient"].asString();
-            uint64_t value = root["value"].asInt();
-
-            Transaction transaction;
-            transaction.setChainID(DEFAULT_GSE_NETWORK);
-            transaction.setType(Transaction::TransferType);
-            transaction.setSender(Address(str_sender));
-            transaction.setRecipient(Address(str_recipient));
-            transaction.setValue(value);
-
-            bytes tem = transaction.getRLPData();
-            ret.insert(ret.begin(), tem.begin(),tem.end());
-
-            ret = toJson("transfer", ret).toStyledString();
-        }else{
+            uint64_t value = std::stoll(root["value"].asString(), 0, 16);
+            Transaction tx;
+            tx.setChainID(DEFAULT_GSE_NETWORK);
+            tx.setType(Transaction::TransferType);
+            tx.setSender(Address(str_sender));
+            tx.setRecipient(Address(str_recipient));
+            tx.setTimestamp(currentTimestamp());
+            tx.setValue(value);
+            ret = toJson(tx).toStyledString();
+        } else {
             ret = "Parse body failed, invalid format.\n";
             CINFO << ret;
         }
@@ -190,21 +178,15 @@ void WebSocket::registerUrlHandlers()
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
         std::string ret;
-        if(reader.parse(body, root))
-        {
-            // to do
+        if (reader.parse(body, root)) {
             std::string str_sender = root["sender"].asString();
-
-            Transaction transaction;
-            transaction.setChainID(DEFAULT_GSE_NETWORK);
-            transaction.setType(Transaction::BeenProducerType);
-            transaction.setSender(Address(str_sender));
-
-            bytes tem = transaction.getRLPData();
-            ret.insert(ret.begin(), tem.begin(), tem.end());
-
-            ret = toJson("producer", ret).toStyledString();
-        }else{
+            Transaction tx;
+            tx.setChainID(DEFAULT_GSE_NETWORK);
+            tx.setType(Transaction::BeenProducerType);
+            tx.setSender(Address(str_sender));
+            tx.setTimestamp(currentTimestamp());
+            ret = toJson(tx).toStyledString();
+        } else {
             ret = "Parse body failed, invalid format.\n";
             CINFO << ret;
         }
@@ -214,22 +196,17 @@ void WebSocket::registerUrlHandlers()
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
         std::string ret;
-        if(reader.parse(body, root))
-        {
-            std::string str_sender = root["sender"].asString();
-            std::string str_data = root["data"].asString();
-            bytes data;
-            data.insert(data.begin(), str_data.begin(), str_data.end());
+        if(reader.parse(body, root)) {
+            Address sender(root["sender"].asString());
+            std::string dataString = root["data"].asString();
 
-            Transaction transaction;
-            transaction.setChainID(DEFAULT_GSE_NETWORK);
-            transaction.setType(Transaction::VoteType);
-            transaction.setSender(Address(str_sender));
-            transaction.setData(data);
-
-            bytes tem = transaction.getRLPData();
-            ret.insert(ret.begin(), tem.begin(), tem.end());
-            ret = toJson("producer", ret).toStyledString();
+            Transaction tx;
+            tx.setChainID(DEFAULT_GSE_NETWORK);
+            tx.setType(Transaction::VoteType);
+            tx.setSender(sender);
+            tx.setTimestamp(currentTimestamp());
+            tx.setData(toBytes(dataString));
+            ret = toJson(tx).toStyledString();
         }else{
             ret = "Parse body failed, invalid format.\n";
             CINFO << ret;

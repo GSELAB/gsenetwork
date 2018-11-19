@@ -128,7 +128,5 @@ Json::Value toJson(std::string const& key, uint64_t value);
 // String to Json
 uint64_t jsToBlockNumber(std::string const& str);
 
-
-
-
+Transaction toTransaction(Json::Value const& root);
 } // namespace core
