@@ -52,62 +52,81 @@ typedef boost::multi_index::multi_index_container<
 typedef boost::multi_index::multi_index_container<
     BlockStatePtr,
     indexed_by<
-        hashed_unique<tag<ByBlockID>, member<BlockState, BlockID, &BlockState::m_blockID>, std::hash<BlockID>>,
-        ordered_non_unique<tag<ByPrev>, const_mem_fun<BlockState, BlockID const&, &BlockState::getPrev>>,
-        ordered_non_unique<tag<ByBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>, std::greater<uint64_t>>,
-        ordered_non_unique<tag<ByUpBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>, std::less<uint64_t>>,
-        ordered_non_unique<tag<ByMultiBlockNumber>,
+        hashed_unique< tag<ByBlockID>, member<BlockState, BlockID, &BlockState::m_blockID>, std::hash<BlockID> >,
+        ordered_non_unique< tag<ByPrev>, const_mem_fun<BlockState, BlockID const&, &BlockState::getPrev> >,
+        ordered_non_unique< tag<ByBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>, std::greater<uint64_t> >,
+        ordered_non_unique< tag<ByUpBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>, std::less<uint64_t> >,
+        ordered_non_unique< tag<ByMultiBlockNumber>,
             composite_key<BlockState,
-                member<BlockState, uint64_t,&BlockState::m_bftIrreversibleBlockNumber>,
+                member<BlockState, uint64_t,&BlockState::m_bftSolidifyBlockNumber>,
                 member<BlockState, uint64_t,&BlockState::m_blockNumber>
             >,
-            composite_key_compare<
-                std::greater<uint64_t>,
-                std::greater<uint64_t>>
+            composite_key_compare< std::greater<uint64_t>, std::less<uint64_t> >
         >
     >
 > RollbackMultiIndexType;
 
+typedef boost::multi_index::multi_index_container<
+    BlockState,
+    indexed_by<
+        hashed_unique<tag<ByBlockID>, member<BlockState, BlockID, &BlockState::m_blockID>, std::hash<BlockID>>,
+        ordered_non_unique<tag<ByUpBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>, std::greater<uint64_t>>
+    >
+> BlockStateCacheIndexType;
+
 class RollbackState {
 public:
     RollbackState();
+
     ~RollbackState();
 
     void close();
 
     BlockStatePtr getBlock(BlockID const& blockID) const;
+
     BlockStatePtr getBlock(uint64_t number) const;
 
     void set(BlockStatePtr bsp);
 
     BlockStatePtr add(Block& block, ProducerSnapshot const& ps, bool trust = false);
+
     BlockStatePtr add(BlockStatePtr nextBSP);
 
     void remove(BlockID const& blockID);
+
     void remove(uint64_t number);
 
     void add(HeaderConfirmation const& confirmation);
+
+    void addSyncBlockState(BlockState const& bs);
 
     BlockStatePtr const& head() const;
 
     // Given two head blocks, return two branchs of the fork graph that end with a common ancestor(same prior block)
     std::pair<BranchType, BranchType> fetchBranchFrom(BlockID const& first, BlockID const& second) const;
 
-    // The invalid block would be removed,
     void setValidity(BlockStatePtr const& bsp, bool valid);
+
     void markInCurrentChain(BlockStatePtr const& bsp, bool inCurrentChain);
+
     void prune(BlockStatePtr const& bsp);
+
+    void setBFTSolidify(BlockID blockID);
+
+    void setSolidifyNumber(uint64_t number);
+
+    uint64_t getSolidifyNumber() const { return m_solidifyNumber; }
 
 public:
     boost::signals2::signal<void(BlockStatePtr)> m_irreversible;
 
 private:
-    void setBFTIrreversible(BlockID blockID);
-
-    // std::unique_ptr<>
     BlockStatePtr m_head;
+
+    mutable Mutex x_index;
     RollbackMultiIndexType m_index;
 
-
+    uint64_t m_solidifyNumber = 0;
 };
-} // namespace chain
+
+}

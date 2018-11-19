@@ -78,6 +78,10 @@ public:
 
     BlockState& operator=(BlockState const& bs);
 
+    bool operator==(BlockState const& bs) const;
+
+    bool operator!=(BlockState const& bs) const;
+
     BlockID const& getPrev() const { return m_block.getBlockHeader().getParentHash(); }
 
     void addConfirmation(HeaderConfirmation const& confirmation);
@@ -86,9 +90,13 @@ public:
 
     size_t getConfirmationsSize() const { return m_confirmations.size(); }
 
+    std::vector<HeaderConfirmation> const& getConfirmations() const { return m_confirmations; }
+
     bool isExistInActiveProducers(Address const& address) { return m_activeProucers.isExist(address); }
 
     void streamRLP(RLPStream& rlpStream) const;
+
+    bool isSolidified() const;
 
     virtual bytes getKey() override;
 
@@ -98,17 +106,21 @@ public:
 
 public:
     core::Block m_block;
+
     uint64_t m_blockNumber;
+
     BlockID m_blockID;
 
-    // uint64_t m_dposIrreversibleBlockNumber = 0;
-    uint64_t m_bftIrreversibleBlockNumber = 0;
+    uint64_t m_bftSolidifyBlockNumber = 0;
 
     bool m_validated = false;
+
     bool m_inCurrentChain = false;
 
     ProducerSnapshot m_activeProucers;
+
     uint8_t m_confirmCount;
+
     std::vector<HeaderConfirmation> m_confirmations;
 };
 

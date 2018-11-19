@@ -115,8 +115,7 @@ BlockState::BlockState(BlockState const& bs)
     m_block = bs.m_block;
     m_blockNumber = bs.m_blockNumber;
     m_blockID = bs.m_blockID;
-    // m_dposIrreversibleBlockNumber = bs.m_dposIrreversibleBlockNumber;
-    m_bftIrreversibleBlockNumber = bs.m_bftIrreversibleBlockNumber;
+    m_bftSolidifyBlockNumber = bs.m_bftSolidifyBlockNumber;
     m_validated = bs.m_validated;
     m_inCurrentChain = bs.m_inCurrentChain;
     m_activeProucers = bs.m_activeProucers;
@@ -164,8 +163,7 @@ BlockState& BlockState::operator=(BlockState const& bs)
     m_block = bs.m_block;
     m_blockNumber = bs.m_blockNumber;
     m_blockID = bs.m_blockID;
-    // m_dposIrreversibleBlockNumber = bs.m_dposIrreversibleBlockNumber;
-    m_bftIrreversibleBlockNumber = bs.m_bftIrreversibleBlockNumber;
+    m_bftSolidifyBlockNumber = bs.m_bftSolidifyBlockNumber;
     m_validated = bs.m_validated;
     m_inCurrentChain = bs.m_inCurrentChain;
     m_activeProucers = bs.m_activeProucers;
@@ -173,6 +171,19 @@ BlockState& BlockState::operator=(BlockState const& bs)
     for (auto confirmation : bs.m_confirmations)
         m_confirmations.push_back(confirmation);
     return *this;
+}
+
+bool BlockState::operator==(BlockState const& bs) const
+{
+    return m_blockNumber == bs.m_blockNumber &&
+            m_blockID == bs.m_blockID &&
+            m_activeProucers.size() == bs.m_activeProucers.size() &&
+            m_confirmCount == bs.m_confirmCount;
+}
+
+bool BlockState::operator!=(BlockState const& bs) const
+{
+    return !operator==(bs);
 }
 
 void BlockState::addConfirmation(HeaderConfirmation const& confirmation)
@@ -206,9 +217,14 @@ void BlockState::streamRLP(RLPStream& rlpStream) const
     }
 }
 
+bool BlockState::isSolidified() const
+{
+    if (m_activeProucers.size() == 0) return false;
+    return m_confirmCount >= ((m_activeProucers.size() * 2) / 3);
+}
+
 bytes BlockState::getKey()
 {
-    // use block key
     return m_block.getKey();
 }
 

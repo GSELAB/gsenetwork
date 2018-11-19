@@ -5,17 +5,11 @@ namespace chain {
 
 enum ProtocolPacketType {
     StatusPacket = 0x20,
-    NewBlockHashesPacket,
     TransactionPacket,
     BlockPacket,
     ConfirmationPacket,
     TransactionsPacket,
-    GetBlockHeadersPacket,
-    BlockHeadersPacket,
-    GetBlockBodiesPacket,
-
-    BlockBodiesPacket,
-    NewBlockPacket,
+    BlockStatePacket,
 
     GetNodeDataPacket = 0x4d,
     NodeDataPacket = 0x4e,
