@@ -19,14 +19,11 @@ public:
 
     ~Transfer() {}
 
-    // @override
-    void init();
+    virtual void init() override;
 
-    // @override
-    void execute();
+    virtual void execute() override;
 
-    // @override
-    void finalize();
+    virtual void finalize() override;
 
 private:
     Transaction m_transaction;

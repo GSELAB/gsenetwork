@@ -41,7 +41,6 @@ void RollbackState::set(BlockStatePtr bsp)
 {
     auto ret = m_index.insert(bsp);
     if (!ret.second) {
-        CERROR << "Duplicate state!";
         throw RollbackStateException("Duplicate state!");
     }
 
@@ -55,14 +54,12 @@ void RollbackState::set(BlockStatePtr bsp)
 BlockStatePtr RollbackState::add(Block& block, ProducerSnapshot const& ps, bool trust)
 {
     if (!m_head) {
-        CERROR << "Not set head block!";
         throw RollbackStateException("Not set head block!");
     }
 
     auto& item = m_index.get<ByBlockID>();
     auto existing = item.find(block.getHash());
     if (existing != item.end()) {
-        CERROR << "Block has exist!";
         throw RollbackStateException("Block has exist!");
     }
 
@@ -74,7 +71,6 @@ BlockStatePtr RollbackState::add(Block& block, ProducerSnapshot const& ps, bool 
 
     auto bsp = std::make_shared<BlockState>(block);
     if (!bsp) {
-        CERROR << "Make shared block state failed!";
         throw RollbackStateException("Make shared block state failed!");
     }
 
@@ -86,7 +82,6 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
 {
     auto ret = m_index.insert(nextBSP);
     if (!ret.second) {
-        CERROR << "Duplicate block state add!";
         throw RollbackStateException("Duplicate block state add!");
     }
 
@@ -113,7 +108,6 @@ void RollbackState::remove(BlockID const& blockID)
     if (prevItr != m_index.end())
         remove(prevBlockID);
 
-    CINFO << "Remove block state - " << blockID;
     m_index.erase(itr);
 }
 
@@ -147,13 +141,11 @@ void RollbackState::setSolidifyNumber(uint64_t number)
 
 void RollbackState::addSyncBlockState(BlockState const& bs)
 {
-    CINFO << "RollbackState recv block state - " << bs.m_blockNumber << "\tsolidifyNumber is " << m_solidifyNumber;
     if (bs.m_blockNumber <= m_solidifyNumber)
         return;
 
-    for (auto i : bs.getConfirmations()) {
+    for (auto i : bs.getConfirmations())
         add(i);
-    }
 }
 
 BlockStatePtr const& RollbackState::head() const
@@ -219,7 +211,6 @@ void RollbackState::markInCurrentChain(BlockStatePtr const& blockState, bool inC
     auto& blockIdx = m_index.get<ByBlockID>();
     auto itr = blockIdx.find(blockState->m_blockID);
     if (itr == blockIdx.end()) {
-        CERROR << "Mark unexist block in chain!";
         throw RollbackStateException("Mark unexist block in chain!");
     }
 

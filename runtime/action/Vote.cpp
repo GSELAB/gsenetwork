@@ -7,16 +7,15 @@ using namespace core;
 namespace runtime {
 namespace action {
 
-// @override
 void Vote::init()
 {
 
 }
 
-// @override
 void Vote::execute()
 {
     Address const& sender = m_transaction.getSender();
+    m_repo->burn(sender, PRODUCER_COST);
     bytes const& data = m_transaction.getData();
     bytesConstRef dataRef = &data;
     Ballot ballot(dataRef);
@@ -26,7 +25,6 @@ void Vote::execute()
     }
 }
 
-// @override
 void Vote::finalize()
 {
 

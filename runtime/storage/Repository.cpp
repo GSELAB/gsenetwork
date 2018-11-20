@@ -64,13 +64,12 @@ void Repository::put(Account const& account)
     }
 }
 
-bool Repository::transfer(Address const& from, Address const& to, uint64_t value)
+void Repository::transfer(Address const& from, Address const& to, uint64_t value)
 {
     Account _from = getAccount(from);
     Account _to = getAccount(to);
     if (_from == EmptyAccount) {
-        CWARN << "Address - " << from << " is not exist";
-        return false;
+        throw RepositoryException("transfer - from:" + toString(from) + " is empty.");
     }
 
     if (_to == EmptyAccount) {
@@ -80,34 +79,28 @@ bool Repository::transfer(Address const& from, Address const& to, uint64_t value
     }
 
     if (_from.getBalance() < value || _to.getBalance() + value < value) {
-        CWARN << "Address - " << from << " not enough balance or overflow";
-        return false;
+        throw RepositoryException("transfer - from:" + toString(from) + " to:" + toString(to) + " not enough balance or overflow.");
     }
 
     _from.setBalance(_from.getBalance() - value);
     _to.setBalance(_to.getBalance() + value);
     put(_from);
     put(_to);
-    CWARN << "Repository::transfer - from.value:" << _from.getBalance() << " to.value:" << _to.getBalance();
-    return true;
 }
 
-bool Repository::burn(Address const& target, uint64_t value)
+void Repository::burn(Address const& target, uint64_t value)
 {
     Account _target = getAccount(target);
     if (_target == EmptyAccount) {
-        CERROR << "Burn token from empty account";
-        return false;
+        throw RepositoryException("burn - " + toString(target) + " is empty.");
     }
 
     if (_target.getBalance() < value) {
-        CERROR << "Not enough token for burning";
-        return false;
+        throw RepositoryException("burn - " + toString(target) + " not enough balance.");
     }
 
     _target.setBalance(_target.getBalance() - value);
     put(_target);
-    return true;
 }
 
 Producer Repository::getProducer(Address const& address)

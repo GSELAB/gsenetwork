@@ -84,8 +84,7 @@ void exitHandler(int sig)
     }
 
     controller.exit();
-    CINFO << "\nexit by signal  " << sigString;
-
+    CINFO << "\n exit by signal  " << sigString;
 }
 
 bool shouldExit()
@@ -96,10 +95,9 @@ bool shouldExit()
 #define SLEEP_SECONDS 2
 void doCheck()
 {
-    //boost::thread::sleep(boost::get_system_time() + boost::posix_time::seconds(10));
     std::this_thread::sleep_for(chrono::seconds(SLEEP_SECONDS));
 }
-} // namespace
+}
 
 int main(int argc, char** argv)
 {
@@ -113,30 +111,6 @@ int main(int argc, char** argv)
     CINFO << "Public:" << toHex(key.getPublic().ref());
     CINFO << "Address:" << toHex(key.getAddress().ref());
 
-    /*
-    {
-        //Transaction(chain::ChainID chainID, uint32_t type, Address const& sender, Address const& recipient,
-        //          uint64_t timestamp, bytes const& data, uint64_t value);
-        Transaction tx(0, 0, key.getAddress(), key.getAddress(), currentTimestamp(), bytes(), 12);
-        tx.sign(key.getSecret());
-
-        if (isValidSig(tx)) {
-            CINFO << "tx sign correct";
-        } else {
-            CINFO << "tx sign incorrect";
-        }
-
-        Transaction tx2 = tx;
-        tx2.setValue(1000);
-        if (isValidSig(tx2)) {
-            CINFO << "tx2 sign correct";
-        } else {
-            CINFO << "tx2 sign incorrect";
-        }
-    }
-    */
-
-    // TODO : Controller
     controller.init(key);
     while (!shouldExit())
         doCheck();

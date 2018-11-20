@@ -105,6 +105,12 @@ struct name##Exception: virtual GSException { \
         GSException(message, number) {} \
 }
 
+#define RUNTIME_TEMPLATE_EXCEPTION(name) \
+struct name##Exception: virtual GSException { \
+    explicit name##Exception(std::string const& message, int number = 0): \
+        GSException(message, number) {} \
+}
+
 CORE_TEMPLATE_EXCEPTION(Deserialize);
 CORE_TEMPLATE_EXCEPTION(Serialize);
 CORE_TEMPLATE_EXCEPTION(VoteNotExistProducer);
@@ -115,4 +121,5 @@ CORE_TEMPLATE_EXCEPTION(InvalidTransaction);
 CORE_TEMPLATE_EXCEPTION(InvalidProducer);
 CORE_TEMPLATE_EXCEPTION(AttributeState);
 
+RUNTIME_TEMPLATE_EXCEPTION(Repository);
 }
