@@ -39,9 +39,9 @@ public:
 
     Account getAccount(Address const& address);
 
-    bool transfer(Address const& from, Address const& to, uint64_t value);
+    void transfer(Address const& from, Address const& to, uint64_t value);
 
-    bool burn(Address const& target, uint64_t value);
+    void burn(Address const& target, uint64_t value);
 
     void put(Account const& account);
 

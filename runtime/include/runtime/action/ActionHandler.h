@@ -2,6 +2,7 @@
 
 #include <core/Common.h>
 #include <core/Block.h>
+#include <config/Constant.h>
 
 namespace runtime {
 namespace action {
