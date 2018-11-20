@@ -52,6 +52,34 @@
             {
                 "address": "06D43b520Ac63b9179d3b6170FcdFDEd947aE44c",
                 "balance": 2000000000000000
+            },
+            {
+                "address": "41fbdc4475d53Fa57e0A1F0602715459cECFF828",
+                "balance": 0
+            },
+            {
+                "address": "Ce97eB788E035ACf4044F5A0Ce5Bf7F83216902D",
+                "balance": 0
+            },
+            {
+                "address": "3Ba458A870df45878351EF6D1D36035e2C967eE1",
+                "balance": 0
+            },
+            {
+                "address": "d4C4e3cA961c7f17D122Fd49Fda0141d7C9d055d",
+                "balance": 0
+            },
+            {
+                "address": "195697D06b5F3Aedd003f04eee7433092C69a98F",
+                "balance": 0
+            },
+            {
+                "address": "6550E396Fc80E2bc1B47CE74D3dc6c262101C03F",
+                "balance": 0
+            },
+            {
+                "address": "fc5B192344eA36edD25A5F202D67582DD7d85751",
+                "balance": 0
             }
         ],
 
