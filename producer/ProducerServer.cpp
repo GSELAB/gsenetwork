@@ -98,18 +98,10 @@ void ProducerServer::doWork()
     std::shared_ptr<Block> block = std::make_shared<Block>(blockHeader);
     for (i = 0; i < MAX_TRANSACTIONS_PER_BLOCK; i++) {
         std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
-        if (transaction) {
+        if (transaction && m_eventHandle->checkTransactionNotExisted(transaction->getHash())) {
             CINFO << "Package transaction to current block(" << block->getNumber() << ")";
             block->addTransaction(*transaction);
         }
-    }
-
-    {
-        // Just test
-        Transaction tx(DEFAULT_GSE_NETWORK, Transaction::TransferType, m_key.getAddress(), Address("969956599be0D545812813F76C61B2D9E283cc7c"),
-            currentTimestamp(), bytes(), 10);
-        tx.sign(m_key.getSecret());
-        block->addTransaction(tx);
     }
 
     // set receipts
@@ -122,7 +114,12 @@ void ProducerServer::doWork()
 
     block->setRoots();
     block->sign(m_key.getSecret());
-    CINFO << "Generate block:" << toJson(*block);
+
+    // Just for testing
+    unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
+                (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
+    CINFO << "Generate block - idx:" << producerPosition  << toJson(*block);
+
     m_eventHandle->broadcast(block);
 }
 } // end of namespace

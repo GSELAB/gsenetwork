@@ -213,6 +213,16 @@ void WebSocket::registerUrlHandlers()
         }
         urlRC(URLCode::Default, ret);
     });
+
+    addHandler("/get_producer_list", [&](std::string, std::string body, URLRequestCallback urlRC) {
+        std::string ret;
+        Producers producerList= m_face->getCurrentProducerList();
+
+        ret = toJson(producerList).toStyledString();
+
+        urlRC(URLCode::Default, ret);
+
+    });
 }
 
 bool WebSocket::init()

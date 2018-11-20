@@ -1,5 +1,6 @@
 #include <producer/Schedule.h>
 #include <core/Log.h>
+#include <config/Constant.h>
 
 namespace producer {
 
@@ -120,6 +121,22 @@ void Schedule::producerSort()
         Guard l{x_currentProducerList};
         std::sort(m_currentProducerList.begin(), m_currentProducerList.end(), ProducerCompareLess());
     }
+}
+
+Producers Schedule::getCurrentProducerList() const
+{
+    Guard l{x_currentProducerList};
+    Producers ret;
+    int count = 0;
+    for (auto i: m_currentProducerList) {
+        if (count < NUM_DELEGATED_BLOCKS) {
+            ret.push_back(i);
+            count++;
+        }
+    }
+
+    return ret;
+
 }
 
 void Schedule::schedule(ProducersConstRef producerList)

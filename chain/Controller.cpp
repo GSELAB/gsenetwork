@@ -236,6 +236,11 @@ ProducersConstRef Controller::getSortedProducerList() const
     return m_producerServer->getSchedule();
 }
 
+Producers Controller::getCurrentProducerList() const
+{
+    return m_producerServer->getCurrentProducerList();
+}
+
 Controller controller(DEFAULT_GSE_NETWORK);
 
 } /* end namespace */

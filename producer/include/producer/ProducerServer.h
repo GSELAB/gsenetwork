@@ -43,6 +43,8 @@ public:
     virtual std::shared_ptr<Block> getBlockFromCache() = 0;
 
     virtual chain::BlockChainStatus getBlockChainStatus() const = 0;
+
+    virtual bool checkTransactionNotExisted(TxID const& txID)= 0;
 };
 
 /* The producer's state. */
@@ -81,6 +83,8 @@ public:
     void schedule(ProducersConstRef producerList) { m_schedule.schedule(producerList); }
 
     ProducersConstRef getSchedule() { return m_schedule.getProducerList(); }
+
+    Producers getCurrentProducerList() const { return m_schedule.getCurrentProducerList(); }
 
     Address getProducerAddress(unsigned idx) const { return m_schedule.getAddress(idx); }
 
