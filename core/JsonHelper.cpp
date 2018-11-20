@@ -139,6 +139,7 @@ Json::Value toJson(Transaction& transaction)
     ret["type"] = toJS(transaction.getType());
     ret["sender"] = toJS(transaction.getSender());
     ret["recipient"] = toJS(transaction.getRecipient());
+    ret["timestamp"] = toJS(transaction.getTimestamp());
     ret["data"] = toJS(transaction.getData());
     ret["value"] = toJS(transaction.getValue());
     Signature sig = *(Signature*)&transaction.getSignature();
