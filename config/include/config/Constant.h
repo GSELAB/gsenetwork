@@ -59,4 +59,13 @@ namespace config {
 // Time period that schedule gets updated
 #define SCHEDULE_UPDATE_INTERVAL ((SCHEDULE_UPDATE_ROUNDS) * (TIME_PER_ROUND))
 
+// Transaction fee is 0.5 GSE (10^6)
+#define TRANSACTION_FEE (500000)
+
+// Base block reward is 500 GSE (10^6)
+#define BLOCK_REWARD_BASE (512000000)
+
+// Cost to be producer is 1024 GSE (10^6)
+#define PRODUCER_COST (1024000000)
+
 } // end namespace

@@ -1,5 +1,4 @@
 SET(config_source
-    Constant.cpp
     DefaultConfig.cpp
     Argument.cpp)
 
