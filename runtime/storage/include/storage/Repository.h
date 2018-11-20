@@ -28,12 +28,12 @@ namespace runtime {
 namespace storage {
 class Repository { //: public std::enable_shared_from_this<Repository> {
 public:
-    Repository(std::shared_ptr<Block> block, DatabaseController *dbc): m_block(block), m_dbc(dbc) { m_producerList = getProducerList(); }
+    Repository(Block& block, DatabaseController *dbc): m_block(block), m_dbc(dbc) { m_producerList = getProducerList(); }
 
-    Repository(std::shared_ptr<Block> block, std::shared_ptr<Repository> parent, DatabaseController *dbc):
+    Repository(Block& block, std::shared_ptr<Repository> parent, DatabaseController *dbc):
         m_block(block), m_parent(parent), m_dbc(dbc) { m_producerList = getProducerList(); }
 
-    ~Repository() { if (m_parent) m_parent.reset(); if (m_block) m_block.reset(); }
+    ~Repository() { if (m_parent) m_parent.reset(); }
 
     void setParentNULL() { m_parent.reset(); }
 
@@ -45,7 +45,7 @@ public:
 
     void put(Account const& account);
 
-    Block& getBlock() { return *m_block; }
+    Block& getBlock() { return m_block; }
 
     void put(Block const& block);
 
@@ -80,7 +80,7 @@ private:
     mutable Mutex x_mutexTransaction;
     mutable std::unordered_map<TxID, Transaction> m_cacheTransaction;
 
-    std::shared_ptr<Block> m_block;
+    Block m_block;
 
     std::vector<Producer> m_producerList;
 };

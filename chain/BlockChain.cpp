@@ -100,13 +100,14 @@ void BlockChain::pushSchedule()
 BlockChain::MemoryItem* BlockChain::addMemoryItem(std::shared_ptr<Block> block)
 {
     MemoryItem* mItem = new MemoryItem();
+    Block repoBlock = *block;
     {
         Guard g(x_memoryQueue);
         std::shared_ptr<runtime::storage::Repository> repository;
         if (m_memoryQueue.empty()) {
-            repository = std::make_shared<runtime::storage::Repository>(block, getDBC());
+            repository = std::make_shared<runtime::storage::Repository>(repoBlock, getDBC());
         } else {
-            repository = std::make_shared<runtime::storage::Repository>(block, m_memoryQueue.back()->getRepository(), getDBC());
+            repository = std::make_shared<runtime::storage::Repository>(repoBlock, m_memoryQueue.back()->getRepository(), getDBC());
         }
 
         mItem->setBlockNumber(block->getNumber());
@@ -561,9 +562,9 @@ bool BlockChain::preProcessTx(Transaction& tx)
 
         std::shared_ptr<runtime::storage::Repository> repository;
         if (backItem) {
-            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), backItem, getDBC());
+            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, backItem, getDBC());
         } else {
-            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), getDBC());
+            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, getDBC());
         }
 
         Runtime runtime(tx, repository);
@@ -648,9 +649,9 @@ bool BlockChain::isExist(Transaction& tx)
 
         std::shared_ptr<runtime::storage::Repository> repository;
         if (backItem) {
-            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), backItem, getDBC());
+            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, backItem, getDBC());
         } else {
-            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), getDBC());
+            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, getDBC());
         }
 
         auto itr = repository->getTransaction(tx.getHash());
@@ -684,9 +685,9 @@ bool BlockChain::isExist(Block& block)
 
         std::shared_ptr<runtime::storage::Repository> repository;
         if (backItem) {
-            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), backItem, getDBC());
+            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, backItem, getDBC());
         } else {
-            repository = std::make_shared<runtime::storage::Repository>(BlockPtr(), getDBC());
+            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, getDBC());
         }
 
         auto item = repository->getBlock(block.getHash());
@@ -738,17 +739,17 @@ void BlockChain::processTxMessage(bi::tcp::endpoint const& from, Transaction& tx
 void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block)
 {
     if (!crypto::isValidSig(block)) {
-        CWARN << "Recv broadcast block - invalid signature";
+        // CWARN << "Recv broadcast block - invalid signature";
         return;
     }
 
     if (isExist(block)) {
-        CWARN << "Recv broadcast block - repeat block";
+        // CWARN << "Recv broadcast block - repeat block";
         return;
     }
 
     if (!preProcessBlock(from, block)) {
-        CWARN << "Recv broadcast block - preProcess block failed";
+        // CWARN << "Recv broadcast block - preProcess block failed";
         return;
     }
 
@@ -764,17 +765,17 @@ void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block
 void BlockChain::processSyncBlockMessage(bi::tcp::endpoint const& from, Block& block)
 {
     if (!crypto::isValidSig(block)) {
-        CINFO << "Recv sync block - invalid signature";
+        // CINFO << "Recv sync block - invalid signature";
         return;
     }
 
     if (isExist(block)) {
-        CINFO << "Recv sync block - repeat block";
+        // CINFO << "Recv sync block - repeat block";
         return;
     }
 
     if (!preProcessBlock(from, block)) {
-        CINFO << "Recv sync block - preProcess block failed";
+        // CINFO << "Recv sync block - preProcess block failed";
         return;
     }
 

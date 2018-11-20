@@ -74,7 +74,7 @@ bool Repository::transfer(Address const& from, Address const& to, uint64_t value
     }
 
     if (_to == EmptyAccount) {
-        Account account(to, 0, m_block->getBlockHeader().getTimestamp());
+        Account account(to, 0, m_block.getBlockHeader().getTimestamp());
         _to = account;
         CINFO << "Create account - " << to;
     }
@@ -188,10 +188,8 @@ void Repository::put(Block const& block)
 Block Repository::getBlock(BlockID const& blockID)
 {
     Block ret;
-    if (m_block) {
-        if (m_block->getHash() == blockID)
-            return *m_block;
-    }
+    if (m_block.getHash() == blockID)
+        return m_block;
 
     if (m_parent) {
         ret = m_parent->getBlock(blockID);
