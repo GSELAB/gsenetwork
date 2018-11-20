@@ -39,11 +39,11 @@ public:
 
     virtual ~Dispatch() {}
 
-    void processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg);
+    void processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg) {}
 
     bool processMsg(bi::tcp::endpoint const& from, unsigned type, RLP const& rlp);
 
-    bool processMsg(bi::tcp::endpoint const& from, unsigned type, bytes const& data);
+    bool processMsg(bi::tcp::endpoint const& from, unsigned type, bytes const& data) { return false; }
 
 private:
     BlockChain *m_chain;
@@ -164,23 +164,19 @@ public:
 
     void setChainID(ChainID const& chainID) { m_chainID = chainID; }
 
-    bool processBlock(std::shared_ptr<Block> block);
+    bool processBlock(BlockPtr block);
 
-    bool processProducerBlock(std::shared_ptr<Block> block);
+    bool processProducerBlock(BlockPtr block);
 
     bool processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem);
 
     bool processTransaction(Transaction const& transaction, MemoryItem* mItem);
 
-    bool checkBifurcation(std::shared_ptr<Block> block);
+    bool checkBifurcation(BlockPtr block);
 
     DispatchFace* getDispatcher() const { return m_dispatcher; }
 
-    void processObject(std::unique_ptr<Object> object);
-
     uint64_t getLastBlockNumber() const;
-
-    uint64_t getLastIrreversibleBlockNumber() const;
 
     Block getLastBlock() const;
 
@@ -190,7 +186,7 @@ public:
 
     std::shared_ptr<Transaction> getTransactionFromCache();
 
-    std::shared_ptr<Block> getBlockFromCache();
+    BlockPtr getBlockFromCache();
 
     void onIrreversible(BlockStatePtr bsp);
 
@@ -202,7 +198,7 @@ public:
 
     void schedule(int64_t timestamp);
 
-    void updateActiveProducers(std::shared_ptr<Block> block);
+    void updateActiveProducers(BlockPtr block);
 
 public: /// used by rpc
     bool preProcessTx(Transaction& tx);
@@ -242,13 +238,15 @@ public: /// Used by network
     bool isExist(Block& block);
 
 private:
-    MemoryItem* addMemoryItem(std::shared_ptr<Block> block);
+    MemoryItem* addMemoryItem(BlockPtr block);
+
     void cancelMemoryItem();
 
-    void commitBlockState(std::shared_ptr<Block> block);
     void popBlockState();
 
-    void doProcessBlock(std::shared_ptr<Block> block);
+    void doProcessBlock(BlockPtr block);
+
+    void eraseSolicitedTx(BlockPtr block);
 
 public:
     void start();

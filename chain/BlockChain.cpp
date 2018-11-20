@@ -97,7 +97,7 @@ void BlockChain::pushSchedule()
     m_messageFace->schedule(m_currentPS.getProducers());
 }
 
-BlockChain::MemoryItem* BlockChain::addMemoryItem(std::shared_ptr<Block> block)
+BlockChain::MemoryItem* BlockChain::addMemoryItem(BlockPtr block)
 {
     MemoryItem* mItem = new MemoryItem();
     Block repoBlock = *block;
@@ -125,17 +125,6 @@ void BlockChain::cancelMemoryItem()
     delete i;
 }
 
-uint64_t BlockChain::getLastIrreversibleBlockNumber() const
-{
-    ///return m_rollbackState.m_bftIrreversibleBlockNumber;
-    return 0;
-}
-
-void BlockChain::commitBlockState(std::shared_ptr<Block> block)
-{
-    // block->commit();
-}
-
 void BlockChain::popBlockState()
 {
     auto prev = m_rollbackState.getBlock(m_head->getPrev());
@@ -148,7 +137,24 @@ void BlockChain::popBlockState()
     cancelMemoryItem();
 }
 
-void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
+void BlockChain::eraseSolicitedTx(BlockPtr block)
+{
+    if (block->getTransactionsSize() == 0)
+        return;
+
+    {
+        Guard l{x_txCache};
+        auto& idx = m_txCache.get<ByTxID>();
+        for (auto i : block->getTransactions()) {
+            auto itr = idx.find(i.getHash());
+            if (itr != idx.end())
+                idx.erase(itr);
+        }
+
+    }
+}
+
+void BlockChain::doProcessBlock(BlockPtr block)
 {
     bool needCancel;
     MemoryItem* item;
@@ -162,13 +168,21 @@ void BlockChain::doProcessBlock(std::shared_ptr<Block> block)
             }
 
         item->setDone();
-    } catch (RollbackStateException& e) {
+        eraseSolicitedTx(block);
+    } catch (RepositoryException& e) {
+        CERROR << "RepositoryException - " << e.what();
         if (needCancel) {
             needCancel = false;
             cancelMemoryItem();
         }
-
+    } catch (RollbackStateException& e) {
+        CERROR << "RollbackStateException - " << e.what();
+        if (needCancel) {
+            needCancel = false;
+            cancelMemoryItem();
+        }
     } catch (GSException& e) {
+        CERROR << "GSException - " << e.what();
         if (needCancel) {
             needCancel = false;
             cancelMemoryItem();
@@ -223,7 +237,7 @@ Address BlockChain::getExpectedProducer(int64_t timestamp) const
     return m_messageFace->getProducerAddress(producerPosition);
 }
 
-void BlockChain::updateActiveProducers(std::shared_ptr<Block> block)
+void BlockChain::updateActiveProducers(BlockPtr block)
 {
     int64_t currentTimestamp = block->getBlockHeader().getTimestamp();
     unsigned currentProducerIndex = ((currentTimestamp - GENESIS_TIMESTAMP) %
@@ -258,7 +272,7 @@ void BlockChain::updateActiveProducers(std::shared_ptr<Block> block)
     }
 }
 
-bool BlockChain::processBlock(std::shared_ptr<Block> block)
+bool BlockChain::processBlock(BlockPtr block)
 {
     try {
         for (auto& i : block->getTransactions()) {
@@ -275,7 +289,6 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
         m_rollbackState.add(*block, m_currentActiveProducers);
         checkBifurcation(block);
         m_head = m_rollbackState.head();
-        CINFO << "Block number is sync:" << block->isSyncBlock();
         if (!block->isSyncBlock()) {
             HeaderConfirmation hc(m_chainID, block->getNumber(), block->getHash(), timestamp, m_key.getAddress());
             hc.sign(m_key.getSecret());
@@ -305,7 +318,7 @@ bool BlockChain::processBlock(std::shared_ptr<Block> block)
     return true;
 }
 
-bool BlockChain::processProducerBlock(std::shared_ptr<Block> block)
+bool BlockChain::processProducerBlock(BlockPtr block)
 {
     Guard l{x_blockCache};
     m_blockCache.emplace(block);
@@ -332,7 +345,7 @@ bool BlockChain::processTransaction(Transaction const& transaction, MemoryItem* 
     return false;
 }
 
-bool BlockChain::checkBifurcation(std::shared_ptr<Block> block)
+bool BlockChain::checkBifurcation(BlockPtr block)
 {
     auto newItem = m_rollbackState.head();
     // CINFO << "checkBifurcation - prev hash:" << newItem->getPrev();
@@ -389,16 +402,10 @@ bool BlockChain::checkBifurcation(std::shared_ptr<Block> block)
     return true;
 }
 
-void BlockChain::processObject(std::unique_ptr<core::Object> object)
-{
-
-}
-
 uint64_t BlockChain::getLastBlockNumber() const
 {
     Guard l(x_memoryQueue);
     if (m_memoryQueue.empty()) {
-        // read from db
         return ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue();
     }
 
@@ -408,11 +415,8 @@ uint64_t BlockChain::getLastBlockNumber() const
 Block BlockChain::getLastBlock() const
 {
     Guard l(x_memoryQueue);
-    if (m_memoryQueue.empty()) {
-        // read from db
+    if (m_memoryQueue.empty())
         return m_dbc->getBlock(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue());
-    }
-
     return m_memoryQueue.back()->getBlock();
 }
 
@@ -424,12 +428,9 @@ Block BlockChain::getBlockByNumber(uint64_t number)
             auto itemS = m_memoryQueue.front();
             auto itemE = m_memoryQueue.back();
             if (number >= itemS->getBlockNumber() && number <= itemE->getBlockNumber()) {
-                for (Queue_t::iterator iter = m_memoryQueue.begin(); iter != m_memoryQueue.end(); iter++) {
-                    if ((*iter)->getBlockNumber() == number) {
-                        // CINFO << "find " << (*iter)->getBlockNumber() << " --  " << (*iter)->getRepository()->getBlock().getNumber() << " block";
+                for (Queue_t::iterator iter = m_memoryQueue.begin(); iter != m_memoryQueue.end(); iter++)
+                    if ((*iter)->getBlockNumber() == number)
                         return (*iter)->getRepository()->getBlock();
-                    }
-                }
             }
         }
     }
@@ -462,7 +463,7 @@ std::shared_ptr<core::Transaction> BlockChain::getTransactionFromCache()
     return ret;
 }
 
-std::shared_ptr<core::Block> BlockChain::getBlockFromCache()
+BlockPtr BlockChain::getBlockFromCache()
 {
     std::shared_ptr<core::Block> ret = nullptr;
     Guard l(x_blockCache);
@@ -587,7 +588,7 @@ bool BlockChain::addRPCTx(Transaction& tx)
 
     {
         Guard l{x_txCache};
-        m_txCache.emplace(std::make_shared<Transaction>(tx));
+        m_txCache.insert(std::make_shared<Transaction>(tx));
     }
 
     return true;
@@ -696,7 +697,6 @@ bool BlockChain::isExist(Block& block)
         }
     }
 
-    // CINFO << "Not find block from memoryDB & levelDB";
     return false;
 }
 
@@ -729,7 +729,7 @@ void BlockChain::processTxMessage(bi::tcp::endpoint const& from, Transaction& tx
 
     {
         Guard l{x_txCache};
-        m_txCache.emplace(std::make_shared<Transaction>(tx));
+        m_txCache.insert(std::make_shared<Transaction>(tx));
     }
 
     m_messageFace->broadcast(from, tx);
@@ -855,11 +855,6 @@ void BlockChain::processBlockStateMessage(bi::tcp::endpoint const& from, BlockSt
     m_rollbackState.addSyncBlockState(bs);
 }
 
-void Dispatch::processMsg(bi::tcp::endpoint const& from, BytesPacket const& msg)
-{
-    CWARN << "Not support - process BytesPacket.";
-}
-
 bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP const& rlp)
 {
     if (rlp.isList() && rlp.itemCount() == 1) {
@@ -915,10 +910,4 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
     }
 
 }
-
-bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, bytes const& data)
-{
-    return false;
-}
-
 }
