@@ -43,6 +43,8 @@ public:
     virtual std::shared_ptr<Block> getBlockFromCache() = 0;
 
     virtual chain::BlockChainStatus getBlockChainStatus() const = 0;
+
+    virtual bool checkTransactionNotExisted(TxID const& txID)= 0;
 };
 
 /* The producer's state. */

@@ -92,6 +92,7 @@ public: // Producer Handle
 
     virtual BlockChainStatus getBlockChainStatus() const override { return m_chain->getBlockChainStatus(); };
 
+    virtual bool checkTransactionNotExisted(TxID const& txID) override { return (m_chain->getTx(txID) == EmptyTransaction); }
 public: // used by block chain
     virtual void broadcast(boost::asio::ip::tcp::endpoint const& from, Block& block) override;
 
