@@ -43,6 +43,8 @@ public:
 
     void burn(Address const& target, uint64_t value);
 
+    void bonus(Address const& target, uint64_t value);
+
     void put(Account const& account);
 
     Block& getBlock() { return m_block; }

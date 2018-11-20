@@ -130,6 +130,8 @@ public:
 
         void setBlockNumber(uint64_t blockNumber) { m_blockNumber = blockNumber; }
 
+        void bonus(Address const& address, uint64_t value) { if (m_repository) m_repository->bonus(address, value); }
+
         bool isDone() const { return m_isDone; }
 
         void setDone() { m_isDone = true; }

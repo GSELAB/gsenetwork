@@ -103,6 +103,17 @@ void Repository::burn(Address const& target, uint64_t value)
     put(_target);
 }
 
+void Repository::bonus(Address const& target, uint64_t value)
+{
+    Account _target = getAccount(target);
+    if (_target == EmptyAccount) {
+        throw RepositoryException("reward - " + toString(target) + " is empty.");
+    }
+
+    _target.setBalance(_target.getBalance() + value);
+    put(_target);
+}
+
 Producer Repository::getProducer(Address const& address)
 {
     Producer producer;

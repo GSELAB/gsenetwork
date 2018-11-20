@@ -163,10 +163,12 @@ void BlockChain::doProcessBlock(BlockPtr block)
         item = addMemoryItem(block);
         needCancel = true;
         for (auto const& i : block->getTransactions())
-            if (!processTransaction(*block, i, item)) {
-                // Record the failed
-            }
+            processTransaction(*block, i, item);
 
+        unsigned bonusFactor = (block->getBlockHeader().getTimestamp() - GENESIS_TIMESTAMP) / SECONDS_PER_YEAR;
+        uint64_t bonus = BLOCK_BONUS_BASE;
+        bonus = bonus >> bonusFactor;
+        item->bonus(block->getProducer(), bonus);
         item->setDone();
         eraseSolicitedTx(block);
     } catch (RepositoryException& e) {
