@@ -75,8 +75,6 @@ Transaction::Transaction(bytesConstRef data)
         h256 s = rlp[index = 9].toInt<u256>();
         m_signature = SignatureStruct(r, s, v);
     } catch (Exception& e) {
-        //e << errinfo_name("Invalid transaction format") << BadFieldError(index, toHex(rlp[index].data().toBytes()));
-        //throw;
         BOOST_THROW_EXCEPTION(e);
     }
 }
@@ -88,12 +86,6 @@ Transaction::Transaction(bytes const& data): Transaction(&data)
 
 void Transaction::streamRLP(RLPStream& rlpStream) const
 {
-    /* // How to make it signature
-    if (!m_signature) {
-        BOOST_THROW_EXCEPTION(std::range_error("Transaction is unsigned!"));
-    }
-    */
-
     rlpStream.appendList(TRANSACTION_FIELDS_ALL);
     rlpStream << (bigint) m_chainID
               << m_type
@@ -121,12 +113,11 @@ void Transaction::streamRLPContent(RLPStream& rlpStream) const
 }
 
 // the sha3 of the transaction not include signature
-h256 const& Transaction::getHash()
+h256 Transaction::getHash()
 {
     RLPStream rlpStream;
     streamRLPContent(rlpStream);
-    m_hash = sha3(&rlpStream.out());
-    return m_hash;
+    return sha3(&rlpStream.out());
 }
 
 void Transaction::sign(Secret const& secret)
@@ -163,8 +154,6 @@ bool Transaction::operator==(Transaction const& transaction) const
         (m_data == transaction.getData()) &&
         (m_timestamp == transaction.getTimestamp()) &&
         (m_value == transaction.getValue());
-
-        // ???????? <should the signature compare ?> boost::optional<SignatureStruct> m_signature;
 }
 
 bool Transaction::operator!=(Transaction const& transaction) const

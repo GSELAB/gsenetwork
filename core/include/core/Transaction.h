@@ -56,7 +56,7 @@ public:
     void streamRLPContent(RLPStream& rlpStream) const;
 
     // @return the sha3 of the transaction not include signature
-    h256 const& getHash();
+    h256 getHash();
 
     Transaction& operator=(Transaction const& transaction);
 
@@ -113,8 +113,6 @@ private:
     bytes m_data;
     uint64_t m_value;
     SignatureStruct m_signature;
-
-    h256 m_hash;
 };
 
 using Transactions = vector<Transaction>;
