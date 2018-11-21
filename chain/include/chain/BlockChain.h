@@ -154,6 +154,10 @@ public:
 
     void init();
 
+    void start();
+
+    void stop();
+
     void pushSchedule();
 
     void initializeRollbackState();
@@ -170,9 +174,7 @@ public:
 
     bool processProducerBlock(BlockPtr block);
 
-    bool processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem);
-
-    bool processTransaction(Transaction const& transaction, MemoryItem* mItem);
+    void processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem);
 
     bool checkBifurcation(BlockPtr block);
 
@@ -203,8 +205,6 @@ public:
     void updateActiveProducers(BlockPtr block);
 
 public: /// used by rpc
-    bool preProcessTx(Transaction& tx);
-
     bool addRPCTx(Transaction& tx);
 
     Transaction getTx(TxID const& txID);
@@ -219,9 +219,9 @@ public: /// used by rpc
 
 
 public: /// Used by network
-    bool preProcessTx(bi::tcp::endpoint const& from, Transaction& tx);
+    void preProcessTx(bi::tcp::endpoint const& from, Transaction& tx) { preProcessTx(tx); }
 
-    bool preProcessBlock(bi::tcp::endpoint const& from, Block& block);
+    void preProcessBlock(bi::tcp::endpoint const& from, Block& block);
 
     void processTxMessage(bi::tcp::endpoint const& from, Transaction& tx);
 
@@ -239,7 +239,7 @@ public: /// Used by network
 
     bool isExist(Block& block);
 
-private:
+protected:
     MemoryItem* addMemoryItem(BlockPtr block);
 
     void cancelMemoryItem();
@@ -250,10 +250,7 @@ private:
 
     void eraseSolicitedTx(BlockPtr block);
 
-public:
-    void start();
-
-    void stop();
+    void preProcessTx(Transaction& tx);
 
 private:
     virtual void doWork() override;

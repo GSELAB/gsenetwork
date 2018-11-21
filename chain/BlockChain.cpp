@@ -154,6 +154,14 @@ void BlockChain::eraseSolicitedTx(BlockPtr block)
     }
 }
 
+void BlockChain::processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem)
+{
+    Runtime runtime(transaction, block, mItem->getRepository());
+    runtime.init();
+    runtime.excute();
+    runtime.finished();
+}
+
 void BlockChain::doProcessBlock(BlockPtr block)
 {
     bool needCancel;
@@ -165,7 +173,20 @@ void BlockChain::doProcessBlock(BlockPtr block)
         for (auto const& i : block->getTransactions())
             processTransaction(*block, i, item);
 
-        unsigned bonusFactor = (block->getBlockHeader().getTimestamp() - GENESIS_TIMESTAMP) / SECONDS_PER_YEAR;
+        int64_t timestamp = block->getBlockHeader().getTimestamp();
+        if (!block->isSyncBlock()) {
+            HeaderConfirmation hc(m_chainID, block->getNumber(), block->getHash(), timestamp, m_key.getAddress());
+            hc.sign(m_key.getSecret());
+            m_rollbackState.add(hc);
+            m_messageFace->send(hc);
+        }
+
+        if (((timestamp - GENESIS_TIMESTAMP) % (SCHEDULE_UPDATE_INTERVAL)) / (TIME_PER_ROUND) >= (SCHEDULE_UPDATE_ROUNDS - 1)) {
+            schedule(timestamp);
+            m_currentActiveProducers.clear();
+        }
+
+        unsigned bonusFactor = (block->getBlockHeader().getTimestamp() - GENESIS_TIMESTAMP) / MILLISECONDS_PER_YEAR;
         uint64_t bonus = BLOCK_BONUS_BASE;
         bonus = bonus >> bonusFactor;
         item->bonus(block->getProducer(), bonus);
@@ -190,6 +211,34 @@ void BlockChain::doProcessBlock(BlockPtr block)
             cancelMemoryItem();
         }
     }
+}
+
+bool BlockChain::processBlock(BlockPtr block)
+{
+    try {
+        int64_t timestamp = block->getBlockHeader().getTimestamp();
+        if (block->getProducer() != getExpectedProducer(timestamp)) {
+            throw InvalidProducerException("Invalid block producer!");
+        }
+
+        updateActiveProducers(block);
+        m_rollbackState.add(*block, m_currentActiveProducers);
+        checkBifurcation(block);
+        m_head = m_rollbackState.head();
+    } catch (InvalidTransactionException& e) {
+        CERROR << "processBlock - " << e.what();
+        return false;
+    } catch (InvalidProducerException& e) {
+        CERROR << "processBlock - " << e.what();
+        return false;
+    } catch (RollbackStateException& e) {
+        CERROR << "RollbackState:" << e.what();
+        return false;
+    } catch (Exception& e) {
+        return false;
+    }
+
+    return true;
 }
 
 Producers BlockChain::getProducerListFromRepo() const
@@ -274,77 +323,11 @@ void BlockChain::updateActiveProducers(BlockPtr block)
     }
 }
 
-bool BlockChain::processBlock(BlockPtr block)
-{
-    try {
-        for (auto& i : block->getTransactions()) {
-            if (!crypto::isValidSig(*const_cast<Transaction*>(&i)))
-                throw InvalidTransactionException("Invalid transaction signature!");
-        }
-
-        int64_t timestamp = block->getBlockHeader().getTimestamp();
-        if (block->getProducer() != getExpectedProducer(timestamp)) {
-            throw InvalidProducerException("Invalid block producer!");
-        }
-
-        updateActiveProducers(block);
-        m_rollbackState.add(*block, m_currentActiveProducers);
-        checkBifurcation(block);
-        m_head = m_rollbackState.head();
-        if (!block->isSyncBlock()) {
-            HeaderConfirmation hc(m_chainID, block->getNumber(), block->getHash(), timestamp, m_key.getAddress());
-            hc.sign(m_key.getSecret());
-            m_rollbackState.add(hc);
-            m_messageFace->send(hc);
-        }
-
-        if (((timestamp - GENESIS_TIMESTAMP) % (SCHEDULE_UPDATE_INTERVAL)) / (TIME_PER_ROUND) >= (SCHEDULE_UPDATE_ROUNDS - 1)) {
-            schedule(timestamp);
-            m_currentActiveProducers.clear();
-        }
-
-
-    } catch (InvalidTransactionException& e) {
-        CERROR << "processBlock - " << e.what();
-        return false;
-    } catch (InvalidProducerException& e) {
-        CERROR << "processBlock - " << e.what();
-        return false;
-    } catch (RollbackStateException& e) {
-        CERROR << "RollbackState:" << e.what();
-        return false;
-    } catch (Exception& e) {
-        return false;
-    }
-
-    return true;
-}
-
 bool BlockChain::processProducerBlock(BlockPtr block)
 {
     Guard l{x_blockCache};
     m_blockCache.emplace(block);
     return true;
-}
-
-bool BlockChain::processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem)
-{
-    try {
-        Runtime runtime(transaction, block, mItem->getRepository());
-        runtime.init();
-        runtime.excute();
-        runtime.finished();
-    } catch (Exception e) {
-        CINFO << "Catch exception during process transaction - " << e.what();
-    }
-
-    return true;
-}
-
-bool BlockChain::processTransaction(Transaction const& transaction, MemoryItem* mItem)
-{
-    // Runtime runtime();
-    return false;
 }
 
 bool BlockChain::checkBifurcation(BlockPtr block)
@@ -553,49 +536,6 @@ void BlockChain::doWork()
     }
 }
 
-bool BlockChain::preProcessTx(Transaction& tx)
-{
-    try {
-        std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
-        {
-            Guard g(x_memoryQueue);
-            if (!m_memoryQueue.empty())
-                backItem = m_memoryQueue.back()->getRepository();
-        }
-
-        std::shared_ptr<runtime::storage::Repository> repository;
-        if (backItem) {
-            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, backItem, getDBC());
-        } else {
-            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, getDBC());
-        }
-
-        Runtime runtime(tx, repository);
-        runtime.init();
-        runtime.excute();
-        runtime.finished();
-    } catch (...) {
-
-    }
-    return true;
-}
-
-bool BlockChain::addRPCTx(Transaction& tx)
-{
-    if (isExist(tx))
-        return false;
-
-    if (!preProcessTx(tx))
-        return false;
-
-    {
-        Guard l{x_txCache};
-        m_txCache.insert(std::make_shared<Transaction>(tx));
-    }
-
-    return true;
-}
-
 Transaction BlockChain::getTx(TxID const& txID)
 {
     Guard g(x_memoryQueue);
@@ -634,6 +574,7 @@ uint64_t BlockChain::getSolidifyHeight() const
 
 bool BlockChain::isExist(Transaction& tx)
 {
+    /*
     {
         Guard l{x_txCache};
         auto& item = m_txCache.get<ByTxID>();
@@ -641,7 +582,7 @@ bool BlockChain::isExist(Transaction& tx)
         if (itr != item.end())
             return true;
     }
-
+    */
     {
         std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
         {
@@ -702,98 +643,151 @@ bool BlockChain::isExist(Block& block)
     return false;
 }
 
-bool BlockChain::preProcessTx(bi::tcp::endpoint const& from, Transaction& tx)
+void BlockChain::preProcessTx(Transaction& tx)
 {
-    return preProcessTx(tx);
+    if (!crypto::validSignature(tx)) {
+        throw BlockChainException("Transaction(" + toString(tx.getHash()) + ") is not valid signature." );
+    }
+
+    if (isExist(tx)) {
+        throw BlockChainException("Transaction(" + toString(tx.getHash()) + ") has exist.");
+    }
+
+    std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
+    {
+        Guard g(x_memoryQueue);
+        if (!m_memoryQueue.empty())
+            backItem = m_memoryQueue.back()->getRepository();
+    }
+
+    std::shared_ptr<runtime::storage::Repository> repository;
+    if (backItem) {
+        repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, backItem, getDBC());
+    } else {
+        repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, getDBC());
+    }
+
+    Runtime runtime(tx, repository);
+    runtime.init();
+    runtime.excute();
+    runtime.finished();
 }
 
-bool BlockChain::preProcessBlock(bi::tcp::endpoint const& from, Block& block)
+bool BlockChain::addRPCTx(Transaction& tx)
 {
+    try {
+        preProcessTx(tx);
+        {
+            Guard l{x_txCache};
+            m_txCache.insert(std::make_shared<Transaction>(tx));
+        }
+    } catch (BlockChainException& e) {
+        CERROR << "BlockChainException - " << e.what();
+        return false;
+    } catch (RepositoryException& e) {
+        CERROR << "RepositoryException - " << e.what();
+        return false;
+    } catch (Exception& e) {
+        CERROR << "Exception - " << e.what();
+        return false;
+    }
+
     return true;
 }
 
 void BlockChain::processTxMessage(bi::tcp::endpoint const& from, Transaction& tx)
 {
-    if (!crypto::isValidSig(tx)) {
-        CDEBUG << "Recv tx: invalid signature.";
-        return;
+    try {
+        preProcessTx(tx);
+        {
+            Guard l{x_txCache};
+            m_txCache.insert(std::make_shared<Transaction>(tx));
+        }
+        m_messageFace->broadcast(from, tx);
+    } catch (BlockChainException& e) {
+        CERROR << "BlockChainException - " << e.what();
+    } catch (RepositoryException& e) {
+        CERROR << "RepositoryException - " << e.what();
+    } catch (Exception& e) {
+        CERROR << "Exception - " << e.what();
+    }
+}
+
+void BlockChain::preProcessBlock(bi::tcp::endpoint const& from, Block& block)
+{
+    if (!crypto::validSignature(block)) {
+        throw BlockChainException("Block(number:" + toString(block.getNumber()) + " hash:" + toString(block.getHash()) + ") is not valid signature." );
     }
 
-    if (isExist(tx)) {
-        CDEBUG << "Recv tx: repeat tx.";
-        return;
+    if (isExist(block)) {
+        throw BlockChainException("Block(number:" + toString(block.getNumber()) + " hash:" + toString(block.getHash()) + ") has exist.");
     }
 
-    if (!preProcessTx(tx)) {
-        CDEBUG << "Recv tx: preProcessTx failed.";
-        return;
-    }
-
+    std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
     {
-        Guard l{x_txCache};
-        m_txCache.insert(std::make_shared<Transaction>(tx));
+        Guard g(x_memoryQueue);
+        if (!m_memoryQueue.empty())
+            backItem = m_memoryQueue.back()->getRepository();
     }
 
-    m_messageFace->broadcast(from, tx);
-    CINFO << "Recv tx:" <<  toJson(tx).toStyledString();
+    std::shared_ptr<runtime::storage::Repository> repository;
+    if (backItem) {
+        repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, backItem, getDBC());
+    } else {
+        repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, getDBC());
+    }
+
+    for (auto i : block.getTransactions()) {
+        Runtime runtime(i, repository);
+        runtime.init();
+        runtime.excute();
+        runtime.finished();
+    }
 }
 
 void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block)
 {
-    if (!crypto::isValidSig(block)) {
-        // CWARN << "Recv broadcast block - invalid signature";
-        return;
+    try {
+        preProcessBlock(from, block);
+        {
+            Guard l{x_blockCache};
+            auto ret = m_blockCache.insert(std::make_shared<Block>(block));
+        }
+        m_messageFace->broadcast(from, block);
+        CINFO << "Recv broadcast block number:" << block.getNumber(); // toJson(block).toStyledString();
+    } catch (BlockChainException& e) {
+        CERROR << "BlockChainException - " << e.what();
+    } catch (RepositoryException& e) {
+        CERROR << "RepositoryException - " << e.what();
+    } catch (Exception& e) {
+        CERROR << "Exception - " << e.what();
     }
-
-    if (isExist(block)) {
-        // CWARN << "Recv broadcast block - repeat block";
-        return;
-    }
-
-    if (!preProcessBlock(from, block)) {
-        // CWARN << "Recv broadcast block - preProcess block failed";
-        return;
-    }
-
-    {
-        Guard l{x_blockCache};
-        auto ret = m_blockCache.insert(std::make_shared<Block>(block));
-    }
-
-    m_messageFace->broadcast(from, block);
-    CINFO << "Recv broadcast block number:" << block.getNumber(); // toJson(block).toStyledString();
 }
 
 void BlockChain::processSyncBlockMessage(bi::tcp::endpoint const& from, Block& block)
 {
-    if (!crypto::isValidSig(block)) {
-        // CINFO << "Recv sync block - invalid signature";
-        return;
+    try {
+        preProcessBlock(from, block);
+        {
+            Guard l{x_blockCache};
+            auto ret = m_blockCache.insert(std::make_shared<Block>(block));
+        }
+        CINFO << "Recv sync block number:" << block.getNumber(); // toJson(block).toStyledString();
+    } catch (BlockChainException& e) {
+        CERROR << "BlockChainException - " << e.what();
+    } catch (RepositoryException& e) {
+        CERROR << "RepositoryException - " << e.what();
+    } catch (Exception& e) {
+        CERROR << "Exception - " << e.what();
     }
-
-    if (isExist(block)) {
-        // CINFO << "Recv sync block - repeat block";
-        return;
-    }
-
-    if (!preProcessBlock(from, block)) {
-        // CINFO << "Recv sync block - preProcess block failed";
-        return;
-    }
-
-    {
-        Guard l{x_blockCache};
-        auto ret = m_blockCache.insert(std::make_shared<Block>(block));
-    }
-    CINFO << "Recv sync block number:" << block.getNumber(); // toJson(block).toStyledString();
 }
 
 void BlockChain::processConfirmationMessage(bi::tcp::endpoint const& from, HeaderConfirmation& confirmation)
 {
     try {
         m_rollbackState.add(confirmation);
-    } catch (RollbackStateException) {
-
+    } catch (RollbackStateException& e) {
+        CERROR << "RollbackStateException - " << e.what();
     }
 }
 
@@ -801,20 +795,17 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
 {
     switch (status.getType()) {
         case GetHeight: {
-            // CINFO << "Recv status from " << from <<  " - get height";
             Status _status(ReplyHeight, getLastBlockNumber());
             m_messageFace->send(from, _status);
             break;
         }
         case ReplyHeight: {
-            // CINFO << "Recv status from " << from <<  " - reply height: " << status.getHeight() << " - current height:" << getLastBlockNumber();
             if (status.getHeight() > getLastBlockNumber()) {
                 m_sync->update(from, status.getHeight());
             }
             break;
         }
         case SyncBlocks: {
-            // CINFO << "Recv status from " << from << " - sync blocks:(" << status.getStart() << ", " << status.getEnd() << ")";
             if (status.getStart() < status.getEnd() && status.getEnd() <= getLastBlockNumber()) {
                 Status _status(ReplyBlocks);
                 BlockState _bs(EmptyBlockState);
@@ -838,7 +829,6 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
             break;
         }
         case ReplyBlocks: {
-            // CINFO << "Recv blocks from " << from << " - reply blocks size is " << status.getBlocks().size();
             for (auto i : status.getBlocks()) {
                 i.setSyncBlock();
                 processSyncBlockMessage(from, i);
