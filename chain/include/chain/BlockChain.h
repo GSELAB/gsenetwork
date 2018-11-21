@@ -96,7 +96,7 @@ typedef boost::multi_index::multi_index_container<
     TransactionPtr,
     indexed_by<
         ordered_unique<tag<ByTxTimestamp>, const_mem_fun<Transaction, int64_t, &Transaction::getTimestamp>>,
-        hashed_non_unique<tag<ByTxID>, mem_fun<Transaction, TxID const&, &Transaction::getHash>, std::hash<TxID>>
+        hashed_non_unique<tag<ByTxID>, mem_fun<Transaction, TxID, &Transaction::getHash>, std::hash<TxID>>
     >
 > TxCacheMultiIndexType;
 

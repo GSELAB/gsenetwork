@@ -99,8 +99,6 @@ public:
 
     void onHttp(RpcServer* server, ConnectHDL hdl);
 
-    void send();
-
 protected:
     void registerUrlHandlers();
 

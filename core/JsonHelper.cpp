@@ -77,8 +77,8 @@ Json::Value toJson(Account const& account)
 {
     Json::Value ret;
     ret["address"] = toJS(account.getAddress());
-    ret["balance"] = toJS(account.getBalance());
-    ret["timestamp"] = toJS(account.getTimestamp());
+    ret["balance"] = account.getBalance();
+    ret["timestamp"] = account.getTimestamp();
     return ret;
 }
 
@@ -86,13 +86,13 @@ Json::Value toJson(Producer const& producer)
 {
     Json::Value ret;
     ret["address"] = toJS(producer.getAddress());
-    ret["timestamp"] = toJS(producer.getTimestamp());
+    ret["timestamp"] = producer.getTimestamp();
     Json::Value voters;
     for (auto i : producer.getVoters()) {
-        voters[toString(i.first)] = toJS(i.second);
+        voters[toString(i.first)] = i.second;
     }
     ret["voters"] = voters;
-    ret["total-votes"] = toJS(producer.getVotes());
+    ret["total-votes"] = producer.getVotes();
     return ret;
 }
 
@@ -117,14 +117,14 @@ Json::Value toJson(BlockHeader const& header)
 Json::Value toJson(Block& block)
 {
     Json::Value ret;
-    ret["ChainID"] = toJS(block.getBlockHeader().getChainID());
+    ret["ChainID"] = block.getBlockHeader().getChainID();
     ret["producer"] = toJS(block.getBlockHeader().getProducer());
     ret["parentHash"] = toJS(block.getBlockHeader().getParentHash());
     ret["merkle"] = toJS(block.getBlockHeader().getTrieRoot());
     ret["txHash"] = toJS(block.getBlockHeader().getTxRoot());
     ret["receiptHash"] = toJS(block.getBlockHeader().getReceiptRoot());
-    ret["blockNumber"] = toJS(block.getBlockHeader().getNumber());
-    ret["timestamp"] = toJS(block.getBlockHeader().getTimestamp());
+    ret["blockNumber"] = block.getNumber();
+    ret["timestamp"] = block.getBlockHeader().getTimestamp();
     ret["extra"] = toString(block.getBlockHeader().getExtra());
     ret["hash"] = toJS(block.getHash());
     Signature sig = *(Signature*)&(block.getBlockHeader().getSignature());
@@ -135,13 +135,13 @@ Json::Value toJson(Block& block)
 Json::Value toJson(Transaction& transaction)
 {
     Json::Value ret;
-    ret["ChainID"] = toJS(transaction.getChainID());
-    ret["type"] = toJS(transaction.getType());
+    ret["ChainID"] = transaction.getChainID();
+    ret["type"] = transaction.getType();
     ret["sender"] = toJS(transaction.getSender());
     ret["recipient"] = toJS(transaction.getRecipient());
-    ret["timestamp"] = toJS(transaction.getTimestamp());
+    ret["timestamp"] = transaction.getTimestamp();
     ret["data"] = toJS(transaction.getData());
-    ret["value"] = toJS(transaction.getValue());
+    ret["value"] = transaction.getValue();
     Signature sig = *(Signature*)&transaction.getSignature();
     ret["signature"] = toJS(sig);
     ret["hash"] = toJS(transaction.getHash());
@@ -151,7 +151,7 @@ Json::Value toJson(Transaction& transaction)
 Json::Value blockNumberToJson(uint64_t blockNumber)
 {
     Json::Value ret;
-    ret["blockNumber"] = toJS(blockNumber);
+    ret["blockNumber"] = blockNumber;
     return ret;
 }
 
@@ -172,19 +172,19 @@ Json::Value toJson(std::string const& key, std::string const& value)
 Json::Value toJson(std::string const& key, uint64_t value)
 {
     Json::Value ret;
-    ret[key] = toJS(value);
+    ret[key] = value;
     return ret;
 }
 
 Transaction toTransaction(Json::Value const& root)
 {
-    chain::ChainID chainID = std::stoll(root["ChainID"].asString(), 0, 16);
-    uint32_t type = std::stol(root["type"].asString(), 0, 16);
+    chain::ChainID chainID = root["ChainID"].asUInt64();
+    uint32_t type = root["type"].asUInt();
     Address sender = Address(root["sender"].asString());
     Address recipient = Address(root["recipient"].asString());
-    int64_t timestamp = std::stoll(root["timestamp"].asString(), 0, 16);
+    int64_t timestamp = root["timestamp"].asInt64();
     std::string dataString = root["data"].asString();
-    uint64_t value = std::stoll(root["value"].asString(), 0, 16);
+    uint64_t value = root["value"].asUInt64();
     std::string sigString = root["signature"].asString();
     Transaction tx(chainID, type, sender, recipient, timestamp, toBytes(dataString), value);
     Signature sig(sigString);

@@ -123,7 +123,7 @@ void WebSocket::registerUrlHandlers()
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
         if (reader.parse(body, root)) {
-            uint64_t number = std::stoll(root["blockNumber"].asString(), 0, 16);
+            uint64_t number = root["blockNumber"].asUInt64();
             CINFO << "get_block " << number;
             Block block = m_face->getBlockByNumber(number);
             ret = toJson(block).toStyledString();
@@ -154,14 +154,14 @@ void WebSocket::registerUrlHandlers()
         Json::Value root;
         std::string ret;
         if (reader.parse(body, root)) {
-            std::string str_sender = root["sender"].asString();
-            std::string str_recipient = root["recipient"].asString();
-            uint64_t value = std::stoll(root["value"].asString(), 0, 16);
+            std::string senderString = root["sender"].asString();
+            std::string recipientString = root["recipient"].asString();
+            uint64_t value = root["value"].asUInt64();
             Transaction tx;
             tx.setChainID(DEFAULT_GSE_NETWORK);
             tx.setType(Transaction::TransferType);
-            tx.setSender(Address(str_sender));
-            tx.setRecipient(Address(str_recipient));
+            tx.setSender(Address(senderString));
+            tx.setRecipient(Address(recipientString));
             tx.setTimestamp(currentTimestamp());
             tx.setValue(value);
             ret = toJson(tx).toStyledString();
@@ -172,18 +172,17 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
-
     addHandler("/create_producer", [&](std::string, std::string body, URLRequestCallback urlRC){
         CINFO << "/create_producer";
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
         std::string ret;
         if (reader.parse(body, root)) {
-            std::string str_sender = root["sender"].asString();
-            Transaction tx;
+            std::string senderString = root["sender"].asString();
+            Transaction tx(EmptyTransaction);
             tx.setChainID(DEFAULT_GSE_NETWORK);
             tx.setType(Transaction::BeenProducerType);
-            tx.setSender(Address(str_sender));
+            tx.setSender(Address(senderString));
             tx.setTimestamp(currentTimestamp());
             ret = toJson(tx).toStyledString();
         } else {
@@ -192,6 +191,7 @@ void WebSocket::registerUrlHandlers()
         }
         urlRC(URLCode::Default, ret);
     });
+
     addHandler("/vote", [&](std::string, std::string body, URLRequestCallback urlRC){
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
@@ -259,12 +259,8 @@ void WebSocket::startService()
 {
     try {
         if (m_initialSuccess) {
-            //??? should start multi threads
-            if (1) {
                 m_rpcServer.run();
-            }
         }
-
     } catch(websocketpp::exception const& e) {
         CERROR << "RPC server run failed, " << e.what();
     }
@@ -277,7 +273,6 @@ bool WebSocket::shutdown()
 
 void WebSocket::onMessage(RpcServer* server, ConnectHDL hdl, MessagePtr msg)
 {
-    CINFO << "WebSocket::onMessage";
     server->send(hdl, msg->get_payload(), msg->get_opcode());
 }
 
@@ -313,14 +308,13 @@ void WebSocket::onHttp(RpcServer* server, ConnectHDL hdl)
             con->set_status(websocketpp::http::status_code::not_found);
         }
 
-    } catch( ... ) {
-        CERROR << "Error occur onHttp.";
+    } catch(Exception& e) {
+        CERROR << "Error occur onHttp - " << e.what();
+    } catch (websocketpp::exception& e) {
+        CERROR << "Error occur onHttp - " << e.what();
+    } catch (std::exception& e) {
+        CERROR << "Error occur onHttp - " << e.what();
     }
 }
-
-void WebSocket::send()
-{
-
 }
-} // namespace rpc
 

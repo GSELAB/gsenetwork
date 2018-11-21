@@ -690,6 +690,9 @@ bool BlockChain::addRPCTx(Transaction& tx)
     } catch (Exception& e) {
         CERROR << "Exception - " << e.what();
         return false;
+    } catch (std::exception& e) {
+        CERROR << "exception - " << e.what();
+        return false;
     }
 
     return true;
