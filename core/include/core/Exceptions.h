@@ -111,15 +111,22 @@ struct name##Exception: virtual GSException { \
         GSException(message, number) {} \
 }
 
+#define CHAIN_TEMPLATE_EXCEPTION(name) \
+struct name##Exception: virtual GSException { \
+    explicit name##Exception(std::string const& message, int number = 0): \
+        GSException(message, number) {} \
+}
+
 CORE_TEMPLATE_EXCEPTION(Deserialize);
 CORE_TEMPLATE_EXCEPTION(Serialize);
 CORE_TEMPLATE_EXCEPTION(VoteNotExistProducer);
 CORE_TEMPLATE_EXCEPTION(VoteNotExistAccount);
 CORE_TEMPLATE_EXCEPTION(RollbackState);
-CORE_TEMPLATE_EXCEPTION(BlockChain);
 CORE_TEMPLATE_EXCEPTION(InvalidTransaction);
 CORE_TEMPLATE_EXCEPTION(InvalidProducer);
 CORE_TEMPLATE_EXCEPTION(AttributeState);
 
 RUNTIME_TEMPLATE_EXCEPTION(Repository);
+
+CHAIN_TEMPLATE_EXCEPTION(BlockChain);
 }
