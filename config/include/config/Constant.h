@@ -60,14 +60,14 @@ namespace config {
 #define SCHEDULE_UPDATE_INTERVAL ((SCHEDULE_UPDATE_ROUNDS) * (TIME_PER_ROUND))
 
 // Transaction fee is 0.5 GSE (10^6)
-#define TRANSACTION_FEE (500000)
+#define TRANSACTION_FEE (500000L)
 
 // Base block bonus is 500 GSE (10^6)
-#define BLOCK_BONUS_BASE (512000000)
+#define BLOCK_BONUS_BASE (512000000L)
 
 // Cost to be producer is 1024 GSE (10^6)
-#define PRODUCER_COST (1024000000)
+#define PRODUCER_COST (1024000000L)
 
-// Seconds in a year is 365 * 24 * 3600
-#define SECONDS_PER_YEAR (365 * 24 * 3600)
+// Milliseconds in a year is 365 * 24 * 3600 * 1000
+#define MILLISECONDS_PER_YEAR (31536000000L)
 } // end namespace
