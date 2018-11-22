@@ -16,7 +16,7 @@ void Vote::execute()
 {
     Address const& sender = m_transaction.getSender();
     m_repo->clearVote(sender);
-    m_repo->burn(sender, PRODUCER_COST);
+    m_repo->burn(sender, TRANSACTION_FEE);
     bytes const& data = m_transaction.getData();
     bytesConstRef dataRef = &data;
     Ballot ballot(dataRef);
