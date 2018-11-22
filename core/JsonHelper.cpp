@@ -79,6 +79,23 @@ Json::Value toJson(Account const& account)
     ret["address"] = toJS(account.getAddress());
     ret["balance"] = account.getBalance();
     ret["timestamp"] = account.getTimestamp();
+    ret["votes"] = account.getVotes();
+    for (auto i : account.getContractAddresses()) {
+        std::string str_address = toJS(i);
+        ret["contract_addresses"].append(str_address);
+    }
+    if (account.isAlive()) {
+        ret["isAlive"] = "True";
+    } else {
+        ret["isAlive"] = "False";
+    }
+
+    Json::Value candidates;
+    for (auto i : account.getCandidates()) {
+        candidates[toString(i.first)] = i.second;
+    }
+    ret["candidates"] = candidates;
+
     return ret;
 }
 
