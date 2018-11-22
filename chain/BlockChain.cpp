@@ -470,8 +470,10 @@ void BlockChain::onIrreversible(BlockStatePtr bsp)
         item->commit();
         CINFO << "onIrreversible block number:" << item->getBlockNumber();
         BlockStatePtr solidifyBSP = m_rollbackState.getBlock(item->getBlockNumber());
-        if (solidifyBSP == EmptyBlockStatePtr)
+        if (solidifyBSP == EmptyBlockStatePtr) {
             throw BlockChainException("onIrreversible - block state not found");
+        }
+
         ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(solidifyBSP->m_blockNumber);
         m_dbc->putAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
         ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.setData(solidifyBSP->m_activeProucers.getRLPData());
@@ -574,7 +576,6 @@ uint64_t BlockChain::getSolidifyHeight() const
 
 bool BlockChain::isExist(Transaction& tx)
 {
-
     {
         Guard l{x_txCache};
         auto& item = m_txCache.get<ByTxID>();
@@ -583,25 +584,23 @@ bool BlockChain::isExist(Transaction& tx)
             return true;
     }
 
+    std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
     {
-        std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
-        {
-            Guard g(x_memoryQueue);
-            if (!m_memoryQueue.empty())
-                backItem = m_memoryQueue.back()->getRepository();
-        }
+        Guard g(x_memoryQueue);
+        if (!m_memoryQueue.empty())
+            backItem = m_memoryQueue.back()->getRepository();
+    }
 
-        std::shared_ptr<runtime::storage::Repository> repository;
-        if (backItem) {
-            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, backItem, getDBC());
-        } else {
-            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, getDBC());
-        }
+    std::shared_ptr<runtime::storage::Repository> repository;
+    if (backItem) {
+        repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, backItem, getDBC());
+    } else {
+        repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, getDBC());
+    }
 
-        auto itr = repository->getTransaction(tx.getHash());
-        if (itr == EmptyTransaction) {} else {
-            return true;
-        }
+    auto itr = repository->getTransaction(tx.getHash());
+    if (itr == EmptyTransaction) {} else {
+        return true;
     }
 
     return false;
@@ -619,25 +618,23 @@ bool BlockChain::isExist(Block& block)
         }
     }
 
+    std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
     {
-        std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
-        {
-            Guard g(x_memoryQueue);
-            if (!m_memoryQueue.empty())
-                backItem = m_memoryQueue.back()->getRepository();
-        }
+        Guard g(x_memoryQueue);
+        if (!m_memoryQueue.empty())
+            backItem = m_memoryQueue.back()->getRepository();
+    }
 
-        std::shared_ptr<runtime::storage::Repository> repository;
-        if (backItem) {
-            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, backItem, getDBC());
-        } else {
-            repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, getDBC());
-        }
+    std::shared_ptr<runtime::storage::Repository> repository;
+    if (backItem) {
+        repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, backItem, getDBC());
+    } else {
+        repository = std::make_shared<runtime::storage::Repository>(EmptyBlock, getDBC());
+    }
 
-        auto item = repository->getBlock(block.getHash());
-        if (item == EmptyBlock) {} else {
-            return true;
-        }
+    auto item = repository->getBlock(block.getHash());
+    if (item == EmptyBlock) {} else {
+        return true;
     }
 
     return false;
@@ -903,6 +900,5 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
         CINFO << "Dispatch::processMsg - unknown rlp.";
         return false;
     }
-
 }
 }
