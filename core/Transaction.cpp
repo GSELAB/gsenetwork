@@ -59,7 +59,6 @@ Transaction::Transaction(bytesConstRef data)
     try {
         if (!rlp.isList() || rlp.itemCount() != TRANSACTION_FIELDS_ALL) {
             BOOST_THROW_EXCEPTION(std::range_error("transaction RLP must be a list"));
-            // BOOST_THROW_EXCEPTION(errinfo_comment("transaction RLP must be a list"));
         }
 
         m_chainID = rlp[index = 0].toInt<chain::ChainID>();
@@ -91,9 +90,9 @@ void Transaction::streamRLP(RLPStream& rlpStream) const
               << m_type
               << m_sender
               << m_recipient
-              << (bigint) m_timestamp
-              << m_data
-              << (bigint) m_value;
+              << (bigint) m_timestamp;
+    rlpStream.appendRaw(m_data);
+    rlpStream << (bigint) m_value;
 
     rlpStream << m_signature.v
               << (u256)m_signature.r
@@ -107,9 +106,9 @@ void Transaction::streamRLPContent(RLPStream& rlpStream) const
               << m_type
               << m_sender
               << m_recipient
-              << (bigint) m_timestamp
-              << m_data
-              << (bigint) m_value;
+              << (bigint) m_timestamp;
+    rlpStream.appendRaw(m_data);
+    rlpStream << (bigint) m_value;
 }
 
 // the sha3 of the transaction not include signature

@@ -186,7 +186,7 @@ Transaction toTransaction(Json::Value const& root)
     std::string dataString = root["data"].asString();
     uint64_t value = root["value"].asUInt64();
     std::string sigString = root["signature"].asString();
-    Transaction tx(chainID, type, sender, recipient, timestamp, toBytes(dataString), value);
+    Transaction tx(chainID, type, sender, recipient, timestamp, jsToBytes(dataString), value);
     Signature sig(sigString);
     SignatureStruct ss(sig);
     tx.setSignature(ss);
