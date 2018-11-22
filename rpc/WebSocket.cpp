@@ -205,7 +205,7 @@ void WebSocket::registerUrlHandlers()
             tx.setType(Transaction::VoteType);
             tx.setSender(sender);
             tx.setTimestamp(currentTimestamp());
-            tx.setData(toBytes(dataString));
+            tx.setData(core::js_util::jsToBytes(dataString));
             ret = toJson(tx).toStyledString();
         }else{
             ret = "Parse body failed, invalid format.\n";

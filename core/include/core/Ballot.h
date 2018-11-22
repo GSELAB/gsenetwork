@@ -33,14 +33,11 @@ public:
 
     uint64_t getValue() const { return m_value; }
 
-    // @override
-    bytes getKey();
+    virtual bytes getKey() override;
 
-    // @override
-    bytes getRLPData();
+    virtual bytes getRLPData() override;
 
-    // @override
-    Object::ObjectType getObjectType() const { return Object::BallotType; }
+    virtual Object::ObjectType getObjectType() const override { return Object::BallotType; }
 
 private:
     Address m_address;
@@ -70,14 +67,11 @@ public:
 
     size_t getCandidateSetSize() const { return m_candidateVector.size(); }
 
-    // @override
-    bytes getKey();
+    virtual bytes getKey() override;
 
-    // @override
-    bytes getRLPData();
+    virtual bytes getRLPData() override;
 
-    // @override
-    Object::ObjectType getObjectType() const { return Object::BallotType; }
+    virtual Object::ObjectType getObjectType() const override { return Object::BallotType; }
 
 private:
     std::vector<Candidate> m_candidateVector;
