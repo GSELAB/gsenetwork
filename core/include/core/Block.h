@@ -77,7 +77,7 @@ public:
 
     Address const& getProducer() const { return m_producer; }
 
-    h256 const& getParentHash() const { return m_parentHash; }
+    h256 getParentHash() const { return m_parentHash; }
 
     trie::H256 const& getTrieRoot() const { return m_mklRoot; }
 
@@ -91,20 +91,17 @@ public:
 
     bytes const& getExtra() const { return m_extra; }
 
-    h256 const& getHash();
+    h256 getHash() const;
 
     SignatureStruct const& getSignature() const { return m_signature; }
 
     void clear();
 
-    // @override
-    bytes getKey();
+    virtual bytes getKey() override;
 
-    // @override
-    bytes getRLPData();
+    virtual bytes getRLPData() override;
 
-    // @override
-    Object::ObjectType getObjectType() const { return Object::BlockHeaderType; }
+    virtual Object::ObjectType getObjectType() const override { return Object::BlockHeaderType; }
 
 private:
     chain::ChainID m_chainID = chain::DEFAULT_GSE_NETWORK;
@@ -117,15 +114,13 @@ private:
     int64_t m_timestamp;
     bytes m_extra;
     SignatureStruct m_signature;
-
-    h256 m_hash; // sha3 of the blockheader
 };
 
 #define BLOCK_FIELDS 3
 
 class Block: public Object {
 public:
-    Block();
+    Block() {}
 
     Block(BlockHeader const&blockHeader);
 
@@ -134,10 +129,6 @@ public:
     Block(bytes const& data): Block(bytesConstRef(&data)) {}
 
     Block(bytesConstRef data);
-
-    // ~Block() {} cause signal c + c uncatched exception
-    //virtual ~Block();
-
 
     void streamRLP(RLPStream& rlpStream) const;
 
@@ -179,7 +170,7 @@ public:
 
     h256 getParentHash() const { return m_blockHeader.getParentHash(); }
 
-    h256 const& getHash() { return m_blockHeader.getHash(); }
+    h256 getHash() const { return m_blockHeader.getHash(); }
 
     SignatureStruct const& getSignature() const { return m_blockHeader.getSignature(); }
 
