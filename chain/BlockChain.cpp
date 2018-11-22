@@ -756,7 +756,7 @@ void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block
         m_messageFace->broadcast(from, block);
         CINFO << "Recv broadcast block number:" << block.getNumber(); // toJson(block).toStyledString();
     } catch (BlockChainException& e) {
-        CERROR << "BlockChainException - " << e.what();
+        // CERROR << "BlockChainException - " << e.what();
     } catch (RepositoryException& e) {
         CERROR << "RepositoryException - " << e.what();
     } catch (Exception& e) {
@@ -774,7 +774,7 @@ void BlockChain::processSyncBlockMessage(bi::tcp::endpoint const& from, Block& b
         }
         CINFO << "Recv sync block number:" << block.getNumber(); // toJson(block).toStyledString();
     } catch (BlockChainException& e) {
-        CERROR << "BlockChainException - " << e.what();
+        // CERROR << "BlockChainException - " << e.what();
     } catch (RepositoryException& e) {
         CERROR << "RepositoryException - " << e.what();
     } catch (Exception& e) {
