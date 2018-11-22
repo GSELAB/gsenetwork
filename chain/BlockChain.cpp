@@ -168,6 +168,7 @@ void BlockChain::doProcessBlock(BlockPtr block)
     MemoryItem* item;
     CINFO << "Process block number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
     try {
+        updateActiveProducers(block);
         item = addMemoryItem(block);
         needCancel = true;
         for (auto const& i : block->getTransactions())
@@ -221,7 +222,6 @@ bool BlockChain::processBlock(BlockPtr block)
             throw InvalidProducerException("Invalid block producer!");
         }
 
-        updateActiveProducers(block);
         m_rollbackState.add(*block, m_currentActiveProducers);
         checkBifurcation(block);
         m_head = m_rollbackState.head();
