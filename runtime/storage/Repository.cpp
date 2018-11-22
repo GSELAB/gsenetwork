@@ -222,6 +222,7 @@ void Repository::clearVote(Address const& address)
         }
 
         producer.eraseVoter(i.first);
+        put(producer);
     }
 
     account.clearVote();
