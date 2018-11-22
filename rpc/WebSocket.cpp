@@ -40,7 +40,7 @@ void WebSocket::registerUrlHandlers()
             std::string addressString = root["address"].asString();
             Address address(addressString);
             CINFO << "Address:" << address;
-            Account account = m_face->getBalance(address);
+            Account account = m_face->getAccount(address);
             ret = toJson(account).toStyledString();
         } else {
             ret = "Parse body failed, invalid format.\n";
