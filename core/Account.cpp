@@ -85,6 +85,7 @@ Account& Account::operator=(Account const& account)
     m_alive = account.isAlive();
     m_balance = account.getBalance();
     m_timestamp = account.getTimestamp();
+    m_candidates.clear();
     for (auto i : account.getCandidates())
         m_candidates[i.first] = i.second;
     m_votes = account.getVotes();
@@ -115,8 +116,6 @@ void Account::addVoter(Address const& address, uint64_t value)
 
 void Account::clearVote()
 {
-    std::map<Address, uint64_t> em;
-    m_candidates.swap(em);
     m_candidates.clear();
     m_votes = 0;
 }
