@@ -107,6 +107,18 @@ bool Account::equal(Account const& account) const
         (m_timestamp == account.getTimestamp());
 }
 
+void Account::addVoter(Address const& address, uint64_t value)
+{
+    m_candidates[address] = value;
+    m_votes += value;
+}
+
+void Account::clearVote()
+{
+    m_candidates.clear();
+    m_votes = 0;
+}
+
 void Account::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(ACCOUNT_COMMON_FIELDS);

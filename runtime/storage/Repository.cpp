@@ -206,33 +206,51 @@ Block Repository::getBlock(BlockID const& blockID)
     return ret;
 }
 
+void Repository::clearVote(Address const& address)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount) {
+        CERROR << "Clear vote account (" << address << ") not exist";
+        throw RepositoryException("Clear vote account (" + toString(address) + ") not exist");
+    }
+
+    for (auto i : account.getCandidates()) {
+        Producer producer = getProducer(i.first);
+        if (producer == EmptyProducer) {
+            CERROR << "Producer (" << i.first << ") not exist";
+            throw RepositoryException("Producer (" + toString(i.first) + ") not exist");
+        }
+
+        producer.eraseVoter(i.first);
+    }
+
+    account.clearVote();
+    put(account);
+}
+
 void Repository::voteIncrease(Address const& voter, Address const& candidate, uint64_t value)
 {
     Account account = getAccount(voter);
     if (account == EmptyAccount) {
         CERROR << "Voter account not exist";
-        throw VoteNotExistAccountException("Voter account not exist");
+        throw RepositoryException("Voter account not exist");
     }
 
     Producer producer = getProducer(candidate);
     if (producer == EmptyProducer) {
         CERROR << "Vote not exist producer";
-        throw VoteNotExistProducerException("Vote not exist producer");
+        throw RepositoryException("Vote not exist producer");
     }
 
-    // TODO:
-    //producer
-}
-
-void Repository::voteDecrease(Address const& voter, Address const& candidate, uint64_t value)
-{
-    Producer producer = getProducer(candidate);
-    if (producer == EmptyProducer) {
-        CERROR << "Vote not exist producer";
-        throw VoteNotExistProducerException("Vote not exist producer");
+    if ((account.getBalance() - account.getVotes()) < value) {
+        CERROR << "Voter (" << voter << ") has not enough balance";
+        throw RepositoryException("Voter (" + toString(voter) + ") has not enough balance");
     }
 
-    // TODO
+    account.addVoter(candidate, value);
+    producer.addVoter(voter, value);
+    put(account);
+    put(producer);
 }
 
 void Repository::commit()
