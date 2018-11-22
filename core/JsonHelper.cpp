@@ -131,6 +131,21 @@ Json::Value toJson(BlockHeader const& header)
     return ret;
 }
 
+Json::Value toJson(Transactions const& txs)
+{
+    Json::Value ret;
+    for (auto& tx : txs) {
+        Json::Value txJS;
+        txJS["hash"] = toJS(tx.getHash());
+        txJS["sender"] = toJS(tx.getSender());
+        txJS["recipient"] = toJS(tx.getRecipient());
+        txJS["value"] = tx.getValue();
+        ret.append(txJS);
+    }
+
+    return ret;
+}
+
 Json::Value toJson(Block& block)
 {
     Json::Value ret;
@@ -143,6 +158,7 @@ Json::Value toJson(Block& block)
     ret["blockNumber"] = block.getNumber();
     ret["timestamp"] = block.getBlockHeader().getTimestamp();
     ret["extra"] = toString(block.getBlockHeader().getExtra());
+    ret["transactions"] = toJson(block.getTransactions());
     ret["hash"] = toJS(block.getHash());
     Signature sig = *(Signature*)&(block.getBlockHeader().getSignature());
     ret["signature"] = toJS(sig);
