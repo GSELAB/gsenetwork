@@ -115,6 +115,8 @@ void Account::addVoter(Address const& address, uint64_t value)
 
 void Account::clearVote()
 {
+    std::map<Address, uint64_t> em;
+    m_candidates.swap(em);
     m_candidates.clear();
     m_votes = 0;
 }
