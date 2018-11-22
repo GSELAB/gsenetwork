@@ -53,6 +53,10 @@ public:
 
     void addContractAddress(Address const& address) {}
 
+    void addVoter(Address const& address, uint64_t value);
+
+    void clearVote();
+
     Address const& getAddress() const { return m_address; }
 
     bool isAlive() const { return m_alive; }
@@ -75,13 +79,18 @@ public:
 
 private:
     Address m_address;
-    bool m_alive = false;
-    uint64_t m_balance;
-    int64_t m_timestamp;
-    Addresses m_contractAddresses;
-    uint64_t m_votes;
-    std::map<Address, uint64_t> m_candidates;
 
+    bool m_alive = false;
+
+    uint64_t m_balance;
+
+    int64_t m_timestamp;
+
+    Addresses m_contractAddresses;
+
+    uint64_t m_votes;
+
+    std::map<Address, uint64_t> m_candidates;
 };
 
 extern Account EmptyAccount;

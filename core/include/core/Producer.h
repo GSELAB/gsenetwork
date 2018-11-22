@@ -47,6 +47,8 @@ public:
 
     void addVoter(Address const& voter, uint64_t value);
 
+    void eraseVoter(Address const& voter);
+
     Address const& getAddress() const { return m_address; }
 
     int64_t getTimestamp() const { return m_timestamp; }

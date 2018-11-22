@@ -117,6 +117,16 @@ void Producer::setVotes(uint64_t votes)
 void Producer::addVoter(Address const& voter, uint64_t value)
 {
     m_voters[voter] = value;
+    m_votes += value;
+}
+
+void Producer::eraseVoter(Address const& voter)
+{
+    auto itr = m_voters.find(voter);
+    if (itr != m_voters.end()) {
+        m_votes -= itr->second;
+        m_voters.erase(itr);
+    }
 }
 
 bytes Producer::getKey()

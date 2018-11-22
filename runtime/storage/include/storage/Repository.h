@@ -57,9 +57,9 @@ public:
 
     void put(Producer const& producer);
 
-    void voteIncrease(Address const& voter, Address const& candidate, uint64_t value);
+    void clearVote(Address const& address);
 
-    void voteDecrease(Address const& voter, Address const& candidate, uint64_t value);
+    void voteIncrease(Address const& voter, Address const& candidate, uint64_t value);
 
     Transaction getTransaction(TxID const& id);
 
