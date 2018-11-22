@@ -96,7 +96,7 @@ typedef boost::multi_index::multi_index_container<
     TransactionPtr,
     indexed_by<
         ordered_unique<tag<ByTxTimestamp>, const_mem_fun<Transaction, int64_t, &Transaction::getTimestamp>>,
-        hashed_non_unique<tag<ByTxID>, mem_fun<Transaction, TxID, &Transaction::getHash>, std::hash<TxID>>
+        hashed_non_unique<tag<ByTxID>, const_mem_fun<Transaction, TxID, &Transaction::getHash>, std::hash<TxID>>
     >
 > TxCacheMultiIndexType;
 
@@ -104,7 +104,7 @@ typedef boost::multi_index::multi_index_container<
     BlockPtr,
     indexed_by<
         ordered_unique<tag<ByUpBlockNumber>, const_mem_fun<Block, uint64_t, &Block::getNumber>, std::less<uint64_t>>,
-        hashed_non_unique<tag<ByBlockID>, mem_fun<Block, BlockID const&, &Block::getHash>, std::hash<BlockID>>
+        hashed_non_unique<tag<ByBlockID>, const_mem_fun<Block, BlockID, &Block::getHash>, std::hash<BlockID>>
     >
 > BlockCacheMultiIndexType;
 
@@ -124,7 +124,7 @@ public:
 
         uint64_t getBlockNumber() const { return m_blockNumber; }
 
-        BlockID const& getBlockID() const { return m_repository->getBlock().getHash(); }
+        BlockID getBlockID() const { return m_repository->getBlock().getHash(); }
 
         Block getBlock() const { return m_repository->getBlock(); }
 

@@ -82,7 +82,7 @@ public:
 
     bool operator!=(BlockState const& bs) const;
 
-    BlockID const& getPrev() const { return m_block.getBlockHeader().getParentHash(); }
+    BlockID getPrev() const { return m_block.getBlockHeader().getParentHash(); }
 
     void addConfirmation(HeaderConfirmation const& confirmation);
 

@@ -192,12 +192,11 @@ void BlockHeader::sign(Secret const& priv)
     if (_sig.isValid()) m_signature = _sig;
 }
 
-h256 const& BlockHeader::getHash()
+h256 BlockHeader::getHash() const
 {
     RLPStream rlpStream;
     streamRLPContent(rlpStream);
-    m_hash = sha3(&rlpStream.out());
-    return m_hash;
+    return sha3(&rlpStream.out());
 }
 
 void BlockHeader::clear()
@@ -214,30 +213,18 @@ void BlockHeader::clear()
     m_signature = SignatureStruct();
 }
 
-// @override
 bytes BlockHeader::getKey()
 {
-    if (m_hash)
-        return m_hash.asBytes();
-
     RLPStream rlpStream;
     streamRLPContent(rlpStream);
-    m_hash = sha3(&rlpStream.out());
-    return m_hash.asBytes();
+    return sha3(&rlpStream.out()).asBytes();
 }
 
-// @override
 bytes BlockHeader::getRLPData()
 {
     RLPStream rlpStream;
     streamRLP(rlpStream);
     return rlpStream.out();
-}
-
-/* --- Block ---*/
-Block::Block()
-{
-
 }
 
 Block::Block(BlockHeader const&blockHeader)
@@ -343,8 +330,7 @@ Block& Block::operator=(Block const& block)
 
 bool Block::operator==(Block const& block) const
 {
-    // Incomplete compare
-    return (m_blockHeader == block.getBlockHeader());
+    return getHash() == block.getHash();
 }
 
 bool Block::operator!=(Block const& block) const

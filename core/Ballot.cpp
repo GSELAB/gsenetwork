@@ -68,7 +68,7 @@ Ballot::Ballot(bytesConstRef data)
 {
     try {
         RLP rlp(data);
-        if (rlp.isList()) {
+        if (rlp.isList() && rlp.itemCount() > 0) {
             for (unsigned i = 0; i < rlp.itemCount(); i++) {
                 bytesConstRef itemRef = rlp[i].data();
                 Candidate candidate(itemRef);
@@ -121,7 +121,7 @@ void Ballot::streamRLP(RLPStream& rlpStream) const
     rlpStream.appendList(getCandidateSetSize());
     for (auto& i : m_candidateVector) {
         Candidate candidate = i;
-        rlpStream.append(candidate.getRLPData());
+        rlpStream.appendRaw(candidate.getRLPData());
     }
 }
 

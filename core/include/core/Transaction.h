@@ -26,7 +26,7 @@ namespace core {
 
 
 #define TRANSACTION_FIELDS_WITHOUT_SIG (7)
-#define TRANSACTION_FIELDS_ALL (TRANSACTION_FIELDS_WITHOUT_SIG + 3)
+#define TRANSACTION_FIELDS_ALL (8)
 
 class Transaction: public Object {
 public:
@@ -56,7 +56,7 @@ public:
     void streamRLPContent(RLPStream& rlpStream) const;
 
     // @return the sha3 of the transaction not include signature
-    h256 getHash();
+    h256 getHash() const;
 
     Transaction& operator=(Transaction const& transaction);
 

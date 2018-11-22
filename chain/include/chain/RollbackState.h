@@ -53,7 +53,7 @@ typedef boost::multi_index::multi_index_container<
     BlockStatePtr,
     indexed_by<
         hashed_unique< tag<ByBlockID>, member<BlockState, BlockID, &BlockState::m_blockID>, std::hash<BlockID> >,
-        ordered_non_unique< tag<ByPrev>, const_mem_fun<BlockState, BlockID const&, &BlockState::getPrev> >,
+        ordered_non_unique< tag<ByPrev>, const_mem_fun<BlockState, BlockID, &BlockState::getPrev> >,
         ordered_non_unique< tag<ByBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>, std::greater<uint64_t> >,
         ordered_non_unique< tag<ByUpBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>, std::less<uint64_t> >,
         ordered_non_unique< tag<ByMultiBlockNumber>,
