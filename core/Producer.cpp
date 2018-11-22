@@ -57,6 +57,7 @@ Producer& Producer::operator=(Producer const& producer)
     m_address = producer.getAddress();
     m_timestamp = producer.getTimestamp();
     m_votes = producer.getVotes();
+    m_voters.clear();
     for (auto& i : producer.getVoters()) {
         m_voters[i.first] = i.second;
     }

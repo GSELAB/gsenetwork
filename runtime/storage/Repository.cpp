@@ -243,7 +243,7 @@ void Repository::voteIncrease(Address const& voter, Address const& candidate, ui
         throw RepositoryException("Vote not exist producer");
     }
 
-    if ((account.getBalance() - account.getVotes()) < value * 1000000) {
+    if ((account.getBalance() - account.getVotes() * 1000000) < value * 1000000) {
         CERROR << "Voter (" << voter << ") has not enough balance";
         throw RepositoryException("Voter (" + toString(voter) + ") has not enough balance");
     }

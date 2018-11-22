@@ -74,13 +74,13 @@ private:
     std::shared_ptr<Repository> m_parent = nullptr;
 
     mutable Mutex x_mutexAccount;
-    mutable std::unordered_map<Address, Account> m_cacheAccount;
+    std::map<Address, Account> m_cacheAccount;
 
     mutable Mutex x_mutexProducer;
-    mutable std::unordered_map<Address, Producer> m_cacheProducer;
+    std::map<Address, Producer> m_cacheProducer;
 
     mutable Mutex x_mutexTransaction;
-    mutable std::unordered_map<TxID, Transaction> m_cacheTransaction;
+    std::map<TxID, Transaction> m_cacheTransaction;
 
     Block m_block;
 
