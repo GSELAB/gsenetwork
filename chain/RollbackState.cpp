@@ -88,11 +88,23 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
 
     m_head = *m_index.get<ByBlockNumber>().begin();
     auto _head = *m_index.get<ByMultiBlockNumber>().begin();
-    uint64_t mutilNumber = _head->m_bftSolidifyBlockNumber;
+    uint64_t solidifyNumber = _head->m_bftSolidifyBlockNumber;
     BlockStatePtr oldest = *m_index.get<ByUpBlockNumber>().begin();
-    CINFO << "Old number:" << oldest->m_blockNumber << "\tirreversible number:" << mutilNumber;
-    if (oldest->m_blockNumber < mutilNumber) {
-        auto solidifyBSP = getBlock(mutilNumber);
+    if (nextBSP->m_block.isSyncBlock()) {
+        CWARN << "Process sync block(number:" << nextBSP->m_blockNumber
+              << "\ttx-size:"
+              << nextBSP->m_block.getTransactionsSize()
+              << ") to rollback state - current solidify number:"
+              << solidifyNumber;
+    } else {
+        CWARN << "Process broadcast block(number:" << nextBSP->m_blockNumber
+              << "\ttx-size:"
+              << nextBSP->m_block.getTransactionsSize()
+              << ") to rollback state - current solidify number:"
+              << solidifyNumber;
+    }
+    if (oldest->m_blockNumber < solidifyNumber) {
+        auto solidifyBSP = getBlock(solidifyNumber);
         solidifiable(solidifyBSP);
     }
 
@@ -128,8 +140,10 @@ void RollbackState::add(HeaderConfirmation const& confirmation)
         return;
 
     bsp->addConfirmation(confirmation);
-    CINFO << "Add confirmation - number:" << confirmation.getNumber() << " size = " << bsp->getConfirmationsSize() << " active-p(" << bsp->m_activeProucers.size() << ")";
     if (bsp->m_bftSolidifyBlockNumber < bsp->m_blockNumber && bsp->getConfirmationsSize() >= ((bsp->m_activeProucers.size() * 2) / 3)) {
+        /// CWARN << "Confirmed number:" << confirmation.getNumber()
+        ///      << "\tsize:" << bsp->getConfirmationsSize()
+        ///      << "\tactive-p:" << bsp->m_activeProucers.size();
         setBFTSolidify(bsp->m_blockID);
     }
 }

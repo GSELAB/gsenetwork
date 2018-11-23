@@ -166,7 +166,6 @@ void BlockChain::doProcessBlock(BlockPtr block)
 {
     bool needCancel;
     MemoryItem* item;
-    CINFO << "Process block number:" << block->getNumber() << "\ttx.size:" << block->getTransactionsSize();
     try {
         updateActiveProducers(block);
         item = addMemoryItem(block);
@@ -453,7 +452,6 @@ void BlockChain::onSolidifiable(BlockStatePtr bsp)
     while (item && bsp->m_blockNumber >= item->getBlockNumber()) {
         m_memoryQueue.pop_front();
         item->commit();
-        CINFO << "onIrreversible block number:" << item->getBlockNumber();
         BlockStatePtr solidifyBSP = m_rollbackState.getBlock(item->getBlockNumber());
         if (solidifyBSP == EmptyBlockStatePtr) {
             throw BlockChainException("onIrreversible - block state not found");
@@ -496,7 +494,6 @@ void BlockChain::doWork()
         Guard l{x_blockCache};
         if (!m_blockCache.empty()) {
             auto itr = m_blockCache.get<ByUpBlockNumber>().begin();
-            CINFO << "BlockChain - last number:" << getLastBlockNumber() << "  cache first Number:" << (*itr)->getNumber();
             if ((*itr)->getNumber() == (getLastBlockNumber() + 1)) {
                 block = *itr;
                 m_blockCache.erase(m_blockCache.begin());
@@ -734,7 +731,6 @@ void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block
             auto ret = m_blockCache.insert(std::make_shared<Block>(block));
         }
         m_messageFace->broadcast(from, block);
-        CINFO << "Recv broadcast block number:" << block.getNumber(); // toJson(block).toStyledString();
     } catch (BlockChainException& e) {
         // CERROR << "BlockChainException - " << e.what();
     } catch (RepositoryException& e) {
@@ -752,7 +748,6 @@ void BlockChain::processSyncBlockMessage(bi::tcp::endpoint const& from, Block& b
             Guard l{x_blockCache};
             auto ret = m_blockCache.insert(std::make_shared<Block>(block));
         }
-        CINFO << "Recv sync block number:" << block.getNumber(); // toJson(block).toStyledString();
     } catch (BlockChainException& e) {
         // CERROR << "BlockChainException - " << e.what();
     } catch (RepositoryException& e) {
