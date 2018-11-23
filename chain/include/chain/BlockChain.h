@@ -148,7 +148,7 @@ public:
     typedef core::Queue<MemoryItem*> Queue_t;
 
 public:
-    BlockChain(crypto::GKey const& key, DatabaseController* dbc, BlockChainMessageFace *messageFace, ChainID const& chainID = DEFAULT_GSE_NETWORK);
+    BlockChain(crypto::GKey const& key, DatabaseController* dbc, BlockChainMessageFace *messageFace, ChainID chainID = GSE_UNKNOWN_NETWORK);
 
     virtual ~BlockChain();
 

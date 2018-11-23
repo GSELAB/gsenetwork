@@ -34,11 +34,11 @@ static std::string ChainVersion("version 1.0");
 class Controller: public producer::ProcuderEventHandleFace, public rpc::WebSocketEventHandlerFace,
     public BlockChainMessageFace {
 public:
-    Controller(ChainID const& chainID): m_chainID(chainID) {}
+    Controller() = default;
 
     virtual ~Controller() {}
 
-    void init(crypto::GKey const& key);
+    void init(crypto::GKey const& key, ChainID chainID);
 
     void exit();
 
@@ -125,7 +125,7 @@ public: // used by block chain
     virtual ProducersConstRef getSortedProducerList() const override;
 
 private:
-    chain::ChainID m_chainID;
+    ChainID m_chainID = GSE_UNKNOWN_NETWORK;
     crypto::GKey m_key;
 
     BlockChain* m_chain;

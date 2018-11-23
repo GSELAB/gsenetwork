@@ -64,8 +64,7 @@ enum ProducerRet {
 
 class ProducerServer: public Task {
 public:
-    ProducerServer(crypto::GKey const& key, ProcuderEventHandleFace* eventHandle):
-        Task("GSE-PRODUCER", 0), m_key(key), m_eventHandle(eventHandle), m_state(Ready) {}
+    ProducerServer(crypto::GKey const& key, ProcuderEventHandleFace* eventHandle, chain::ChainID chainID = GSE_UNKNOWN_NETWORK);
 
     virtual ~ProducerServer();
 

@@ -104,7 +104,7 @@ public:
     virtual Object::ObjectType getObjectType() const override { return Object::BlockHeaderType; }
 
 private:
-    chain::ChainID m_chainID = chain::DEFAULT_GSE_NETWORK;
+    chain::ChainID m_chainID = chain::GSE_UNKNOWN_NETWORK;
     Address  m_producer;
     h256 m_parentHash;
     trie::H256 m_mklRoot;

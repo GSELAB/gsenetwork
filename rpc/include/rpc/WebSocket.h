@@ -10,6 +10,7 @@
 #include <websocketpp/config/asio_no_tls.hpp>
 
 #include <core/JsonHelper.h>
+#include <chain/Types.h>
 
 namespace rpc {
 
@@ -77,7 +78,6 @@ struct AsioStubConfig: public websocketpp::config::asio {
     static const websocketpp::log::level alog_level =        websocketpp::log::alevel::all;
 };
 
-//typedef websocketpp::server<websocketpp::config::core> RpcServer;
 typedef websocketpp::server<AsioStubConfig> RpcServer;
 typedef websocketpp::connection_hdl ConnectHDL;
 typedef RpcServer::message_ptr MessagePtr;
@@ -85,7 +85,7 @@ typedef websocketpp::http::parser::request Request;
 
 class WebSocket {
 public:
-    WebSocket(WebSocketEventHandlerFace* face, unsigned short listenPort): m_face(face), m_listenPort(listenPort) {}
+    WebSocket(WebSocketEventHandlerFace* face, unsigned short listenPort, chain::ChainID chainID = chain::GSE_UNKNOWN_NETWORK);
 
     ~WebSocket() {}
 
@@ -105,13 +105,14 @@ protected:
     void addHandler(std::string const& url, URLHandler const& handler) { m_urlHandlers.insert(std::make_pair(url, handler)); }
 
 private:
+    chain::ChainID m_chainID;
+
     unsigned short m_listenPort;
+
     RpcServer m_rpcServer;
 
     bool m_initialSuccess = false;
-    // boost::optional<bi::tcp::endpoint> m_httpListenEndpoint;
 
-    // url handlers
     std::map<std::string, URLHandler> m_urlHandlers;
 
     WebSocketEventHandlerFace *m_face;

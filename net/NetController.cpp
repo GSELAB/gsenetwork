@@ -10,15 +10,18 @@ using namespace chain;
 
 namespace net {
 
-NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher):
+NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher, chain::ChainID chainID):
     m_key(key), m_inited(false), m_dispatcher(dispatcher),
     m_networkConfig(ARGs.m_local.m_address.to_string(), ARGs.m_local.m_tcpPort, false),
-    m_host(new Host("GSE V1.0", m_networkConfig))
+    m_host(new Host("GSE V1.0", m_networkConfig)), m_chainID(chainID)
 {
-
+    if (m_chainID == GSE_UNKNOWN_NETWORK) {
+        throw NetControllerException("Unknown Chain ID:" + toString(GSE_UNKNOWN_NETWORK));
+    }
 }
 
-NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher, config::NetConfig const& netConfig): NetController(key, dispatcher)
+NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher, config::NetConfig const& netConfig, chain::ChainID chainID):
+    NetController(key, dispatcher, chainID)
 {
 }
 
@@ -114,8 +117,6 @@ void NetController::send(bytes const& data, ProtocolPacketType packetType)
             core::RLPStream rlpStream;
             prepare(rlpStream, packetType, 1).appendRaw(data);
             session->sealAndSend(rlpStream);
-        } else {
-            /// CWARN << "NetController::send not find session ,size:" << m_host->getSessionSize();
         }
     }
 }
@@ -132,8 +133,6 @@ void NetController::send(bytes const& data, ProtocolPacketType packetType, bi::t
             core::RLPStream rlpStream;
             prepare(rlpStream, packetType, 1).appendRaw(data);
             session->sealAndSend(rlpStream);
-        } else {
-            /// CWARN << "NetController::send not find session ,size:" << m_host->getSessionSize();
         }
     }
 }
@@ -149,12 +148,10 @@ void NetController::send(bytes const& data, bi::tcp::endpoint const& to, chain::
                 core::RLPStream rlpStream;
                 prepare(rlpStream, packetType, 1).appendRaw(data);
                 session->sealAndSend(rlpStream);
-            } else {
-                ///  CWARN << "NetController::send not find session ,size:" << m_host->getSessionSize();
             }
+
             break;
         }
     }
-
 }
 }

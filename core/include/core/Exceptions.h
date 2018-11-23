@@ -117,6 +117,24 @@ struct name##Exception: virtual GSException { \
         GSException(message, number) {} \
 }
 
+#define PRODUCER_TEMPLATE_EXCEPTION(name) \
+struct name##Exception: virtual GSException { \
+    explicit name##Exception(std::string const& message, int number = 0): \
+        GSException(message, number) {} \
+}
+
+#define RPC_TEMPLATE_EXCEPTION(name) \
+struct name##Exception: virtual GSException { \
+    explicit name##Exception(std::string const& message, int number = 0): \
+        GSException(message, number) {} \
+}
+
+#define NET_TEMPLATE_EXCEPTION(name) \
+struct name##Exception: virtual GSException { \
+    explicit name##Exception(std::string const& message, int number = 0): \
+        GSException(message, number) {} \
+}
+
 CORE_TEMPLATE_EXCEPTION(Deserialize);
 CORE_TEMPLATE_EXCEPTION(Serialize);
 CORE_TEMPLATE_EXCEPTION(VoteNotExistProducer);
@@ -130,4 +148,10 @@ RUNTIME_TEMPLATE_EXCEPTION(Repository);
 CHAIN_TEMPLATE_EXCEPTION(BlockChain);
 CHAIN_TEMPLATE_EXCEPTION(RollbackState);
 CHAIN_TEMPLATE_EXCEPTION(RollbackStateAncestor);
+
+PRODUCER_TEMPLATE_EXCEPTION(Producer);
+
+NET_TEMPLATE_EXCEPTION(NetController);
+
+RPC_TEMPLATE_EXCEPTION(RPC);
 }

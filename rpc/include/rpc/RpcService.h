@@ -17,7 +17,7 @@ namespace rpc {
 
 class RpcService {
 public:
-    RpcService(WebSocketEventHandlerFace* face);
+    RpcService(WebSocketEventHandlerFace* face, chain::ChainID chainID = chain::GSE_UNKNOWN_NETWORK);
 
     ~RpcService();
 

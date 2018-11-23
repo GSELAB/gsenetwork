@@ -23,16 +23,24 @@ enum URLCode {
     Default = 200,
 };
 
+WebSocket::WebSocket(WebSocketEventHandlerFace* face, unsigned short listenPort, chain::ChainID chainID):
+    m_face(face), m_listenPort(listenPort), m_chainID(chainID)
+{
+    if (m_chainID == GSE_UNKNOWN_NETWORK) {
+        throw RPCException("Unknown Chain ID:" + toString(GSE_UNKNOWN_NETWORK));
+    }
+}
+
 void WebSocket::registerUrlHandlers()
 {
-    addHandler("/get_version", [&](std::string, std::string body, URLRequestCallback urlRC) {
+    addHandler("/get_version", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         CINFO << "get_version";
         ret = toJson("version", m_face->getVersion()).toStyledString();
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/get_account", [&](std::string, std::string body, URLRequestCallback urlRC) {
+    addHandler("/get_account", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
@@ -50,7 +58,7 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/get_producer", [&](std::string, std::string body, URLRequestCallback urlRC) {
+    addHandler("/get_producer", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
@@ -68,7 +76,17 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/get_balance", [&](std::string, std::string body, URLRequestCallback urlRC) {
+    addHandler("/get_producer_list", [this] (std::string, std::string body, URLRequestCallback urlRC) {
+        std::string ret;
+        Producers producerList= m_face->getCurrentProducerList();
+
+        ret = toJson(producerList).toStyledString();
+
+        urlRC(URLCode::Default, ret);
+
+    });
+
+    addHandler("/get_balance", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
@@ -86,21 +104,21 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/get_height", [&](std::string, std::string body, URLRequestCallback urlRC) {
+    addHandler("/get_height", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         uint64_t height = m_face->getHeight();
         ret = toJson("height", height).toStyledString();
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/get_solidify_height", [&](std::string, std::string body, URLRequestCallback urlRC) {
+    addHandler("/get_solidify_height", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         uint64_t height = m_face->getSolidifyHeight();
         ret = toJson("solidify-height", height).toStyledString();
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/get_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
+    addHandler("/get_transaction", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
@@ -118,7 +136,7 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/get_block", [&](std::string, std::string body, URLRequestCallback urlRC) {
+    addHandler("/get_block", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
@@ -135,7 +153,7 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/push_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
+    addHandler("/push_transaction", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
@@ -149,7 +167,7 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/create_transaction", [&](std::string, std::string body, URLRequestCallback urlRC) {
+    addHandler("/create_transaction", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
         std::string ret;
@@ -158,7 +176,7 @@ void WebSocket::registerUrlHandlers()
             std::string recipientString = root["recipient"].asString();
             uint64_t value = root["value"].asUInt64();
             Transaction tx;
-            tx.setChainID(DEFAULT_GSE_NETWORK);
+            tx.setChainID(m_chainID);
             tx.setType(Transaction::TransferType);
             tx.setSender(Address(senderString));
             tx.setRecipient(Address(recipientString));
@@ -172,7 +190,7 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/create_producer", [&](std::string, std::string body, URLRequestCallback urlRC){
+    addHandler("/create_producer", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         CINFO << "/create_producer";
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
@@ -180,7 +198,7 @@ void WebSocket::registerUrlHandlers()
         if (reader.parse(body, root)) {
             std::string senderString = root["sender"].asString();
             Transaction tx(EmptyTransaction);
-            tx.setChainID(DEFAULT_GSE_NETWORK);
+            tx.setChainID(m_chainID);
             tx.setType(Transaction::BeenProducerType);
             tx.setSender(Address(senderString));
             tx.setTimestamp(currentTimestamp());
@@ -192,7 +210,7 @@ void WebSocket::registerUrlHandlers()
         urlRC(URLCode::Default, ret);
     });
 
-    addHandler("/vote", [&](std::string, std::string body, URLRequestCallback urlRC){
+    addHandler("/vote", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         Json::Reader reader(Json::Features::strictMode());
         Json::Value root;
         std::string ret;
@@ -201,7 +219,7 @@ void WebSocket::registerUrlHandlers()
             std::string dataString = root["data"].asString();
 
             Transaction tx;
-            tx.setChainID(DEFAULT_GSE_NETWORK);
+            tx.setChainID(m_chainID);
             tx.setType(Transaction::VoteType);
             tx.setSender(sender);
             tx.setTimestamp(currentTimestamp());
@@ -212,16 +230,6 @@ void WebSocket::registerUrlHandlers()
             CINFO << ret;
         }
         urlRC(URLCode::Default, ret);
-    });
-
-    addHandler("/get_producer_list", [&](std::string, std::string body, URLRequestCallback urlRC) {
-        std::string ret;
-        Producers producerList= m_face->getCurrentProducerList();
-
-        ret = toJson(producerList).toStyledString();
-
-        urlRC(URLCode::Default, ret);
-
     });
 }
 
