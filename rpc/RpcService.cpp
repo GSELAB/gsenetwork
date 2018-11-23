@@ -15,10 +15,10 @@
 
 namespace rpc {
 
-RpcService::RpcService(WebSocketEventHandlerFace* face)
+RpcService::RpcService(WebSocketEventHandlerFace* face, chain::ChainID chainID)
 {
     CINFO << "RpcService::RpcService";
-    m_server = new WebSocket(face, ARGs.m_rpc.m_tcpPort);
+    m_server = new WebSocket(face, ARGs.m_rpc.m_tcpPort, chainID);
 }
 
 RpcService::~RpcService()
