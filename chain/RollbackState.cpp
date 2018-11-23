@@ -1,4 +1,5 @@
 #include <chain/RollbackState.h>
+#include <core/CommonIO.h>
 #include <core/Log.h>
 
 using namespace core;
@@ -87,13 +88,26 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
 
     m_head = *m_index.get<ByBlockNumber>().begin();
     auto _head = *m_index.get<ByMultiBlockNumber>().begin();
-    uint64_t mutilNumber = _head->m_bftSolidifyBlockNumber;
+    uint64_t solidifyNumber = _head->m_bftSolidifyBlockNumber;
     BlockStatePtr oldest = *m_index.get<ByUpBlockNumber>().begin();
-    CINFO << "Old number:" << oldest->m_blockNumber << "\tirreversible number:" << mutilNumber;
-    if (oldest->m_blockNumber < mutilNumber) {
-        auto solidifyBSP = getBlock(mutilNumber);
-        prune(solidifyBSP);
+    if (nextBSP->m_block.isSyncBlock()) {
+        CWARN << "Process sync block(number:" << nextBSP->m_blockNumber
+              << " tx-size:"
+              << nextBSP->m_block.getTransactionsSize()
+              << ") to rollback state - current solidify number:"
+              << solidifyNumber;
+    } else {
+        CWARN << "Process broadcast block(number:" << nextBSP->m_blockNumber
+              << " tx-size:"
+              << nextBSP->m_block.getTransactionsSize()
+              << ") to rollback state - current solidify number:"
+              << solidifyNumber;
     }
+    if (oldest->m_blockNumber < solidifyNumber) {
+        auto solidifyBSP = getBlock(solidifyNumber);
+        solidifiable(solidifyBSP);
+    }
+
     return nextBSP;
 }
 
@@ -122,14 +136,14 @@ void RollbackState::remove(uint64_t number)
 void RollbackState::add(HeaderConfirmation const& confirmation)
 {
     BlockStatePtr bsp = getBlock(confirmation.getBlockID());
-    if (!bsp) {
-        // throw RollbackStateException("Confirmation block id not found!");
+    if (!bsp)
         return;
-    }
 
     bsp->addConfirmation(confirmation);
-    CINFO << "Add confirmation - number:" << confirmation.getNumber() << " size = " << bsp->getConfirmationsSize() << " active-p(" << bsp->m_activeProucers.size() << ")";
     if (bsp->m_bftSolidifyBlockNumber < bsp->m_blockNumber && bsp->getConfirmationsSize() >= ((bsp->m_activeProucers.size() * 2) / 3)) {
+        /// CWARN << "Confirmed number:" << confirmation.getNumber()
+        ///      << "\tsize:" << bsp->getConfirmationsSize()
+        ///      << "\tactive-p:" << bsp->m_activeProucers.size();
         setBFTSolidify(bsp->m_blockID);
     }
 }
@@ -148,82 +162,52 @@ void RollbackState::addSyncBlockState(BlockState const& bs)
         add(i);
 }
 
-BlockStatePtr const& RollbackState::head() const
-{
-    return m_head;
-}
-
 // Given two head blocks, return two branches of the fork graph that end with a common ancestor(same prior block)
 std::pair<BranchType, BranchType> RollbackState::fetchBranchFrom(BlockID const& first, BlockID const& second) const
 {
-    std::pair<BranchType, BranchType> ret;
+    std::pair<BranchType, BranchType> result;
     BlockStatePtr firstItem = getBlock(first);
     BlockStatePtr secondItem = getBlock(second);
     while (firstItem->m_blockNumber > secondItem->m_blockNumber) {
-        ret.first.push_back(firstItem);
-        firstItem = getBlock(firstItem->getPrev());
+        result.first.push_back(firstItem);
+        BlockID prevBlockID = firstItem->getPrev();
+        firstItem = getBlock(prevBlockID);
         if (!firstItem) {
-            CERROR << "Block ID:" << firstItem->getPrev() << " not exist!";
-            throw RollbackStateException("Block ID not exist!");
+            CWARN << "First block id(" << prevBlockID << ") not exist in rollback state";
+            throw RollbackStateAncestorException("First block id(" + toString(prevBlockID) + ") not exist in rollback state");
         }
+
     }
 
     while (secondItem->m_blockNumber > firstItem->m_blockNumber) {
-        ret.second.push_back(secondItem);
-        secondItem = getBlock(secondItem->getPrev());
+        result.second.push_back(secondItem);
+        BlockID prevBlockID = secondItem->getPrev();
+        secondItem = getBlock(prevBlockID);
         if (!secondItem) {
-            CERROR << "Block ID:" << secondItem->getPrev() << " not exist!";
-            throw RollbackStateException("Block ID not exist!");
+            CWARN << "Second block id(" << prevBlockID << ") not exist in rollback state";
+            throw RollbackStateAncestorException("Second block id(" + toString(prevBlockID) + ") not exist in rollback state");
         }
     }
 
     while (firstItem->getPrev() != secondItem->getPrev()) {
-        ret.first.push_back(firstItem);
-        ret.second.push_back(secondItem);
+        result.first.push_back(firstItem);
+        result.second.push_back(secondItem);
         firstItem = getBlock(firstItem->getPrev());
         secondItem = getBlock(secondItem->getPrev());
         if (!firstItem || !secondItem) {
-            CERROR << "First or second block not exist!";
-            RollbackStateException("First or second block not exist!");
+            CWARN << "The same ancestor block not exist";
+            RollbackStateAncestorException("The same ancestor block not exist");
         }
     }
 
-    if (firstItem && secondItem) {
-        ret.first.push_back(firstItem);
-        ret.second.push_back(secondItem);
-    }
-
-    return ret;
+    return result;
 }
 
-void RollbackState::setValidity(BlockStatePtr const& blockState, bool valid)
-{
-    if (valid) {
-        blockState->m_validated = true;
-    } else {
-        remove(blockState->m_blockID);
-    }
-}
-
-void RollbackState::markInCurrentChain(BlockStatePtr const& blockState, bool inCurrentChain)
-{
-    if (blockState->m_inCurrentChain == inCurrentChain) return;
-    auto& blockIdx = m_index.get<ByBlockID>();
-    auto itr = blockIdx.find(blockState->m_blockID);
-    if (itr == blockIdx.end()) {
-        throw RollbackStateException("Mark unexist block in chain!");
-    }
-
-    blockIdx.modify(itr, [&](auto& bsp) {
-        bsp->m_inCurrentChain = inCurrentChain;
-    });
-}
-
-void RollbackState::prune(BlockStatePtr const& bsp)
+void RollbackState::solidifiable(BlockStatePtr const& bsp)
 {
     auto _bsp = m_index.find(bsp->m_blockID);
     if (_bsp != m_index.end()) {
-        m_irreversible(*_bsp);
+        m_solidifiable(*_bsp);
     }
 }
 

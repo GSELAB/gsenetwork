@@ -192,7 +192,7 @@ public:
 
     BlockPtr getBlockFromCache();
 
-    void onIrreversible(BlockStatePtr bsp);
+    void onSolidifiable(BlockStatePtr bsp);
 
     Address getExpectedProducer(int64_t timestamp) const;
 

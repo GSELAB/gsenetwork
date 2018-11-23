@@ -67,7 +67,6 @@ void NetController::broadcast(core::Transaction const& tMsg)
     tMsg.streamRLP(rlpStream);
     bytes data = rlpStream.out();
     send(data, TransactionPacket);
-    CINFO << "RPC broadcast tx success";
 }
 
 void NetController::broadcast(std::shared_ptr<core::Block> bMsg)
@@ -76,7 +75,6 @@ void NetController::broadcast(std::shared_ptr<core::Block> bMsg)
     bMsg->streamRLP(rlpStream);
     bytes data = rlpStream.out();
     send(data, BlockPacket);
-    CINFO << "Broadcast block success. number(" << bMsg->getNumber() << ")";
 }
 
 void NetController::addNode(std::string const& host)
@@ -117,7 +115,7 @@ void NetController::send(bytes const& data, ProtocolPacketType packetType)
             prepare(rlpStream, packetType, 1).appendRaw(data);
             session->sealAndSend(rlpStream);
         } else {
-            // CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
+            /// CWARN << "NetController::send not find session ,size:" << m_host->getSessionSize();
         }
     }
 }
@@ -135,7 +133,7 @@ void NetController::send(bytes const& data, ProtocolPacketType packetType, bi::t
             prepare(rlpStream, packetType, 1).appendRaw(data);
             session->sealAndSend(rlpStream);
         } else {
-            // CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
+            /// CWARN << "NetController::send not find session ,size:" << m_host->getSessionSize();
         }
     }
 }
@@ -152,12 +150,11 @@ void NetController::send(bytes const& data, bi::tcp::endpoint const& to, chain::
                 prepare(rlpStream, packetType, 1).appendRaw(data);
                 session->sealAndSend(rlpStream);
             } else {
-                //  CINFO << "NetController::send not find session ,size:" << m_host->getSessionSize();
+                ///  CWARN << "NetController::send not find session ,size:" << m_host->getSessionSize();
             }
             break;
         }
     }
 
 }
-
-} // end of namespace
+}

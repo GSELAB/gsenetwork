@@ -14,10 +14,9 @@
 #include <chain/BlockState.h>
 
 using namespace core;
+using namespace boost::multi_index;
 
 namespace chain {
-
-using namespace boost::multi_index;
 
 typedef std::vector<BlockStatePtr> BranchType;
 
@@ -26,29 +25,6 @@ struct ByBlockNumber;
 struct ByUpBlockNumber;
 struct ByPrev;
 struct ByMultiBlockNumber;
-
-/*
-typedef boost::multi_index::multi_index_container<
-    BlockStatePtr,
-    indexed_by<
-        hashed_unique<tag<ByBlockID>, member<BlockState, BlockID, &BlockState::m_blockID>, std::hash<BlockID>>,
-        ordered_non_unique<tag<ByPrev>, const_mem_fun<BlockState, BlockID const&, &BlockState::getPrev>>,
-        ordered_non_unique<tag<ByBlockNumber>, member<BlockState, uint64_t, &BlockState::m_blockNumber>>,
-        ordered_non_unique<tag<ByMultiBlockNumber>,
-            composite_key<BlockState,
-                // member<BlockState, uint64_t,&BlockState::m_dposIrreversibleBlockNumber>,
-                member<BlockState, uint64_t,&BlockState::m_bftIrreversibleBlockNumber>,
-                member<BlockState, uint64_t,&BlockState::m_blockNumber>
-            >,
-            composite_key_compare<
-                // std::greater<uint64_t>,
-                std::greater<uint64_t>,
-                std::greater<uint64_t>>
-        >
-    >
-> RollbackMultiIndexType;
-*/
-
 typedef boost::multi_index::multi_index_container<
     BlockStatePtr,
     indexed_by<
@@ -100,16 +76,11 @@ public:
 
     void addSyncBlockState(BlockState const& bs);
 
-    BlockStatePtr const& head() const;
+    BlockStatePtr const& head() const { return m_head; }
 
-    // Given two head blocks, return two branchs of the fork graph that end with a common ancestor(same prior block)
     std::pair<BranchType, BranchType> fetchBranchFrom(BlockID const& first, BlockID const& second) const;
 
-    void setValidity(BlockStatePtr const& bsp, bool valid);
-
-    void markInCurrentChain(BlockStatePtr const& bsp, bool inCurrentChain);
-
-    void prune(BlockStatePtr const& bsp);
+    void solidifiable(BlockStatePtr const& bsp);
 
     void setBFTSolidify(BlockID blockID);
 
@@ -118,7 +89,7 @@ public:
     uint64_t getSolidifyNumber() const { return m_solidifyNumber; }
 
 public:
-    boost::signals2::signal<void(BlockStatePtr)> m_irreversible;
+    boost::signals2::signal<void(BlockStatePtr)> m_solidifiable;
 
 private:
     BlockStatePtr m_head;
