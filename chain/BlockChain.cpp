@@ -27,10 +27,13 @@ using namespace config;
 
 namespace chain {
 
-BlockChain::BlockChain(crypto::GKey const& key, DatabaseController* dbc, BlockChainMessageFace *messageFace, ChainID const& chainID):
+BlockChain::BlockChain(crypto::GKey const& key, DatabaseController* dbc, BlockChainMessageFace *messageFace, ChainID chainID):
     m_key(key), m_dbc(dbc), m_messageFace(messageFace), m_chainID(chainID), Task("Chain")
 {
     m_dispatcher = new Dispatch(this);
+    if (m_chainID == GSE_UNKNOWN_NETWORK) {
+        throw BlockChainException("Unknown Chain ID:" + toString(GSE_UNKNOWN_NETWORK));
+    }
 }
 
 BlockChain::~BlockChain()
@@ -619,6 +622,15 @@ bool BlockChain::isExist(Block& block)
 
 void BlockChain::preProcessTx(Transaction& tx)
 {
+    if (tx.getChainID() != m_chainID) {
+        CWARN << "The transaction's ChainID is not current ChainID, "
+              << "current ChainID is "
+              << toString(m_chainID)
+              << ", transaction's ChainID is "
+              << toString(tx.getChainID());
+        throw BlockChainException("The transaction's ChainID is not current ChainID");
+    }
+
     if (!crypto::validSignature(tx)) {
         throw BlockChainException("Transaction(" + toString(tx.getHash()) + ") is not valid signature." );
     }
@@ -692,6 +704,15 @@ void BlockChain::processTxMessage(bi::tcp::endpoint const& from, Transaction& tx
 
 void BlockChain::preProcessBlock(bi::tcp::endpoint const& from, Block& block)
 {
+    if (block.getBlockHeader().getChainID() != m_chainID) {
+        CWARN << "The block number:" << block.getNumber()
+              << " is not current ChainID, current ChainID is "
+              << toString(m_chainID)
+              << ", block's ChainID is "
+              << toString(block.getBlockHeader().getChainID());
+        throw BlockChainException("Block's ChainID is not current ChainID");
+    }
+
     if (!crypto::validSignature(block)) {
         throw BlockChainException("Block(number:" + toString(block.getNumber()) + " hash:" + toString(block.getHash()) + ") is not valid signature." );
     }

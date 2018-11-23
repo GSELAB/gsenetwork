@@ -68,27 +68,28 @@ do {    \
     m_net->send(rlpStream.out(), type);  \
 } while (0)
 
-void Controller::init(crypto::GKey const& key)
+void Controller::init(crypto::GKey const& key, ChainID chainID)
 {
+    m_chainID = chainID;
     m_key = key;
     m_dbc = new DatabaseController();
     m_dbc->init();
 
-    m_chain = new BlockChain(key, m_dbc, this);
+    m_chain = new BlockChain(key, m_dbc, this, m_chainID);
     m_chain->init();
     m_chain->start();
 
-    m_net = new NetController(m_key, m_chain->getDispatcher());
+    m_net = new NetController(m_key, m_chain->getDispatcher(), m_chainID);
     m_net->init();
 
-    m_producerServer = new ProducerServer(m_key, this);
+    m_producerServer = new ProducerServer(m_key, this, m_chainID);
     m_chain->pushSchedule();
     if (ARGs.m_producerON) {
         m_producerServer->start();
     }
 
     if (ARGs.m_rpcON) {
-        m_rpcServer = new RpcService(this);
+        m_rpcServer = new RpcService(this, m_chainID);
         m_rpcServer->start();
     }
 }
@@ -241,6 +242,6 @@ Producers Controller::getCurrentProducerList() const
     return m_producerServer->getCurrentProducerList();
 }
 
-Controller controller(DEFAULT_GSE_NETWORK);
+Controller controller;
 
 } /* end namespace */
