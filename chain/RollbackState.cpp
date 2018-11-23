@@ -92,13 +92,13 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
     BlockStatePtr oldest = *m_index.get<ByUpBlockNumber>().begin();
     if (nextBSP->m_block.isSyncBlock()) {
         CWARN << "Process sync block(number:" << nextBSP->m_blockNumber
-              << "\ttx-size:"
+              << " tx-size:"
               << nextBSP->m_block.getTransactionsSize()
               << ") to rollback state - current solidify number:"
               << solidifyNumber;
     } else {
         CWARN << "Process broadcast block(number:" << nextBSP->m_blockNumber
-              << "\ttx-size:"
+              << " tx-size:"
               << nextBSP->m_block.getTransactionsSize()
               << ") to rollback state - current solidify number:"
               << solidifyNumber;
