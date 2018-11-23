@@ -35,8 +35,9 @@ BlockChain::BlockChain(crypto::GKey const& key, DatabaseController* dbc, BlockCh
 
 BlockChain::~BlockChain()
 {
-    CINFO << "BlockChain::~BlockChain";
-    if (m_dispatcher) delete m_dispatcher;
+    if (m_dispatcher)
+        delete m_dispatcher;
+
     stop();
     terminate();
     {
@@ -65,8 +66,8 @@ void BlockChain::initializeRollbackState()
 
 void BlockChain::init()
 {
-    m_rollbackState.m_irreversible.connect([&](BlockStatePtr bsp) {
-        onIrreversible(bsp);
+    m_rollbackState.m_solidifiable.connect([&](BlockStatePtr bsp) {
+        onSolidifiable(bsp);
     });
 
     if (!m_head) {
@@ -150,7 +151,6 @@ void BlockChain::eraseSolicitedTx(BlockPtr block)
             if (itr != idx.end())
                 idx.erase(itr);
         }
-
     }
 }
 
@@ -214,6 +214,41 @@ void BlockChain::doProcessBlock(BlockPtr block)
     }
 }
 
+bool BlockChain::checkBifurcation(BlockPtr block)
+{
+    auto newItem = m_rollbackState.head();
+    if (newItem->getPrev() == m_head->m_blockID) {
+        doProcessBlock(block);
+    } else if (newItem->getPrev() != m_head->m_blockID) {
+        try {
+            CWARN << "Switch branch - current number:" << m_head->m_blockNumber << "\t new number:" << newItem->m_blockNumber;
+            CWARN << "checkBifurcation - new item's prev hash:" << newItem->getPrev();
+            CWARN << "checkBifurcation - current head hash:" << m_head->m_blockID;
+            auto branches = m_rollbackState.fetchBranchFrom(newItem->m_blockID, m_head->m_blockID);
+            for (auto itr = branches.second.begin(); itr != branches.second.end(); itr++) {
+                m_rollbackState.remove((*itr)->m_blockNumber);
+                popBlockState();
+            }
+
+            if (m_head->m_blockID != branches.second.back()->getPrev()) {
+                throw BlockChainException("checkBifurcation - the head is not the second chain's parent block");
+            }
+
+        } catch (RollbackStateAncestorException& e) {
+            /// Do nothing, not valid block for curent chain
+            CWARN << e.what();
+        } catch (BlockChainException& e) {
+            CWARN << e.what();
+            CWARN << "***************** GSENetwork Serious Data Error Occur *****************";
+            exit(-1);
+        } catch (std::exception& e) {
+            CWARN << e.what();
+        }
+    }
+
+    return true;
+}
+
 bool BlockChain::processBlock(BlockPtr block)
 {
     try {
@@ -223,7 +258,9 @@ bool BlockChain::processBlock(BlockPtr block)
         }
 
         m_rollbackState.add(*block, m_currentActiveProducers);
+
         checkBifurcation(block);
+
         m_head = m_rollbackState.head();
     } catch (InvalidTransactionException& e) {
         CERROR << "processBlock - " << e.what();
@@ -325,66 +362,14 @@ void BlockChain::updateActiveProducers(BlockPtr block)
 
 bool BlockChain::processProducerBlock(BlockPtr block)
 {
-    Guard l{x_blockCache};
-    m_blockCache.emplace(block);
-    return true;
-}
+    if (block->getNumber() <= getSolidifyHeight())
+        return false;
 
-bool BlockChain::checkBifurcation(BlockPtr block)
-{
-    auto newItem = m_rollbackState.head();
-    // CINFO << "checkBifurcation - prev hash:" << newItem->getPrev();
-    // CINFO << "checkBifurcation - head hash:" << m_head->m_blockID;
-    if (newItem->getPrev() == m_head->m_blockID) {
-        doProcessBlock(block);
-    } else if (newItem->getPrev() != m_head->m_blockID) {
-        CINFO << "Switch branch : prevHead(" << m_head->m_blockNumber << ")" << " newHead(" << newItem->m_blockNumber << ")";
-        auto branches = m_rollbackState.fetchBranchFrom(newItem->m_blockID, m_head->m_blockID);
-        for (auto itr = branches.second.begin(); itr != branches.second.end(); itr++) {
-            m_rollbackState.markInCurrentChain(*itr, false);
-            popBlockState();
-        }
-
-        if (m_head->m_blockID != branches.second.back()->getPrev()) {
-            CERROR << "checkBifurcation - error occur when check switch!";
-            throw BlockChainException("checkBifurcation - error occur when check switch!");
-        }
-
-        for (auto nItr = branches.first.rbegin(); nItr != branches.first.rend(); nItr++) {
-            try {
-                std::shared_ptr<Block> _block = std::make_shared<Block>((*nItr)->m_block);
-                doProcessBlock(_block);
-                m_head = *nItr;
-                m_rollbackState.markInCurrentChain(m_head, true);
-                (*nItr)->m_validated = true;
-            } catch (Exception& e) {
-                CERROR << "checkBifurcation - error occur when switch!";
-                m_rollbackState.setValidity(*nItr, false);
-                for (auto _nItr = nItr.base(); _nItr != branches.first.end(); _nItr++) {
-                    m_rollbackState.markInCurrentChain(*_nItr, false);
-                    popBlockState();
-                }
-
-                if (m_head->m_blockID != branches.second.back()->getPrev()) {
-                    CERROR << "checkBifurcation - error occur when check switch first!";
-                    throw BlockChainException("checkBifurcation - error occur when check switch first!");
-                }
-
-                // re-process orginal blocks;
-                for (auto rItr = branches.second.rbegin(); rItr != branches.second.rend(); rItr++) {
-                    std::shared_ptr<Block> _b = std::make_shared<Block>((*rItr)->m_block);
-                    doProcessBlock(_b);
-                    m_head = *rItr;
-                    m_rollbackState.markInCurrentChain(*rItr, true);
-                }
-
-                throw e;
-            }
-            CINFO << "Switch to new head!";
-        }
+    {
+        Guard l{x_blockCache};
+        m_blockCache.emplace(block);
+        return true;
     }
-
-    return true;
 }
 
 uint64_t BlockChain::getLastBlockNumber() const
@@ -461,7 +446,7 @@ BlockPtr BlockChain::getBlockFromCache()
     return ret;
 }
 
-void BlockChain::onIrreversible(BlockStatePtr bsp)
+void BlockChain::onSolidifiable(BlockStatePtr bsp)
 {
     Guard l(x_memoryQueue);
     MemoryItem* item = m_memoryQueue.front();
@@ -506,35 +491,30 @@ void BlockChain::stop()
 
 void BlockChain::doWork()
 {
-    bool empty;
     BlockPtr block = nullptr;
     {
         Guard l{x_blockCache};
-        if (m_blockCache.empty()) {
-            empty = true;
-        } else {
-            empty = false;
+        if (!m_blockCache.empty()) {
             auto itr = m_blockCache.get<ByUpBlockNumber>().begin();
-            // CINFO << "BlockChain - lastNumber:" << getLastBlockNumber() << "  cacheNumber:" << (*itr)->getNumber();
-            if ((*itr)->getNumber() > (getLastBlockNumber() + 1)) {
-
-            } else if ((*itr)->getNumber() == (getLastBlockNumber() + 1)) {
+            CINFO << "BlockChain - last number:" << getLastBlockNumber() << "  cache first Number:" << (*itr)->getNumber();
+            if ((*itr)->getNumber() == (getLastBlockNumber() + 1)) {
                 block = *itr;
                 m_blockCache.erase(m_blockCache.begin());
-            } else {
-                block = *itr;
-                m_blockCache.erase(m_blockCache.begin());
+            } else if ((*itr)->getNumber() <= getLastBlockNumber()) {
+                if ((*itr)->getNumber() <= getSolidifyHeight()) {
+                    m_blockCache.erase(m_blockCache.begin());
+                } else {
+                    block = *itr;
+                    m_blockCache.erase(m_blockCache.begin());
+                }
             }
         }
     }
 
-    if (empty) {
-        sleepMilliseconds(100);
+    if (block) {
+        processBlock(block);
     } else {
-        if (block)
-            processBlock(block);
-        else
-            sleepMilliseconds(100);
+        sleepMilliseconds(100);
     }
 }
 
