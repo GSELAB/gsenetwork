@@ -25,19 +25,16 @@ void Runtime::init()
 
 void Runtime::excute()
 {
-
     ActionFactory factory(m_transaction, &m_block, m_repo);
     factory.init();
     factory.execute();
     factory.finalize();
-
+    m_repo->put(m_transaction);
 }
 
 void Runtime::finished()
 {
-    if (m_type == NormalType) {
-        // commit data
-    }
+
 }
 
 uint64_t Runtime::getResult() const
