@@ -31,9 +31,9 @@ namespace net {
 
 class NetController {
 public:
-    NetController(crypto::GKey const& key, DispatchFace* dispatcher);
+    NetController(crypto::GKey const& key, DispatchFace* dispatcher, chain::ChainID chainID = GSE_UNKNOWN_NETWORK);
 
-    NetController(crypto::GKey const& key, DispatchFace* dispatcher, config::NetConfig const& netConfig);
+    NetController(crypto::GKey const& key, DispatchFace* dispatcher, config::NetConfig const& netConfig, chain::ChainID chainID = GSE_UNKNOWN_NETWORK);
 
     ~NetController();
 
@@ -64,6 +64,8 @@ public:
     void send(bytes const& data, bi::tcp::endpoint const& to, chain::ProtocolPacketType packetType);
 
 private:
+    chain::ChainID m_chainID;
+
     bool m_inited;
     crypto::GKey m_key;
 
