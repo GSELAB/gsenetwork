@@ -20,6 +20,14 @@ using namespace core;
 
 namespace producer {
 
+ProducerServer::ProducerServer(crypto::GKey const& key, ProcuderEventHandleFace* eventHandle, chain::ChainID chainID):
+    Task("GSE-PRODUCER", 0), m_key(key), m_eventHandle(eventHandle), m_state(Ready), m_chainID(chainID)
+{
+    if (m_chainID == GSE_UNKNOWN_NETWORK) {
+        throw ProducerException("Unknown Chain ID:" + toString(GSE_UNKNOWN_NETWORK));
+    }
+}
+
 ProducerServer::~ProducerServer()
 {
     CINFO << "ProducerServer::~ProducerServer";
@@ -85,41 +93,34 @@ void ProducerServer::doWork()
     }
 
     Block prevBlock = m_eventHandle->getLastBlock();
-    BlockHeader blockHeader(m_eventHandle->getLastBlockNumber() + 1);
+    BlockHeader blockHeader(prevBlock.getNumber() + 1);
     blockHeader.setProducer(m_key.getAddress());
-    if (prevBlock != EmptyBlock) {
-        //CINFO << "prev:" << toJson(prevBlock).toStyledString();
-        blockHeader.setParentHash(prevBlock.getHash());
-    }
-
+    blockHeader.setChainID(m_chainID);
     blockHeader.setTimestamp(timestamp);
     //blockHeader.setExtra();
+    if (prevBlock != EmptyBlock) {
+        blockHeader.setParentHash(prevBlock.getHash());
+    } else {
+        return;
+    }
 
     std::shared_ptr<Block> block = std::make_shared<Block>(blockHeader);
     for (i = 0; i < MAX_TRANSACTIONS_PER_BLOCK; i++) {
         std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
-        if (transaction && m_eventHandle->checkTransactionNotExisted(transaction->getHash())) {
-            CINFO << "Package transaction to current block(" << block->getNumber() << ")";
+        if (!transaction) {
+            break;
+        }
+
+        if (m_eventHandle->checkTransactionNotExisted(transaction->getHash())) {
             block->addTransaction(*transaction);
         }
     }
 
-    // set receipts
-    {
-        //size_t transactionCount = block.getTransactionsSize();
-        //for (i = 0; i < transactionCount; i++) {
-        //
-        //}
-    }
-
     block->setRoots();
     block->sign(m_key.getSecret());
-
-    // Just for testing
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
-    CINFO << "Generate block - idx:" << producerPosition  << toJson(*block);
-
+    CWARN << "Generate block - idx:" << producerPosition  << toJson(*block);
     m_eventHandle->broadcast(block);
 }
-} // end of namespace
+}
