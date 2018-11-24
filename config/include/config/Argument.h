@@ -30,8 +30,10 @@ struct Host {
 
 class Argument {
 public:
+    std::string m_configFile;
+
     bool m_producerON = false;
-    bool m_rpcON = true;
+    bool m_rpcON = false;
 
     Host m_local;
     Host m_rpc;

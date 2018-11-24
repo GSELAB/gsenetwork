@@ -77,6 +77,7 @@ SET(GSE_BOOST_LIBS
     ${Boost_THREAD_LIBRARY}
     ${Boost_ATOMIC_LIBRARY}
     ${Boost_CONTEXT_LIBRARY}
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 
 hunter_add_package(cryptopp)
