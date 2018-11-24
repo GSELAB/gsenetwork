@@ -13,7 +13,7 @@ using namespace core;
 
 namespace config {
 
-#define DEFAULT_CONFIG_DIR "./default_config"
+#define DEFAULT_CONFIG_DIR "./testnet_config"
 
 Argument ARGs;
 
@@ -36,7 +36,12 @@ void initArgument()
     bi::tcp::endpoint localEP = net::Network::resolveHost(local["local_ip_port"].asString());
     ARGs.m_rpc = { rpcEP.address(), rpcEP.port(), rpcEP.port() };
     ARGs.m_local = { localEP.address(), localEP.port(), localEP.port() };
-    ARGs.m_secret = Secret(key["secret"].asString());
+    if (key["secret"].asString().size() == 0) {
+        GKey randKey = GKey::create();
+        ARGs.m_secret = randKey.getSecret();
+    } else {
+        ARGs.m_secret = Secret(key["secret"].asString());
+    }
 
     Json::Value nodeList = net["node_list"];
     for (unsigned i = 0; i < nodeList.size(); i++) {

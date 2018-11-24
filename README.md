@@ -22,28 +22,34 @@ Welcome to the c++ implementation of GSENetwork protocol. GSENetwork is a decent
   * runtime: virtual machine operating environment.
   * utils: tool class directory.
   
-## Setup
+## Setup 
 ```
 $ mkdir -p ~/GSE
 $ cd ~/GSE
 $ git clone https://github.com/GSELAB/gsenetwork.git
 $ cd gsenetwork
-```
-
-```
 $ mkdir build
 $ cd build
 $ cmake ..
 $ make
 ```
 
+
+## Setup Node Environment
+```
+$ mkdir -p ~/GSE/node
+$ cp ~/GSE/gsenetwork/testnet_config ~/GSE/node
+$ cp ~/GSE/gsenetwork/programs/gsenode ~/GSE/node
+```
+
+
 ## Run GSE Node
 ```
+$ cd ~/GSE/node
+
 # Normal GSE Node.
-$ cd programs
 $ ./gsenode
 
-# Producer
-$ cd programs
+# Producer Node
 $ ./gsenode -p
 ```
