@@ -122,7 +122,7 @@
             "receiptRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
             "number": 0,
             "timestamp": 1538352000,
-            "extra": "gse-genesis_testnet",
+            "extra": "gse-genesis_mainnet",
             "signature": "0xcd34ec9542deb2de14318d6726103039f81162caa829c8b948bf7760ac8126ad4868d61932ee33c69e7f695b6be32571e5bf469c0d9dbd4408b6ec226253c4e601"
         }
     },
