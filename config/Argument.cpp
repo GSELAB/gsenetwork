@@ -13,15 +13,13 @@ using namespace core;
 
 namespace config {
 
-#define DEFAULT_CONFIG_DIR "./testnet_config"
-
 Argument ARGs;
 
 void initArgument()
 {
     Json::Reader reader;
     Json::Value root;
-    ifstream fin(DEFAULT_CONFIG_DIR, ios::binary);
+    ifstream fin(ARGs.m_configFile, ios::binary);
     assert(fin.is_open());
     assert(reader.parse(fin, root));
 

@@ -25,12 +25,14 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/program_options/options_description.hpp>
 
 using namespace std;
 using namespace crypto;
 using namespace chain;
 using namespace utils;
+
+namespace  bpo = boost::program_options;
+
 namespace {
 
 void printFlag()
@@ -53,14 +55,47 @@ void printFlag()
 
 void init(int argc, char **argv)
 {
-    printFlag();
-    toPublic({});
-    if (argc > 1 && (strncmp(argv[1], "-p", 2) == 0 || strncmp(argv[1], "-P", 2) == 0)) {
-        CINFO << "Set argInstance.m_producerON true";
-        ARGs.m_producerON = true;
+    bpo::options_description opts("GSENetwork options");
+    bpo::variables_map vm;
+    opts.add_options()
+        ("configfile,c", bpo::value<std::string>(), "specify the config file path/name")
+        ("rpc,r", "turn on rpc service")
+        ("produce,p", "turn on producer service")
+        ("help,h", "help");
+
+    try {
+        bpo::store(bpo::parse_command_line(argc, argv, opts), vm);
+    } catch (...) {
+        std::cout << "Imput unknown cmd" << std::endl;
+        exit(0);
     }
 
+    if (vm.count("help")) {
+        std::cout << opts << std::endl;
+        exit(0);
+    }
+
+    if (vm.count("configfile")) {
+        ARGs.m_configFile = vm["configfile"].as<std::string>();
+    } else {
+        ARGs.m_configFile = "./testnet_config";
+    }
+
+    printFlag();
+    toPublic({});
     initArgument();
+
+    if (vm.count("producer")) {
+        ARGs.m_producerON = true;
+    } else {
+        ARGs.m_producerON = false;
+    }
+
+    if (vm.count("rpc")) {
+        ARGs.m_rpcON = true;
+    } else {
+        ARGs.m_rpcON = false;
+    }
 }
 
 bool s_shouldExit = false;

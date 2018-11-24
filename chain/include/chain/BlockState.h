@@ -121,6 +121,7 @@ public:
 
     uint8_t m_confirmCount;
 
+    mutable Mutex x_confirmations;
     std::vector<HeaderConfirmation> m_confirmations;
 };
 

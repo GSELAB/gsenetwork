@@ -188,6 +188,7 @@ bool BlockState::operator!=(BlockState const& bs) const
 
 void BlockState::addConfirmation(HeaderConfirmation const& confirmation)
 {
+    Guard l{x_confirmations};
     if (confirmation.getNumber() != m_blockNumber || confirmation.getBlockID() != m_blockID)
         return;
 
@@ -219,6 +220,7 @@ void BlockState::streamRLP(RLPStream& rlpStream) const
 
 bool BlockState::isSolidified() const
 {
+    Guard l{x_confirmations};
     if (m_activeProucers.size() == 0) return false;
     return m_confirmCount >= ((m_activeProucers.size() * 2) / 3);
 }
