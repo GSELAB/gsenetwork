@@ -1,6 +1,7 @@
 # GSENetwork
 
 Welcome to the C++ implementation of GSENetwork protocol. GSENetwork is a decentralized trust network for sharing economies that will disrupt the traditional model, eliminating the need for centralized intermediaries, through a three-pillar solution - DService, Incentive Model and Trust Network. GSENetwork envisions the future of the sharing economy as a global decentralized network which will seamlessly connect the interactions of every user, asset or service in the sharing economies anywhere in the world.
+
  
 ## Introduction
   * chain: GSENetwork block chain module.
@@ -13,10 +14,12 @@ Welcome to the C++ implementation of GSENetwork protocol. GSENetwork is a decent
   * rpc: Remote procedure call interface.
   * runtime: Virtual machine operating environment.
   
+  
 ## Prerequisites
 ```
 cmake
 ```
+
 
 ## Installation
 ```
@@ -65,6 +68,7 @@ You may run multiple nodes on the same computer. Repeat the instructions above a
 
 ```
 
+
 ### Setup GSE Mainnet Node
 Build mainnet directory and copy the mainnet configuration file [mainnet_config](mainnet_config) into it. 
 ```
@@ -73,6 +77,7 @@ $ cp ~/GSE/gsenetwork/mainnet_config ~/GSE/mainnet_node
 $ cp ~/GSE/gsenetwork/programs/gsenode ~/GSE/mainnet_node
 $ cd ~/GSE/mainnet_node
 ```
+
 
 ## Running
 Before running, you have to set your private key in the "key" section of the configuration file.
@@ -115,6 +120,7 @@ To run node on maintnet while having rpc service enabled and producer mode disab
 ```
 $ ./gsenode -c mainnet_config -r
 ```
+
 
 ## License
 This project is licensed under GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
