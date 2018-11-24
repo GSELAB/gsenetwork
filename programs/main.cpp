@@ -60,7 +60,7 @@ void init(int argc, char **argv)
     opts.add_options()
         ("configfile,c", bpo::value<std::string>(), "specify the config file path/name")
         ("rpc,r", "turn on rpc service")
-        ("produce,p", "turn on producer service")
+        ("producer,p", "turn on producer service")
         ("help,h", "help");
 
     try {
@@ -77,6 +77,7 @@ void init(int argc, char **argv)
 
     if (vm.count("configfile")) {
         ARGs.m_configFile = vm["configfile"].as<std::string>();
+        CINFO << "Config:" << ARGs.m_configFile;
     } else {
         ARGs.m_configFile = "./testnet_config";
     }
@@ -86,12 +87,14 @@ void init(int argc, char **argv)
     initArgument();
 
     if (vm.count("producer")) {
+        CINFO << "Turn on producer service";
         ARGs.m_producerON = true;
     } else {
         ARGs.m_producerON = false;
     }
 
     if (vm.count("rpc")) {
+        CINFO << "Turn on rpc service";
         ARGs.m_rpcON = true;
     } else {
         ARGs.m_rpcON = false;
