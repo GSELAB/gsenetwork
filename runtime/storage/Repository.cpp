@@ -75,7 +75,7 @@ void Repository::transfer(Address const& from, Address const& to, uint64_t value
     if (_to == EmptyAccount) {
         Account account(to, 0, m_block.getBlockHeader().getTimestamp());
         _to = account;
-        CINFO << "Create account - " << to;
+        /// CINFO << "Create account - " << to;
     }
 
     if (_from.getBalance() < value || _to.getBalance() + value < value) {
