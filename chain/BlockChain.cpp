@@ -660,6 +660,16 @@ void BlockChain::preProcessTx(Transaction& tx)
 bool BlockChain::addRPCTx(Transaction& tx)
 {
     try {
+        {
+            Guard l{x_historyTxCache};
+            TxID txID = tx.getHash();
+            if (m_historyTxCache.isExist(txID)) {
+                return false;
+            } else {
+                m_historyTxCache.push(txID);
+            }
+        }
+
         preProcessTx(tx);
         {
             Guard l{x_txCache};
@@ -685,6 +695,16 @@ bool BlockChain::addRPCTx(Transaction& tx)
 void BlockChain::processTxMessage(bi::tcp::endpoint const& from, Transaction& tx)
 {
     try {
+        {
+            Guard l{x_historyTxCache};
+            TxID txID = tx.getHash();
+            if (m_historyTxCache.isExist(txID)) {
+                return;
+            } else {
+                m_historyTxCache.push(txID);
+            }
+        }
+
         preProcessTx(tx);
         {
             Guard l{x_txCache};
