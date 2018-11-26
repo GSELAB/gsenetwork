@@ -35,16 +35,14 @@ $ make
 
 
 ## Deployment
-GSE node can run on testnet or mainnet. On testnet, six block producing nodes has been deployed, which means any node deployed on testnet will receive blocks from these six producers. You may use the [gsenetwork-client](https://github.com/GSELAB/gsenetwork-cli) to make transaction, vote and get blockchain information, etc.
-
-Currently, there are no blocks being produced on mainnet.
+On testnet, there will be seven producer nodes, which means any node deployed on testnet will receive blocks from these seven producers. You may use the [gsenetwork-client](https://github.com/GSELAB/gsenetwork-cli) to make transaction, vote and get blockchain information, etc.
 
 ### Setup GSE Testnet Node
 Build testnet directory and copy the testnet configuration file [testnet_config](testnet_config) into it.
 ```
 $ mkdir -p ~/GSE/testnet_node
-$ cp ~/GSE/gsenetwork/testnet_config ~/GSE/testnet_node
-$ cp ~/GSE/gsenetwork/build/programs/gsenode ~/GSE/testnet_node
+$ cp ~/GSE/gsenetwork/testnet_config ~/GSE/testnet_node/testnet_config
+$ cp ~/GSE/gsenetwork/build/programs/gsenode ~/GSE/testnet_node/gsenode
 $ cd ~/GSE/testnet_node
 ```
 
@@ -67,17 +65,6 @@ You may run multiple nodes on the same computer. Repeat the instructions above a
     },
 
 ```
-
-
-### Setup GSE Mainnet Node
-Build mainnet directory and copy the mainnet configuration file [mainnet_config](mainnet_config) into it. 
-```
-$ mkdir -p ~/GSE/mainnet_node
-$ cp ~/GSE/gsenetwork/mainnet_config ~/GSE/mainnet_node
-$ cp ~/GSE/gsenetwork/programs/gsenode ~/GSE/mainnet_node
-$ cd ~/GSE/mainnet_node
-```
-
 
 ## Running
 Before running, you have to set your private key in the "key" section of the configuration file.
@@ -115,12 +102,6 @@ GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGSSSSSSSSSSSSSSSSSSSSSSSEEEEEEEEEEEEEEEEEEE
 [2018-11-25 20:47:51.116640] [0x000000010979d5c0] [info]    Turn on producer service
 [2018-11-25 20:47:51.116654] [0x000000010979d5c0] [info]    Turn on rpc service
 ```
-
-To run node on maintnet while having rpc service enabled and producer mode disabled:
-```
-$ ./gsenode -c mainnet_config -r
-```
-
 
 ## License
 This project is licensed under GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
