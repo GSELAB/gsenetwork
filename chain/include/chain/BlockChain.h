@@ -277,7 +277,7 @@ private:
     BlockChainStatus m_blockChainStatus = ProducerStatus;
 
     mutable Mutex x_historyTxCache;
-    FixedQueue<TxID, 256> m_historyTxCache;
+    FixedQueue<TxID, 4096> m_historyTxCache;
 
     mutable Mutex x_txCache;
     TxCacheMultiIndexType m_txCache;
