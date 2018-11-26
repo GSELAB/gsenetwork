@@ -108,19 +108,24 @@ void ProducerServer::doWork()
     for (i = 0; i < MAX_TRANSACTIONS_PER_BLOCK; i++) {
         std::shared_ptr<Transaction> transaction = m_eventHandle->getTransactionFromCache();
         if (!transaction) {
-            break;
+            //testing
+            //break;
         }
 
         if (m_eventHandle->checkTransactionNotExisted(transaction->getHash())) {
             block->addTransaction(*transaction);
         }
     }
+    
+    uint64_t timestampTemp = currentTimestamp();
 
     block->setRoots();
     block->sign(m_key.getSecret());
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
     CWARN << "Generate block - idx:" << producerPosition  << toJson(*block);
-    m_eventHandle->broadcast(block);
+    // PRODUCER_INTERVAL * 0.3
+    if ((timestampTemp - timestamp) < 600)
+        m_eventHandle->broadcast(block);
 }
 }
