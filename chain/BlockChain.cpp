@@ -556,8 +556,8 @@ uint64_t BlockChain::getSolidifyHeight() const
 
 bool BlockChain::isExist(Transaction& tx)
 {
-    {
-        Guard l{x_txCache};
+    Guard l{x_txCache};
+    if (!m_txCache.empty()) {
         auto& item = m_txCache.get<ByTxID>();
         auto itr = item.find(tx.getHash());
         if (itr != item.end())
@@ -588,14 +588,12 @@ bool BlockChain::isExist(Transaction& tx)
 
 bool BlockChain::isExist(Block& block)
 {
-    {
-        Guard l(x_blockCache);
-        if (!m_blockCache.empty()) {
-            auto& item = m_blockCache.get<ByBlockID>();
-            auto itr = item.find(block.getHash());
-            if (itr != item.end())
-                return true;
-        }
+    Guard l(x_blockCache);
+    if (!m_blockCache.empty()) {
+        auto& item = m_blockCache.get<ByBlockID>();
+        auto itr = item.find(block.getHash());
+        if (itr != item.end())
+            return true;
     }
 
     std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
