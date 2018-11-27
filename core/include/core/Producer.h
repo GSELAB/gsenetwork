@@ -87,6 +87,8 @@ class ProducerSnapshot: public Object {
 public:
     ProducerSnapshot() {}
 
+    ProducerSnapshot(ProducerSnapshot const& ps);
+
     ProducerSnapshot(bytesConstRef data);
 
     ProducerSnapshot(bytes const& data): ProducerSnapshot(bytesConstRef(&data)) {}

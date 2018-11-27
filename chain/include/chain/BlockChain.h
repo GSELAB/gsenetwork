@@ -77,11 +77,13 @@ public:
 
     virtual void send(bi::tcp::endpoint const& to, BlockStatePtr bsp) = 0;
 
-    virtual void schedule(ProducersConstRef producerList) = 0;
+    virtual void schedule(ProducersConstRef producerList, int64_t timestamp) = 0;
 
     virtual Address getProducerAddress(unsigned idx) const = 0;
 
     virtual ProducersConstRef getSortedProducerList() const = 0;
+
+    virtual ProducerSnapshot getProducerSnapshot() const = 0;
 };
 
 enum BlockChainStatus {

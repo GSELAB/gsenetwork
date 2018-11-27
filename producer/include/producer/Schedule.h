@@ -76,18 +76,20 @@ public: // used by producer or block chain
 
     Producers getCurrentProducerList() const;
 
+    ProducerSnapshot getProducerSnapshot() const;
+
     Address getAddress(unsigned idx) const;
 
-    void schedule(ProducersConstRef producerList);
+    void schedule(ProducersConstRef producerList, int64_t timestamp);
 
 private:
     mutable Mutex x_activeProducers;
     Producers m_activeProducers;
 
-    mutable Mutex x_prevProducerList;
+    mutable Mutex x_producerList;
+    int64_t m_prevTimestamp;
     std::vector<Producer> m_prevProducerList;
-
-    mutable Mutex x_currentProducerList;
+    int64_t m_currentTimestamp;
     std::vector<Producer> m_currentProducerList;
 };
 

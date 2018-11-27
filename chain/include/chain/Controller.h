@@ -75,7 +75,7 @@ public: // RPC Handle
 
     virtual uint64_t getSolidifyHeight() const override { return m_chain->getSolidifyHeight(); }
 
-    virtual Producers getCurrentProducerList() const override;
+    virtual Producers getCurrentProducerList() const override { return m_producerServer->getCurrentProducerList(); }
 
 public: // Producer Handle
     virtual void broadcast(std::shared_ptr<Block> block) override;
@@ -118,11 +118,13 @@ public: // used by block chain
 
     virtual void send(boost::asio::ip::tcp::endpoint const& to, BlockStatePtr bsp) override;
 
-    virtual void schedule(ProducersConstRef producerList) override;
+    virtual void schedule(ProducersConstRef producerList, int64_t timestamp) override { m_producerServer->schedule(producerList, timestamp); }
 
-    virtual Address getProducerAddress(unsigned idx) const override;
+    virtual Address getProducerAddress(unsigned idx) const override { return m_producerServer->getProducerAddress(idx); }
 
-    virtual ProducersConstRef getSortedProducerList() const override;
+    virtual ProducersConstRef getSortedProducerList() const override { return m_producerServer->getSchedule(); }
+
+    virtual ProducerSnapshot getProducerSnapshot() const override { return m_producerServer->getProducerSnapshot(); }
 
 private:
     ChainID m_chainID = GSE_UNKNOWN_NETWORK;

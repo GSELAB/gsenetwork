@@ -68,6 +68,8 @@ do {    \
     m_net->send(rlpStream.out(), type);  \
 } while (0)
 
+Controller controller;
+
 void Controller::init(crypto::GKey const& key, ChainID chainID)
 {
     m_chainID = chainID;
@@ -221,27 +223,4 @@ void Controller::send(boost::asio::ip::tcp::endpoint const& to, BlockStatePtr bs
 {
     RLP_STREAM_PTR_SEND_TO(bsp, BlockStatePacket, to);
 }
-
-void Controller::schedule(ProducersConstRef producerList)
-{
-    m_producerServer->schedule(producerList);
-}
-
-Address Controller::getProducerAddress(unsigned idx) const
-{
-    return m_producerServer->getProducerAddress(idx);
-}
-
-ProducersConstRef Controller::getSortedProducerList() const
-{
-    return m_producerServer->getSchedule();
-}
-
-Producers Controller::getCurrentProducerList() const
-{
-    return m_producerServer->getCurrentProducerList();
-}
-
-Controller controller;
-
 } /* end namespace */

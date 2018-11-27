@@ -97,8 +97,8 @@ void BlockChain::init()
 
 void BlockChain::pushSchedule()
 {
-    m_messageFace->schedule(m_prevPS.getProducers());
-    m_messageFace->schedule(m_currentPS.getProducers());
+    m_messageFace->schedule(m_prevPS.getProducers(), m_prevPS.getTimestamp());
+    m_messageFace->schedule(m_currentPS.getProducers(), m_currentPS.getTimestamp());
 }
 
 BlockChain::MemoryItem* BlockChain::addMemoryItem(BlockPtr block)
@@ -259,7 +259,9 @@ bool BlockChain::processBlock(BlockPtr block)
             throw InvalidProducerException("Invalid block producer!");
         }
 
-        m_rollbackState.add(*block, m_currentActiveProducers);
+        /// m_rollbackState.add(*block, m_currentActiveProducers);
+        ProducerSnapshot ps = m_messageFace->getProducerSnapshot();
+        m_rollbackState.add(*block, ps);
 
         checkBifurcation(block);
 
@@ -301,7 +303,7 @@ void BlockChain::schedule(int64_t timestamp) {
     }
     m_currentPS.setTimestamp(timestamp);
 
-    m_messageFace->schedule(m_currentPS.getProducers());
+    m_messageFace->schedule(m_currentPS.getProducers(), timestamp);
 
     ATTRIBUTE_PREV_PRODUCER_LIST.setData(m_prevPS.getRLPData());
     m_dbc->putAttribute(ATTRIBUTE_PREV_PRODUCER_LIST);
