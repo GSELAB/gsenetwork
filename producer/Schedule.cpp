@@ -124,7 +124,6 @@ Address Schedule::getAddress(unsigned idx) const
 
 void Schedule::producerSort()
 {
-    Guard l{x_producerList};
     std::sort(m_prevProducerList.begin(), m_prevProducerList.end(), ProducerCompareLess());
     std::sort(m_currentProducerList.begin(), m_currentProducerList.end(), ProducerCompareLess());
 }

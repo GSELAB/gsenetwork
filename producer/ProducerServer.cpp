@@ -86,10 +86,8 @@ void ProducerServer::doWork()
 
     int64_t timestamp = currentTimestamp();
     if (checkProducer(timestamp)) {
-        CINFO << "ProducerServer::doWork - mytime";
         m_prevTimestamp = timestamp;
     } else {
-        CINFO << "ProducerServer::doWork - sleep";
         sleepMilliseconds(PRODUCER_SLEEP_INTERVAL);
         return;
     }
