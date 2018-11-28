@@ -107,6 +107,7 @@ INCLUDE_DIRECTORIES(
     ${Boost_INCLUDE_DIR}
     "${PROJECT_SOURCE_DIR}/database/include/leveldb/include"
     "${PROJECT_SOURCE_DIR}/core/include"
+    "${PROJECT_SOURCE_DIR}/listener/include"
     "${PROJECT_SOURCE_DIR}/runtime/storage/include"
     "${PROJECT_SOURCE_DIR}/runtime/vm/include"
     "${PROJECT_SOURCE_DIR}/runtime/include"
@@ -123,6 +124,7 @@ INCLUDE_DIRECTORIES(
 ADD_SUBDIRECTORY(config)
 ADD_SUBDIRECTORY(utils)
 ADD_SUBDIRECTORY(core)
+ADD_SUBDIRECTORY(listener)
 ADD_SUBDIRECTORY(crypto)
 ADD_SUBDIRECTORY(trie)
 ADD_SUBDIRECTORY(database)
