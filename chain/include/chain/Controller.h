@@ -77,6 +77,9 @@ public: // RPC Handle
 
     virtual Producers getCurrentProducerList() const override { return m_producerServer->getCurrentProducerList(); }
 
+    template<typename ... Args>
+    void registerObserver(Observer<Args ...> const& observer) { m_chain->registerObserver(observer); }
+
 public: // Producer Handle
     virtual void broadcast(std::shared_ptr<Block> block) override;
 
@@ -93,6 +96,7 @@ public: // Producer Handle
     virtual BlockChainStatus getBlockChainStatus() const override { return m_chain->getBlockChainStatus(); };
 
     virtual bool checkTransactionNotExisted(TxID const& txID) override { return (m_chain->getTx(txID) == EmptyTransaction); }
+
 public: // used by block chain
     virtual void broadcast(boost::asio::ip::tcp::endpoint const& from, Block& block) override;
 

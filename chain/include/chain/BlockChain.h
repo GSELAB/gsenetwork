@@ -25,9 +25,11 @@
 #include <core/Queue.h>
 #include <chain/RollbackState.h>
 #include <chain/Sync.h>
+#include <listener/EventObserve.h>
 
 using namespace net;
 using namespace core;
+using namespace listener;
 
 namespace chain {
 
@@ -206,6 +208,9 @@ public:
 
     void updateActiveProducers(BlockPtr block);
 
+    template<typename ... Args>
+    void registerObserver(Observer<Args ...> const& observer) { m_observe.add(observer); }
+
 public: /// used by rpc
     bool addRPCTx(Transaction& tx);
 
@@ -291,5 +296,7 @@ private:
 
     ProducerSnapshot m_prevPS;
     ProducerSnapshot m_currentPS;
+
+    EventObserve<Object*> m_observe;
 };
 } // end namespace
