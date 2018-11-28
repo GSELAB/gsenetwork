@@ -9,15 +9,11 @@ namespace listener {
 template<typename ... Args>
 class EventObserve {
 public:
-    EventObserve() = default;
-
-    EventObserve(EventObserve const& observe);
-
-    EventObserve& operator=(EventObserve const& observe);
+    EventObserve() {}
 
     virtual ~EventObserve() { m_observers.clear(); }
 
-    void notify(Args ... arg);
+    void notify(Args ... args);
 
     bool add(std::function<Args ...> observer) { m_observers.push_back(observer); }
 
@@ -33,4 +29,11 @@ public:
 private:
     std::vector<Observer<Args ...>> m_observers;
 };
+
+template<typename ... Args>
+void EventObserve<Args ...>::notify(Args ... args) {
+    for (auto& observer : m_observers) {
+        observer.notify(std::forward<Args>(args)...);
+    }
+}
 }

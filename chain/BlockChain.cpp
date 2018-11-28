@@ -195,6 +195,13 @@ void BlockChain::doProcessBlock(BlockPtr block)
         item->bonus(block->getProducer(), bonus);
         item->setDone();
         eraseSolicitedTx(block);
+
+        BlockHeight height(block->getNumber());
+        m_observe.notify(&height);
+        m_observe.notify(block.get());
+        for (auto& i : block->getTransactions()) {
+            m_observe.notify(const_cast<Transaction*>(&i));
+        }
     } catch (RepositoryException& e) {
         CERROR << "RepositoryException - " << e.what();
         if (needCancel) {
@@ -304,6 +311,9 @@ void BlockChain::schedule(int64_t timestamp) {
     m_currentPS.setTimestamp(timestamp);
 
     m_messageFace->schedule(m_currentPS.getProducers(), timestamp);
+
+    ProducerSnapshot ps = m_messageFace->getProducerSnapshot();
+    m_observe.notify(&ps);
 
     ATTRIBUTE_PREV_PRODUCER_LIST.setData(m_prevPS.getRLPData());
     m_dbc->putAttribute(ATTRIBUTE_PREV_PRODUCER_LIST);
@@ -452,29 +462,33 @@ BlockPtr BlockChain::getBlockFromCache()
 
 void BlockChain::onSolidifiable(BlockStatePtr bsp)
 {
-    Guard l(x_memoryQueue);
-    MemoryItem* item = m_memoryQueue.front();
-    while (item && bsp->m_blockNumber >= item->getBlockNumber()) {
-        m_memoryQueue.pop_front();
-        item->commit();
-        BlockStatePtr solidifyBSP = m_rollbackState.getBlock(item->getBlockNumber());
-        if (solidifyBSP == EmptyBlockStatePtr) {
-            throw BlockChainException("onIrreversible - block state not found");
+    SolidifyBlockHeight height(bsp->m_blockNumber);
+    m_observe.notify(&height);
+    {
+        Guard l(x_memoryQueue);
+        MemoryItem* item = m_memoryQueue.front();
+        while (item && bsp->m_blockNumber >= item->getBlockNumber()) {
+            m_memoryQueue.pop_front();
+            item->commit();
+            BlockStatePtr solidifyBSP = m_rollbackState.getBlock(item->getBlockNumber());
+            if (solidifyBSP == EmptyBlockStatePtr) {
+                throw BlockChainException("onIrreversible - block state not found");
+            }
+
+            ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(solidifyBSP->m_blockNumber);
+            m_dbc->putAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
+            ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.setData(solidifyBSP->m_activeProucers.getRLPData());
+            m_dbc->putAttribute(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST);
+            BlockState solidifyBS = *solidifyBSP;
+            m_dbc->put(solidifyBS);
+            m_rollbackState.remove(solidifyBSP->m_blockID);
+            m_rollbackState.setSolidifyNumber(item->getBlockNumber());
+            delete item;
+
+            if (!m_memoryQueue.empty())
+                m_memoryQueue.front()->setParentEmpty();
+            item = m_memoryQueue.front();
         }
-
-        ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(solidifyBSP->m_blockNumber);
-        m_dbc->putAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
-        ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.setData(solidifyBSP->m_activeProucers.getRLPData());
-        m_dbc->putAttribute(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST);
-        BlockState solidifyBS = *solidifyBSP;
-        m_dbc->put(solidifyBS);
-        m_rollbackState.remove(solidifyBSP->m_blockID);
-        m_rollbackState.setSolidifyNumber(item->getBlockNumber());
-        delete item;
-
-        if (!m_memoryQueue.empty())
-            m_memoryQueue.front()->setParentEmpty();
-        item = m_memoryQueue.front();
     }
 }
 
