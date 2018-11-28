@@ -11,6 +11,9 @@
 
 #include <core/JsonHelper.h>
 #include <chain/Types.h>
+#include <listener/Observer.h>
+
+using namespace listener;
 
 namespace rpc {
 
@@ -45,6 +48,9 @@ public:
     virtual uint64_t getSolidifyHeight() const = 0;
 
     virtual Producers getCurrentProducerList() const = 0;
+
+    template<typename ... Args>
+    void registerObserver(Observer<Args ...> const& observer) {}
 };
 
 struct AsioStubConfig: public websocketpp::config::asio {
@@ -100,6 +106,8 @@ public:
     void onHttp(RpcServer* server, ConnectHDL hdl);
 
 protected:
+    void registerObservers();
+
     void registerUrlHandlers();
 
     void addHandler(std::string const& url, URLHandler const& handler) { m_urlHandlers.insert(std::make_pair(url, handler)); }
@@ -116,5 +124,9 @@ private:
     std::map<std::string, URLHandler> m_urlHandlers;
 
     WebSocketEventHandlerFace *m_face;
+
+    uint64_t m_height;
+
+    uint64_t m_solidifyHeight;
 };
 }
