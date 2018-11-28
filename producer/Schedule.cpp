@@ -102,9 +102,21 @@ void Schedule::addProducer(Producer const& producer)
     //m_producerList.push_back(producer);
 }
 
+ProducerSnapshot Schedule::getProducerSnapshot() const
+{
+    Guard l{x_producerList};
+    ProducerSnapshot ps;
+    ps.setTimestamp(m_currentTimestamp);
+    for (auto& producer : m_currentProducerList) {
+        ps.addProducer(producer);
+    }
+
+    return ps;
+}
+
 Address Schedule::getAddress(unsigned idx) const
 {
-    Guard l{x_currentProducerList};
+    Guard l{x_producerList};
     if (idx >= m_currentProducerList.size())
         return ZeroAddress;
     return m_currentProducerList[idx].getAddress();
@@ -112,20 +124,13 @@ Address Schedule::getAddress(unsigned idx) const
 
 void Schedule::producerSort()
 {
-    {
-        Guard l{x_prevProducerList};
-        std::sort(m_prevProducerList.begin(), m_prevProducerList.end(), ProducerCompareLess());
-    }
-
-    {
-        Guard l{x_currentProducerList};
-        std::sort(m_currentProducerList.begin(), m_currentProducerList.end(), ProducerCompareLess());
-    }
+    std::sort(m_prevProducerList.begin(), m_prevProducerList.end(), ProducerCompareLess());
+    std::sort(m_currentProducerList.begin(), m_currentProducerList.end(), ProducerCompareLess());
 }
 
 Producers Schedule::getCurrentProducerList() const
 {
-    Guard l{x_currentProducerList};
+    Guard l{x_producerList};
     Producers ret;
     int count = 0;
     for (auto i: m_currentProducerList) {
@@ -136,27 +141,34 @@ Producers Schedule::getCurrentProducerList() const
     }
 
     return ret;
-
 }
 
-void Schedule::schedule(ProducersConstRef producerList)
+void Schedule::schedule(ProducersConstRef producerList, int64_t timestamp)
 {
-    {
-        Guard l(x_prevProducerList);
-        if (!m_prevProducerList.empty())
-            m_prevProducerList.clear();
+
+    Guard l(x_producerList);
+    if (!m_prevProducerList.empty()) {
+        m_prevProducerList.clear();
     }
-    {
-        Guard l{x_currentProducerList};
-        if (!m_currentProducerList.empty()) {
-            for (auto i : m_currentProducerList)
-                    m_prevProducerList.push_back(i);
-            m_currentProducerList.clear();
+
+    if (!m_currentProducerList.empty()) {
+        for (auto producer : m_currentProducerList) {
+            m_prevProducerList.push_back(producer);
         }
 
-        for (auto i : producerList)
-            m_currentProducerList.push_back(i);
+        m_prevTimestamp = m_currentTimestamp;
+        m_currentProducerList.clear();
     }
+
+    for (auto producer : producerList) {
+        if (m_currentProducerList.size() >= NUM_DELEGATED_BLOCKS) {
+            break;
+        }
+
+        m_currentTimestamp = timestamp;
+        m_currentProducerList.push_back(producer);
+    }
+
     producerSort();
 }
 

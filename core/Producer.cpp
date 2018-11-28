@@ -142,6 +142,14 @@ bytes Producer::getRLPData()
     return rlpStream.out();
 }
 
+ProducerSnapshot::ProducerSnapshot(ProducerSnapshot const& ps)
+{
+    m_producers.clear();
+    m_timestamp = ps.getTimestamp();
+    for (auto i : ps.getProducers())
+        m_producers.push_back(i);
+}
+
 ProducerSnapshot::ProducerSnapshot(bytesConstRef data)
 {
     populate(data);

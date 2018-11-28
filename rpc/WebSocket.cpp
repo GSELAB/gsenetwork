@@ -233,8 +233,40 @@ void WebSocket::registerUrlHandlers()
     });
 }
 
+void WebSocket::registerObservers()
+{
+    m_face->registerObserver(Observer<Object*>([this] (Object* object) {
+        switch (object->getObjectType()) {
+            case Object::BlockHeightType: {
+
+                break;
+            }
+            case Object::SolidifyBlockHeightType: {
+
+                break;
+            }
+            case Object::TransactionType: {
+
+                break;
+            }
+            case Object::BlockType: {
+
+                break;
+            }
+            case Object::ProducerSnapshotType: {
+
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }));
+}
+
 bool WebSocket::init()
 {
+    registerObservers();
     registerUrlHandlers();
 
     try {

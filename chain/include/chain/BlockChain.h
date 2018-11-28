@@ -25,9 +25,11 @@
 #include <core/Queue.h>
 #include <chain/RollbackState.h>
 #include <chain/Sync.h>
+#include <listener/EventObserve.h>
 
 using namespace net;
 using namespace core;
+using namespace listener;
 
 namespace chain {
 
@@ -77,11 +79,13 @@ public:
 
     virtual void send(bi::tcp::endpoint const& to, BlockStatePtr bsp) = 0;
 
-    virtual void schedule(ProducersConstRef producerList) = 0;
+    virtual void schedule(ProducersConstRef producerList, int64_t timestamp) = 0;
 
     virtual Address getProducerAddress(unsigned idx) const = 0;
 
     virtual ProducersConstRef getSortedProducerList() const = 0;
+
+    virtual ProducerSnapshot getProducerSnapshot() const = 0;
 };
 
 enum BlockChainStatus {
@@ -204,6 +208,9 @@ public:
 
     void updateActiveProducers(BlockPtr block);
 
+    template<typename ... Args>
+    void registerObserver(Observer<Args ...> const& observer) { m_observe.add(observer); }
+
 public: /// used by rpc
     bool addRPCTx(Transaction& tx);
 
@@ -289,5 +296,7 @@ private:
 
     ProducerSnapshot m_prevPS;
     ProducerSnapshot m_currentPS;
+
+    EventObserve<Object*> m_observe;
 };
 } // end namespace

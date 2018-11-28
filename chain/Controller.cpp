@@ -68,6 +68,8 @@ do {    \
     m_net->send(rlpStream.out(), type);  \
 } while (0)
 
+Controller controller;
+
 void Controller::init(crypto::GKey const& key, ChainID chainID)
 {
     m_chainID = chainID;
@@ -84,6 +86,7 @@ void Controller::init(crypto::GKey const& key, ChainID chainID)
 
     m_producerServer = new ProducerServer(m_key, this, m_chainID);
     m_chain->pushSchedule();
+    CINFO << "Producer start - " << ARGs.m_producerON;
     if (ARGs.m_producerON) {
         m_producerServer->start();
     }
@@ -97,12 +100,16 @@ void Controller::init(crypto::GKey const& key, ChainID chainID)
 void Controller::exit()
 {
     CINFO << "Controller release the resource...";
-    if (ARGs.m_rpcON && m_rpcServer) delete m_rpcServer;
+    if (ARGs.m_rpcON && m_rpcServer) {
+        delete m_rpcServer;
+    }
+
     if (ARGs.m_producerON && m_producerServer) {
         m_producerServer->stop();
         sleepMilliseconds(PRODUCER_SLEEP_INTERVAL * 2);
         delete m_producerServer;
     }
+
     if (m_net) delete m_net;
     if (m_chain) delete m_chain;
     if (m_dbc) delete m_dbc;
@@ -221,27 +228,4 @@ void Controller::send(boost::asio::ip::tcp::endpoint const& to, BlockStatePtr bs
 {
     RLP_STREAM_PTR_SEND_TO(bsp, BlockStatePacket, to);
 }
-
-void Controller::schedule(ProducersConstRef producerList)
-{
-    m_producerServer->schedule(producerList);
-}
-
-Address Controller::getProducerAddress(unsigned idx) const
-{
-    return m_producerServer->getProducerAddress(idx);
-}
-
-ProducersConstRef Controller::getSortedProducerList() const
-{
-    return m_producerServer->getSchedule();
-}
-
-Producers Controller::getCurrentProducerList() const
-{
-    return m_producerServer->getCurrentProducerList();
-}
-
-Controller controller;
-
 } /* end namespace */

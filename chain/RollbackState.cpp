@@ -19,15 +19,19 @@ RollbackState::~RollbackState()
 void RollbackState::close()
 {
     Guard l{x_index};
-    if (m_index.size() == 0) return;
-    m_index.clear();
+    if (m_index.size()) {
+        m_index.clear();
+    }
 }
 
 BlockStatePtr RollbackState::getBlock(BlockID const& blockID) const
 {
     Guard l{x_index};
     auto itr = m_index.find(blockID);
-    if (itr != m_index.end()) return *itr;
+    if (itr != m_index.end()) {
+        return *itr;
+    }
+
     return EmptyBlockStatePtr;
 }
 
@@ -36,8 +40,10 @@ BlockStatePtr RollbackState::getBlock(uint64_t number) const
     Guard l{x_index};
     auto const& numberIdx = m_index.get<ByBlockNumber>();
     auto itr = numberIdx.find(number);
-    if (itr != numberIdx.end())
+    if (itr != numberIdx.end()) {
         return *itr;
+    }
+
     return EmptyBlockStatePtr;
 }
 
@@ -111,17 +117,13 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
     }
 
     if (nextBSP->m_block.isSyncBlock()) {
-        CWARN << "Process sync block(number:" << nextBSP->m_blockNumber
-              << " tx-size:"
-              << nextBSP->m_block.getTransactionsSize()
-              << ") to rollback state - current solidify number:"
-              << solidifyNumber;
+        CWARN << "Received [s] block:" << nextBSP->m_blockNumber
+              << "\ttxns:" << nextBSP->m_block.getTransactionsSize()
+              << "\tsolidify:" << m_solidifyNumber;
     } else {
-        CWARN << "Process broadcast block(number:" << nextBSP->m_blockNumber
-              << " tx-size:"
-              << nextBSP->m_block.getTransactionsSize()
-              << ") to rollback state - current solidify number:"
-              << solidifyNumber;
+        CWARN << "Received [b] block:" << nextBSP->m_blockNumber
+              << "\ttxns:" << nextBSP->m_block.getTransactionsSize()
+              << "\tsolidify:" << m_solidifyNumber;
     }
 
     if (oldest->m_blockNumber < solidifyNumber) {
@@ -140,7 +142,6 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
 
 void RollbackState::remove(BlockID const& blockID)
 {
-
     auto itr = m_index.find(blockID);
     if (itr == m_index.end()) {
         return;

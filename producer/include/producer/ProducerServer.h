@@ -79,7 +79,7 @@ public:
     bool checkProducer(int64_t timestamp) const;
 
 public:
-    void schedule(ProducersConstRef producerList) { m_schedule.schedule(producerList); }
+    void schedule(ProducersConstRef producerList, int64_t timestamp) { m_schedule.schedule(producerList, timestamp); }
 
     ProducersConstRef getSchedule() { return m_schedule.getProducerList(); }
 
@@ -87,12 +87,15 @@ public:
 
     Address getProducerAddress(unsigned idx) const { return m_schedule.getAddress(idx); }
 
+    ProducerSnapshot getProducerSnapshot() const { return m_schedule.getProducerSnapshot(); }
+
 private:
     chain::ChainID m_chainID;
+
     crypto::GKey m_key;
 
-    //std::vector<std::shared_ptr<Producer>> m_producers;
     ProducerState m_state;
+
     std::shared_ptr<Account> m_currentAccout;
 
     ProcuderEventHandleFace* m_eventHandle;
