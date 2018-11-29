@@ -78,14 +78,13 @@ void WebSocket::registerUrlHandlers()
 
     addHandler("/get_producer_list", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
-        ret = toJson(m_scheduleProducers).toStyledString();
+        Producers producerList= m_face->getCurrentProducerList();
+        ret = toJson(producerList).toStyledString();
         urlRC(URLCode::Default, ret);
     });
 
     addHandler("/get_active_producer_list", [this] (std::string, std::string body, URLRequestCallback urlRC) {
-        std::string ret;
-        ret = toJson(m_activeProducers).toStyledString();
-        urlRC(URLCode::Default, ret);
+
     });
 
     addHandler("/get_balance", [this] (std::string, std::string body, URLRequestCallback urlRC) {
@@ -126,19 +125,8 @@ void WebSocket::registerUrlHandlers()
             std::string hashString = root["txHash"].asString();
             TxID txID(hashString);
             CINFO << "Tx hash:" << txID;
-
-            auto itr = m_txQueue.begin();
-            for (;itr != m_txQueue.end(); ++itr) {
-                if (txID == itr->getHash()) {
-                    ret = toJson(*itr).toStyledString();
-                    break;
-                }
-            }
-
-            if (itr == m_txQueue.end()) {
-                Transaction tx = m_face->getTransaction(txID);
-                ret = toJson(tx).toStyledString();
-            }
+            Transaction tx = m_face->getTransaction(txID);
+            ret = toJson(tx).toStyledString();
         } else {
             ret = "Parse body failed, invalid format.\n";
             CINFO << ret;
@@ -148,10 +136,7 @@ void WebSocket::registerUrlHandlers()
     });
 
     addHandler("/get_latest_transactions", [this] (std::string, std::string body, URLRequestCallback urlRC) {
-        std::string ret;
-        CINFO << "LATEST TRANSACTION SIZE:" << m_txQueue.size();
-        ret = toJson(m_txQueue).toStyledString();
-        urlRC(URLCode::Default, ret);
+
     });
 
     addHandler("/get_block", [this] (std::string, std::string body, URLRequestCallback urlRC) {
@@ -161,19 +146,8 @@ void WebSocket::registerUrlHandlers()
         if (reader.parse(body, root)) {
             uint64_t number = root["blockNumber"].asUInt64();
             CINFO << "get_block " << number;
-
-            auto itr = m_blockQueue.begin();
-            for (;itr != m_blockQueue.end(); ++itr) {
-                if (number == itr->getNumber()) {
-                    ret = toJson(*itr).toStyledString();
-                    break;
-                }
-            }
-
-            if (itr == m_blockQueue.end()) {
-                Block block = m_face->getBlockByNumber(number);
-                ret = toJson(block).toStyledString();
-            }
+            Block block = m_face->getBlockByNumber(number);
+            ret = toJson(block).toStyledString();
         } else {
             ret = "Parse body failed, invalid format.\n";
             CINFO << ret;
@@ -279,39 +253,15 @@ void WebSocket::registerObservers()
                 break;
             }
             case Object::TransactionType: {
-                Transaction *tx = dynamic_cast<Transaction*>(object);
-                if (tx) {
-                    m_txQueue.push(*tx);
-                }
                 break;
             }
             case Object::BlockType: {
-                Block *block= dynamic_cast<Block*>(object);
-                if (block) {
-                    m_blockQueue.push(*block);
-                }
                 break;
             }
             case Object::ProducerSnapshotType: {
-                ProducerSnapshot *ps= dynamic_cast<ProducerSnapshot*>(object);
-                if (ps) {
-                    ProducersConstRef activeProducers = ps->getProducers();
-                    m_scheduleProducers.clear();
-                    for (auto producer : activeProducers) {
-                        m_scheduleProducers.push_back(producer);
-                    }
-                }
                 break;
             }
             case Object::ActiveProducerSnapshotType: {
-                ActiveProducerSnapshot *ps= dynamic_cast<ActiveProducerSnapshot*>(object);
-                if (ps) {
-                    ProducersConstRef activeProducers = ps->getProducers();
-                    m_activeProducers.clear();
-                    for (auto producer : activeProducers) {
-                        m_activeProducers.push_back(producer);
-                    }
-                }
                 break;
             }
             default: {
@@ -328,7 +278,6 @@ bool WebSocket::init()
 
     m_height = m_face->getHeight();
     m_solidifyHeight = m_face->getSolidifyHeight();
-    m_scheduleProducers = m_face->getCurrentProducerList();
 
     try {
         m_rpcServer.clear_access_channels(websocketpp::log::alevel::all);

@@ -210,20 +210,6 @@ Json::Value toJson(std::string const& key, uint64_t value)
     return ret;
 }
 
-Json::Value toJson(FixedQueue<Transaction,200> const& txs)
-{
-    Json::Value ret;
-    for (auto& tx : txs) {
-        Json::Value txJS;
-        txJS["hash"] = toJS(tx.getHash());
-        txJS["sender"] = toJS(tx.getSender());
-        txJS["recipient"] = toJS(tx.getRecipient());
-        txJS["value"] = tx.getValue();
-        ret.append(txJS);
-    }
-    return ret;
-}
-
 Transaction toTransaction(Json::Value const& root)
 {
     chain::ChainID chainID = root["ChainID"].asUInt64();

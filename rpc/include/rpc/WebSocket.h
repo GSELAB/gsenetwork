@@ -133,12 +133,5 @@ private:
 
     uint64_t m_solidifyHeight = 0;
 
-    FixedQueue<Transaction,TX_BUFFER_SIZE> m_txQueue;
-
-    FixedQueue<Block,BLOCK_BUFFER_SIZE> m_blockQueue;
-
-    Producers m_scheduleProducers;
-
-    Producers m_activeProducers;
 };
 }

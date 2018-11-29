@@ -124,8 +124,6 @@ Json::Value toJson(std::string const& key, std::string const& value);
 
 Json::Value toJson(std::string const& key, uint64_t value);
 
-Json::Value toJson(FixedQueue<Transaction,200> const& txs);
-
 // Json to String
 
 // String to Json
