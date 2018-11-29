@@ -18,6 +18,7 @@
 using namespace core;
 
 namespace runtime {
+namespace common {
 
 class Runtime {
 public:
@@ -26,12 +27,12 @@ public:
         NormalType = 0x01,
     };
 
-    Runtime(Transaction const& transaction, Block const& block, std::shared_ptr<storage::Repository> repo):
+    Runtime(Transaction const& transaction, BlockPtr block, std::shared_ptr<storage::Repository> repo):
         m_block(block), m_transaction(transaction), m_repo(repo), m_type(NormalType) {}
 
     // @just for pre execute
     Runtime(Transaction const& transaction, std::shared_ptr<storage::Repository> repo):
-        m_block(EmptyBlock), m_transaction(transaction), m_repo(repo), m_type(PreType) {}
+        m_block(EmptyBlockPtr), m_transaction(transaction), m_repo(repo), m_type(PreType) {}
 
     void init();
 
@@ -46,9 +47,10 @@ private:
 
     Transaction m_transaction;
 
-    Block m_block;
+    BlockPtr m_block;
 
     std::shared_ptr<storage::Repository> m_repo;
 
 };
-} // end namespace
+}
+}

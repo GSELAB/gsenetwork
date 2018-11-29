@@ -178,7 +178,7 @@ public:
 
     bool processProducerBlock(BlockPtr block);
 
-    void processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem);
+    void processTransaction(BlockPtr block, Transaction const& transaction, MemoryItem* mItem);
 
     bool checkBifurcation(BlockPtr block);
 

@@ -65,7 +65,8 @@ void Sync::doWork()
             } else {
                 requestEnd = i.second;
             }
-            CINFO << "Sync request block from " << i.first << " (" << requestStart << " - " << requestEnd << ")";
+
+            /// CINFO << "Sync request block from " << i.first << " (" << requestStart << " - " << requestEnd << ")";
             needSync = true;
             m_chain->m_blockChainStatus = SyncStatus;
             Status status(SyncBlocks, requestStart, requestEnd);
