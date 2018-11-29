@@ -15,9 +15,9 @@ public:
 
     void notify(Args ... args);
 
-    bool add(std::function<Args ...> observer) { m_observers.push_back(observer); }
+    void add(Observer<Args ...> const& observer) { m_observers.push_back(observer); }
 
-    void remove(std::function<Args ...> observer) {
+    void remove(Observer<Args ...> const& observer) {
         auto itr = std::find(m_observers.begin(), m_observers.end(), observer);
         if (itr != m_observers.end()) {
             m_observers.erase(itr);

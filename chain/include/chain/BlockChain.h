@@ -208,8 +208,7 @@ public:
 
     void updateActiveProducers(BlockPtr block);
 
-    template<typename ... Args>
-    void registerObserver(Observer<Args ...> const& observer) { m_observe.add(observer); }
+    void registerObserver(Observer<Object*> const& observer) { m_observe.add(observer); }
 
 public: /// used by rpc
     bool addRPCTx(Transaction& tx);
