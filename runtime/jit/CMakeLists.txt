@@ -1,6 +1,7 @@
 SET(runtime_jit_source
     JITListener.cpp
-    JIT.cpp)
+    JIT.cpp
+    JITContext.cpp)
 
 ADD_LIBRARY(runtime_jit ${runtime_jit_source})
 

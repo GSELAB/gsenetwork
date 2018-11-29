@@ -10,7 +10,8 @@
  */
 
 #include <chain/BlockChain.h>
-#include <runtime/Runtime.h>
+#include <runtime/correlator/Correlation.h>
+#include <runtime/common/Runtime.h>
 #include <core/JsonHelper.h>
 #include <core/Log.h>
 #include <core/Exceptions.h>
@@ -21,7 +22,8 @@
 
 using namespace core;
 using namespace runtime::storage;
-using namespace runtime;
+using namespace runtime::common;
+using namespace runtime::correlator;
 using namespace utils;
 using namespace config;
 
@@ -157,7 +159,7 @@ void BlockChain::eraseSolicitedTx(BlockPtr block)
     }
 }
 
-void BlockChain::processTransaction(Block const& block, Transaction const& transaction, MemoryItem* mItem)
+void BlockChain::processTransaction(BlockPtr block, Transaction const& transaction, MemoryItem* mItem)
 {
     Runtime runtime(transaction, block, mItem->getRepository());
     runtime.init();
@@ -173,8 +175,12 @@ void BlockChain::doProcessBlock(BlockPtr block)
         updateActiveProducers(block);
         item = addMemoryItem(block);
         needCancel = true;
+        /*
         for (auto const& i : block->getTransactions())
-            processTransaction(*block, i, item);
+            processTransaction(block, i, item);
+        */
+        CorrelatorFilter correlatorFilter(block, item->getRepository());
+        correlatorFilter.run();
 
         int64_t timestamp = block->getBlockHeader().getTimestamp();
         if (!block->isSyncBlock()) {

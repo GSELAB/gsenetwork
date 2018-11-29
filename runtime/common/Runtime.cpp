@@ -9,7 +9,7 @@
  *
  */
 
-#include <runtime/Runtime.h>
+#include <runtime/common/Runtime.h>
 #include <core/Address.h>
 #include <storage/Repository.h>
 #include <runtime/action/ActionFactory.h>
@@ -17,7 +17,7 @@
 namespace runtime {
 
 using namespace action;
-
+namespace common {
 void Runtime::init()
 {
 
@@ -25,7 +25,7 @@ void Runtime::init()
 
 void Runtime::excute()
 {
-    ActionFactory factory(m_transaction, &m_block, m_repo);
+    ActionFactory factory(m_transaction, m_block, m_repo);
     factory.init();
     factory.execute();
     factory.finalize();
@@ -41,5 +41,5 @@ uint64_t Runtime::getResult() const
 {
     return 0;
 }
-
+}
 }

@@ -14,7 +14,7 @@ namespace action {
 
 class BeenProducer: public ActionHandler {
 public:
-    BeenProducer(Transaction transaction, Block *block, std::shared_ptr<Repository> repo):
+    BeenProducer(Transaction transaction, BlockPtr block, std::shared_ptr<Repository> repo):
         m_transaction(transaction), m_block(block), m_repo(repo) {}
 
     ~BeenProducer() {}
@@ -27,7 +27,7 @@ public:
 
 private:
     Transaction m_transaction;
-    Block* m_block;
+    BlockPtr m_block;
     std::shared_ptr<Repository> m_repo;
 };
 }

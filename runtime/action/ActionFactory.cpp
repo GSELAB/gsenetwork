@@ -8,7 +8,7 @@ using namespace core;
 namespace runtime {
 namespace action {
 
-ActionFactory::ActionFactory(Transaction const& transaction, Block* block, std::shared_ptr<Repository> repo)
+ActionFactory::ActionFactory(Transaction const& transaction, BlockPtr block, std::shared_ptr<Repository> repo)
 {
     switch (transaction.getType()) {
         case Transaction::VoteType:
