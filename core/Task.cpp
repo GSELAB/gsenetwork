@@ -39,7 +39,6 @@ void Task::startWorking()
 		m_state_notifier.notify_all();
 		m_task.reset(new thread([&]() {
 			setThreadName(m_name.c_str());
-			CINFO << "Task:" << m_name << " thread begin";
 			while (m_state != TaskState::Killing) {
 				TaskState ex = TaskState::Starting;
 				{
@@ -48,7 +47,6 @@ void Task::startWorking()
                     m_state = TaskState::Started;
 				}
 
-                CINFO << "Task:" << m_name << "Thread was" << (unsigned)ex;
 				m_state_notifier.notify_all();
 
 				try {
@@ -58,9 +56,6 @@ void Task::startWorking()
 				} catch (std::exception const& _e) {
 				    CWARN << "Task:" << m_name << " Exception thrown in Task thread: " << _e.what();
 				}
-
-//				ex = TaskState::Stopping;
-//				m_state.compare_exchange_strong(ex, TaskState::Stopped);
 
                 {
                     // the condition variable-related lock
@@ -72,8 +67,6 @@ void Task::startWorking()
                 }
 
 				m_state_notifier.notify_all();
-				CINFO << "Task:" << m_name << " Waiting until not Stopped...";
-
                 {
                     unique_lock<mutex> l(x_task);
                     DEV_TIMED_ABOVE("Task stopping", 100)
@@ -83,8 +76,6 @@ void Task::startWorking()
 
 			}
 		}));
-
-		CINFO << "Spawning:" << m_name;
 	}
 
 	DEV_TIMED_ABOVE("Start Task", 100)

@@ -14,7 +14,6 @@ SET(core_source
     SubChain.cpp
     AttributeState.cpp
     Ballot.cpp
-    Worker.cpp
     Task.cpp
     JsonHelper.cpp)
 
