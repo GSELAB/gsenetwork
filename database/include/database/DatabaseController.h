@@ -86,8 +86,6 @@ protected:
     bool initGenesis();
 
 private:
-//    Controller *m_controller;
-
     unique_ptr<Database> m_attributesStore;
     unique_ptr<Database> m_accountStore;
     unique_ptr<Database> m_transactionStore;
@@ -97,6 +95,7 @@ private:
     unique_ptr<Database> m_blockStateIndexStore;
     unique_ptr<Database> m_subChainStore;
     unique_ptr<Database> m_producerStore;
+    unique_ptr<Database> m_storageStore;
 
 };
 } // namespace end

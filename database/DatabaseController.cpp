@@ -32,6 +32,7 @@ std::string BLOCK_STATE_DIR_FILE("./data/block-state");
 std::string BLOCK_STATE_INDEX_DIR_FILE("./data/block-state-index");
 std::string SUBCHAIN_DIR_FILE("./data/subchain");
 std::string PRODUCER_DIR_FILE("./data/producer");
+std::string STORAGE_DIR_FILE("./data/storage");
 
 DatabaseController::DatabaseController():
     m_attributesStore(std::unique_ptr<Database>(new Database(ATTRIBUTE_DIR_FILE))),
@@ -42,7 +43,11 @@ DatabaseController::DatabaseController():
     m_blockStateStore(std::unique_ptr<Database>(new Database(BLOCK_STATE_DIR_FILE))),
     m_blockStateIndexStore(std::unique_ptr<Database>(new Database(BLOCK_STATE_INDEX_DIR_FILE))),
     m_subChainStore(std::unique_ptr<Database>(new Database(SUBCHAIN_DIR_FILE))),
-    m_producerStore(std::unique_ptr<Database>(new Database(PRODUCER_DIR_FILE))) {}
+    m_producerStore(std::unique_ptr<Database>(new Database(PRODUCER_DIR_FILE))),
+    m_storageStore(std::unique_ptr<Database>(new Database(STORAGE_DIR_FILE)))
+{
+
+}
 
 DatabaseController::~DatabaseController()
 {
