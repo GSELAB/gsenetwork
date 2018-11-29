@@ -77,8 +77,7 @@ public: // RPC Handle
 
     virtual Producers getCurrentProducerList() const override { return m_producerServer->getCurrentProducerList(); }
 
-    template<typename ... Args>
-    void registerObserver(Observer<Args ...> const& observer) { m_chain->registerObserver(observer); }
+    void registerObserver(Observer<Object*> const& observer) override { m_chain->registerObserver(observer); }
 
 public: // Producer Handle
     virtual void broadcast(std::shared_ptr<Block> block) override;

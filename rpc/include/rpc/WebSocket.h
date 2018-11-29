@@ -49,8 +49,7 @@ public:
 
     virtual Producers getCurrentProducerList() const = 0;
 
-    template<typename ... Args>
-    void registerObserver(Observer<Args ...> const& observer) {}
+    virtual void registerObserver(Observer<Object*> const& observer) = 0;
 };
 
 struct AsioStubConfig: public websocketpp::config::asio {
@@ -125,7 +124,7 @@ private:
 
     WebSocketEventHandlerFace *m_face;
 
-    uint64_t m_height;
+    BlockHeight *m_height;
 
     uint64_t m_solidifyHeight;
 };
