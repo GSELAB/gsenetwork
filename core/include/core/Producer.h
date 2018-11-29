@@ -128,4 +128,48 @@ private:
     Producers m_producers;
 };
 
+class ActiveProducerSnapshot: public Object {
+public:
+    ActiveProducerSnapshot() {}
+
+    ActiveProducerSnapshot(ActiveProducerSnapshot const& ps);
+
+    ActiveProducerSnapshot(bytesConstRef data);
+
+    ActiveProducerSnapshot(bytes const& data): ActiveProducerSnapshot(bytesConstRef(&data)) {}
+
+    ActiveProducerSnapshot& operator=(ActiveProducerSnapshot const& ps);
+
+    void populate(bytesConstRef data);
+
+    void populate(bytes const& data) { populate(bytesConstRef(&data)); }
+
+    int64_t getTimestamp() const { return m_timestamp; }
+
+    size_t size() const { return m_producers.size(); }
+
+    ProducersConstRef getProducers() const { return m_producers; }
+
+    void setTimestamp(int64_t timestamp) { m_timestamp = timestamp; }
+
+    void addProducer(Producer const& producer);
+
+    void deleteProducer(Producer const& producer);
+
+    void clear() { m_producers.clear(); }
+
+    void streamRLP(RLPStream& rlpStream) const;
+
+    bool isExist(Address const& address) const;
+
+    virtual bytes getKey() override;
+
+    virtual bytes getRLPData() override;
+
+    virtual Object::ObjectType getObjectType() const override { return Object::ActiveProducerSnapshotType; }
+
+private:
+    int64_t m_timestamp;
+    Producers m_producers;
+};
 } // end of namespace

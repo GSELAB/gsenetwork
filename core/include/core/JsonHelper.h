@@ -11,6 +11,7 @@
 #include <core/Account.h>
 #include <core/Transaction.h>
 #include <core/Producer.h>
+#include <core/Queue.h>
 
 namespace core {
 
