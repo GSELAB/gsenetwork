@@ -117,9 +117,10 @@ Json::Value toJson(Producers const& producerList)
 {
     Json::Value ret;
     for (auto i : producerList) {
-        std::string str_address = toJS(i.getAddress());
-        std::string str_vote = toJS(i.getVotes());
-        ret["producer_list"].append(str_address + ": " + str_vote);
+        Json::Value txJS;
+        txJS["address"] = toJS(i.getAddress());
+        txJS["votes"] = toJS(i.getVotes());
+        ret.append(txJS);
     }
 
     return ret;
@@ -206,6 +207,20 @@ Json::Value toJson(std::string const& key, uint64_t value)
 {
     Json::Value ret;
     ret[key] = value;
+    return ret;
+}
+
+Json::Value toJson(FixedQueue<Transaction,200> const& txs)
+{
+    Json::Value ret;
+    for (auto& tx : txs) {
+        Json::Value txJS;
+        txJS["hash"] = toJS(tx.getHash());
+        txJS["sender"] = toJS(tx.getSender());
+        txJS["recipient"] = toJS(tx.getRecipient());
+        txJS["value"] = tx.getValue();
+        ret.append(txJS);
+    }
     return ret;
 }
 

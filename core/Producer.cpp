@@ -224,5 +224,86 @@ bytes ProducerSnapshot::getRLPData()
     return rlpStream.out();
 }
 
+ActiveProducerSnapshot::ActiveProducerSnapshot(ActiveProducerSnapshot const& ps)
+{
+    m_producers.clear();
+    m_timestamp = ps.getTimestamp();
+    for (auto i : ps.getProducers())
+        m_producers.push_back(i);
+}
+
+ActiveProducerSnapshot::ActiveProducerSnapshot(bytesConstRef data)
+{
+    populate(data);
+}
+
+ActiveProducerSnapshot& ActiveProducerSnapshot::operator=(ActiveProducerSnapshot const& ps)
+{
+    if (this == &ps)
+        return *this;
+
+    m_producers.clear();
+    m_timestamp = ps.getTimestamp();
+    for (auto i : ps.getProducers())
+        m_producers.push_back(i);
+    return *this;
+}
+
+void ActiveProducerSnapshot::populate(bytesConstRef data)
+{
+    m_producers.clear();
+    try {
+        RLP rlp(data);
+        if (rlp.isList() && rlp.itemCount() > 0) {
+            m_timestamp = rlp[0].toInt<int64_t>();
+            for (unsigned i = 1; i < rlp.itemCount(); i++)
+                m_producers.push_back(Producer(rlp[i].data()));
+        }
+    } catch (...) {
+
+    }
+}
+
+void ActiveProducerSnapshot::addProducer(Producer const& producer)
+{
+    if (!isExist(producer.getAddress()))
+        m_producers.push_back(producer);
+}
+
+void ActiveProducerSnapshot::deleteProducer(Producer const& producer)
+{
+    Producers::iterator itr;
+    itr = std::find(m_producers.begin(), m_producers.end(), producer);
+    if (itr != m_producers.end())
+        m_producers.erase(itr);
+}
+
+bool ActiveProducerSnapshot::isExist(Address const& address) const
+{
+    for (auto i : m_producers)
+        if (i.getAddress() == address)
+            return true;
+    return false;
+}
+
+void ActiveProducerSnapshot::streamRLP(RLPStream& rlpStream) const
+{
+    rlpStream.appendList(1 + m_producers.size());
+    rlpStream << (bigint) m_timestamp;
+    for (auto i : m_producers)
+        rlpStream.appendRaw(i.getRLPData());
+}
+
+bytes ActiveProducerSnapshot::getKey()
+{
+    return toBytes(toString(m_timestamp));
+}
+
+bytes ActiveProducerSnapshot::getRLPData()
+{
+    RLPStream rlpStream;
+    streamRLP(rlpStream);
+    return rlpStream.out();
+}
 } // end of producer
 

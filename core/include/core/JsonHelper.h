@@ -11,6 +11,7 @@
 #include <core/Account.h>
 #include <core/Transaction.h>
 #include <core/Producer.h>
+#include <core/Queue.h>
 
 namespace core {
 
@@ -122,6 +123,8 @@ Json::Value blockNumberToJson(uint64_t blockNumber);
 Json::Value toJson(std::string const& key, std::string const& value);
 
 Json::Value toJson(std::string const& key, uint64_t value);
+
+Json::Value toJson(FixedQueue<Transaction,200> const& txs);
 
 // Json to String
 
