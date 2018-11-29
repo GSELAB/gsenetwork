@@ -106,8 +106,9 @@ void WebSocket::registerUrlHandlers()
 
     addHandler("/get_height", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
-        uint64_t height = m_face->getHeight();
-        ret = toJson("height", height).toStyledString();
+        //uint64_t height = m_face->getHeight();
+        //ret = toJson("height", height).toStyledString();
+        ret = toJson("height", m_height->getNumber()).toStyledString();
         urlRC(URLCode::Default, ret);
     });
 
@@ -238,7 +239,7 @@ void WebSocket::registerObservers()
     m_face->registerObserver(Observer<Object*>([this] (Object* object) {
         switch (object->getObjectType()) {
             case Object::BlockHeightType: {
-
+                m_height = dynamic_cast<BlockHeight*>(object);
                 break;
             }
             case Object::SolidifyBlockHeightType: {
