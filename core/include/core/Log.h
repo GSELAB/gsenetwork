@@ -44,27 +44,27 @@ enum Verbosity
 // Thread-safe
 BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(g_errorLogger,
     boost::log::sources::severity_channel_logger_mt<>,
-    (boost::log::keywords::severity = VerbosityError)(boost::log::keywords::channel = "error"))
+    (boost::log::keywords::severity = VerbosityError)(boost::log::keywords::channel = "E"))
 #define cerror LOG(core::g_errorLogger::get())
 
 BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(g_warnLogger,
     boost::log::sources::severity_channel_logger_mt<>,
-    (boost::log::keywords::severity = VerbosityWarning)(boost::log::keywords::channel = "warn"))
+    (boost::log::keywords::severity = VerbosityWarning)(boost::log::keywords::channel = "W"))
 #define cwarn LOG(core::g_warnLogger::get())
 
 BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(g_noteLogger,
     boost::log::sources::severity_channel_logger_mt<>,
-    (boost::log::keywords::severity = VerbosityInfo)(boost::log::keywords::channel = "info"))
+    (boost::log::keywords::severity = VerbosityInfo)(boost::log::keywords::channel = "I"))
 #define cnote LOG(core::g_noteLogger::get())
 
 BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(g_debugLogger,
     boost::log::sources::severity_channel_logger_mt<>,
-    (boost::log::keywords::severity = VerbosityDebug)(boost::log::keywords::channel = "debug"))
+    (boost::log::keywords::severity = VerbosityDebug)(boost::log::keywords::channel = "D"))
 #define cdebug LOG(core::g_debugLogger::get())
 
 BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(g_traceLogger,
     boost::log::sources::severity_channel_logger_mt<>,
-    (boost::log::keywords::severity = VerbosityTrace)(boost::log::keywords::channel = "trace"))
+    (boost::log::keywords::severity = VerbosityTrace)(boost::log::keywords::channel = "T"))
 #define ctrace LOG(core::g_traceLogger::get())
 
 #define CERROR LOG(core::g_errorLogger::get())
