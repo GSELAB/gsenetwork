@@ -389,6 +389,7 @@ void BlockChain::updateActiveProducers(BlockPtr block)
         for (int j = prevProducerIndex + 1; j < producerList.size(); ++j)
             m_currentActiveProducers.deleteProducer(producerList[j]);
     }
+    m_observe.notify(&m_currentActiveProducers);
 }
 
 bool BlockChain::processProducerBlock(BlockPtr block)

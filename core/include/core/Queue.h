@@ -68,7 +68,7 @@ public:
     T& back() { return m_list.back(); }
 
     void push(T const& t) {
-        if (m_list.size() > N) {
+        if (m_list.size() >= N) {
             pop_front();
         }
 

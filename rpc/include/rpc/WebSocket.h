@@ -12,10 +12,15 @@
 #include <core/JsonHelper.h>
 #include <chain/Types.h>
 #include <listener/Observer.h>
+#include <core/Queue.h>
 
 using namespace listener;
 
 namespace rpc {
+
+#define TX_BUFFER_SIZE (200)
+#define BLOCK_BUFFER_SIZE (20)
+#define ACCOUNT_BUFFER_SIZE (20)
 
 namespace ba = boost::asio;
 namespace bi = boost::asio::ip;
@@ -124,8 +129,9 @@ private:
 
     WebSocketEventHandlerFace *m_face;
 
-    BlockHeight *m_height;
+    uint64_t m_height = 0;
 
-    uint64_t m_solidifyHeight;
+    uint64_t m_solidifyHeight = 0;
+
 };
 }

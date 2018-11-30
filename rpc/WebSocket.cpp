@@ -79,10 +79,11 @@ void WebSocket::registerUrlHandlers()
     addHandler("/get_producer_list", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
         Producers producerList= m_face->getCurrentProducerList();
-
         ret = toJson(producerList).toStyledString();
-
         urlRC(URLCode::Default, ret);
+    });
+
+    addHandler("/get_active_producer_list", [this] (std::string, std::string body, URLRequestCallback urlRC) {
 
     });
 
@@ -106,16 +107,13 @@ void WebSocket::registerUrlHandlers()
 
     addHandler("/get_height", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
-        //uint64_t height = m_face->getHeight();
-        //ret = toJson("height", height).toStyledString();
-        ret = toJson("height", m_height->getNumber()).toStyledString();
+        ret = toJson("height", m_height).toStyledString();
         urlRC(URLCode::Default, ret);
     });
 
     addHandler("/get_solidify_height", [this] (std::string, std::string body, URLRequestCallback urlRC) {
         std::string ret;
-        uint64_t height = m_face->getSolidifyHeight();
-        ret = toJson("solidify-height", height).toStyledString();
+        ret = toJson("solidify-height", m_solidifyHeight).toStyledString();
         urlRC(URLCode::Default, ret);
     });
 
@@ -135,6 +133,10 @@ void WebSocket::registerUrlHandlers()
         }
 
         urlRC(URLCode::Default, ret);
+    });
+
+    addHandler("/get_latest_transactions", [this] (std::string, std::string body, URLRequestCallback urlRC) {
+
     });
 
     addHandler("/get_block", [this] (std::string, std::string body, URLRequestCallback urlRC) {
@@ -239,23 +241,27 @@ void WebSocket::registerObservers()
     m_face->registerObserver(Observer<Object*>([this] (Object* object) {
         switch (object->getObjectType()) {
             case Object::BlockHeightType: {
-                m_height = dynamic_cast<BlockHeight*>(object);
+                BlockHeight *height = dynamic_cast<BlockHeight*>(object);
+                if (height) {
+                    m_height = height->getNumber();
+                }
                 break;
             }
             case Object::SolidifyBlockHeightType: {
-
+                SolidifyBlockHeight *solidifyHeight = dynamic_cast<SolidifyBlockHeight*>(object);
+                m_solidifyHeight = solidifyHeight->getNumber();
                 break;
             }
             case Object::TransactionType: {
-
                 break;
             }
             case Object::BlockType: {
-
                 break;
             }
             case Object::ProducerSnapshotType: {
-
+                break;
+            }
+            case Object::ActiveProducerSnapshotType: {
                 break;
             }
             default: {
@@ -269,6 +275,9 @@ bool WebSocket::init()
 {
     registerObservers();
     registerUrlHandlers();
+
+    m_height = m_face->getHeight();
+    m_solidifyHeight = m_face->getSolidifyHeight();
 
     try {
         m_rpcServer.clear_access_channels(websocketpp::log::alevel::all);
