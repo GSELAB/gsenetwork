@@ -52,6 +52,16 @@ DatabaseController::DatabaseController():
 DatabaseController::~DatabaseController()
 {
     CWARN << "DatabaseController::~DatabaseController";
+    m_attributesStore.reset();
+    m_accountStore.reset();
+    m_transactionStore.reset();
+    m_blockStore.reset();
+    m_blockIndexStore.reset();
+    m_blockStateStore.reset();
+    m_blockStateIndexStore.reset();
+    m_subChainStore.reset();
+    m_producerStore.reset();
+    m_storageStore.reset();
 }
 
 void DatabaseController::init()
@@ -105,6 +115,7 @@ bool DatabaseController::initGenesis()
     ATTRIBUTE_CURRENT_BLOCK_HEIGHT.setValue(0);
     putAttribute(ATTRIBUTE_CURRENT_BLOCK_HEIGHT);
     putAttribute(ATTRIBUTE_GENESIS_INITED);
+    putAttribute(ATTRIBUTE_DB_DIRTY);
     ATTRIBUTE_PREV_PRODUCER_LIST.setData(genesis.m_producerSnapshot.getRLPData());
     ATTRIBUTE_CURRENT_PRODUCER_LIST.setData(genesis.m_producerSnapshot.getRLPData());
     putAttribute(ATTRIBUTE_PREV_PRODUCER_LIST);
