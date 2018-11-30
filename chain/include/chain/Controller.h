@@ -42,12 +42,6 @@ public:
 
     void exit();
 
-    std::shared_ptr<TransactionReceipt> processTransaction(Transaction const& transaction, int64_t max_timestamp);
-
-    void processBlock(Block const& block);
-
-    void processTransaction(Transaction const& transaction);
-
     chain::ChainID getChainID() const;
 
     void setChainID(ChainID chainID);
@@ -133,11 +127,11 @@ private:
     ChainID m_chainID = GSE_UNKNOWN_NETWORK;
     crypto::GKey m_key;
 
-    BlockChain* m_chain;
-    net::NetController* m_net;
-    database::DatabaseController* m_dbc;
-    producer::ProducerServer* m_producerServer;
-    rpc::RpcService *m_rpcServer;
+    BlockChain* m_chain = nullptr;
+    net::NetController* m_net = nullptr;
+    database::DatabaseController* m_dbc = nullptr;
+    producer::ProducerServer* m_producerServer = nullptr;
+    rpc::RpcService *m_rpcServer = nullptr;
 };
 
 extern Controller controller;

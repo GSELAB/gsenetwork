@@ -59,6 +59,9 @@ public:
 #define ATTRIBUTE_GENESIS_INITED_KEY "attribute_genesis_inited_key"
 extern AttributeState ATTRIBUTE_GENESIS_INITED;
 
+#define ATTRIBUTE_DB_DIRTY_KEY "attribute_db_dirty_key"
+extern AttributeState ATTRIBUTE_DB_DIRTY;
+
 #define ATTRIBUTE_CURRENT_BLOCK_HEIGHT_KEY "attribute_current_block_height"
 extern AttributeState ATTRIBUTE_CURRENT_BLOCK_HEIGHT;
 

@@ -40,11 +40,11 @@ BlockChain::BlockChain(crypto::GKey const& key, DatabaseController* dbc, BlockCh
 
 BlockChain::~BlockChain()
 {
-    if (m_dispatcher)
-        delete m_dispatcher;
+    if (ARGs.m_syncFlag && m_sync) {
+        m_sync->stop();
+        delete m_sync;
+    }
 
-    stop();
-    terminate();
     {
         Guard l{x_memoryQueue};
         while (!m_memoryQueue.empty()) {
@@ -54,10 +54,8 @@ BlockChain::~BlockChain()
         }
     }
 
-    if (ARGs.m_syncFlag && m_sync) {
-        m_sync->stop();
-        delete m_sync;
-    }
+    if (m_dispatcher)
+        delete m_dispatcher;
 }
 
 void BlockChain::initializeRollbackState()
@@ -79,6 +77,11 @@ void BlockChain::init()
         initializeRollbackState();
     }
 
+    ATTRIBUTE_DB_DIRTY = m_dbc->getAttribute(ATTRIBUTE_DB_DIRTY.getKey());
+    if (ATTRIBUTE_DB_DIRTY.getValue() == 1) {
+        throw BlockChainException("Database corruption, please delete database ans sync again!");
+    }
+
     m_currentActiveProducers.populate(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.getData());
 
     Block solidifyBlock = m_dbc->getBlock(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue());
@@ -86,6 +89,12 @@ void BlockChain::init()
     m_currentPS.populate(ATTRIBUTE_CURRENT_PRODUCER_LIST.getData());
     if (m_currentPS.getTimestamp() > solidifyBlock.getTimestamp()) {
         m_currentPS.populate(ATTRIBUTE_PREV_PRODUCER_LIST.getData());
+    }
+
+    {
+        Guard l{x_latestBlock};
+        m_latestBlockNumber = solidifyBlock.getNumber();
+        m_latestBlock = solidifyBlock;
     }
 
     if (ARGs.m_syncFlag) {
@@ -201,6 +210,13 @@ void BlockChain::doProcessBlock(BlockPtr block)
         item->bonus(block->getProducer(), bonus);
         item->setDone();
         eraseSolicitedTx(block);
+
+        {
+            Guard l{x_latestBlock};
+            m_latestBlockNumber = block->getNumber();
+            m_latestBlock = *block;
+        }
+
 
         BlockHeight height(block->getNumber());
         m_observe.notify(&height);
@@ -329,12 +345,7 @@ void BlockChain::schedule(int64_t timestamp) {
 
 Producer BlockChain::getProducer(Address const& address)
 {
-    Guard g(x_memoryQueue);
-    if (m_memoryQueue.empty()) {
-        return getDBC()->getProducer(address);
-    } else {
-        return m_memoryQueue.back()->getRepository()->getProducer(address);
-    }
+    return m_dbc->getProducer(address);
 }
 
 Address BlockChain::getExpectedProducer(int64_t timestamp) const
@@ -395,25 +406,29 @@ bool BlockChain::processProducerBlock(BlockPtr block)
 
 uint64_t BlockChain::getLastBlockNumber() const
 {
-    Guard l(x_memoryQueue);
-    if (m_memoryQueue.empty()) {
-        return ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue();
-    }
-
-    return m_memoryQueue.back()->getBlockNumber();
+    Guard l(x_latestBlock);
+    return m_latestBlockNumber;
 }
 
 Block BlockChain::getLastBlock() const
 {
-    Guard l(x_memoryQueue);
-    if (m_memoryQueue.empty())
-        return m_dbc->getBlock(ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue());
-    return m_memoryQueue.back()->getBlock();
+    Guard l(x_latestBlock);
+    return m_latestBlock;
 }
 
 Block BlockChain::getBlockByNumber(uint64_t number)
 {
+    Block ret;
     {
+        Guard l{x_latestBlock};
+        if (number > m_latestBlockNumber) {
+            return EmptyBlock;
+        }
+    }
+
+    if (number <= m_rollbackState.getSolidifyNumber()) {
+        ret = m_dbc->getBlock(number);
+    } else {
         Guard l(x_memoryQueue);
         if (!m_memoryQueue.empty()) {
             auto itemS = m_memoryQueue.front();
@@ -426,7 +441,7 @@ Block BlockChain::getBlockByNumber(uint64_t number)
         }
     }
 
-    Block ret = m_dbc->getBlock(number);
+    ret = m_dbc->getBlock(number);
     return ret;
 }
 
@@ -475,6 +490,11 @@ void BlockChain::onSolidifiable(BlockStatePtr bsp)
         Guard l(x_memoryQueue);
         MemoryItem* item = m_memoryQueue.front();
         while (item && bsp->m_blockNumber >= item->getBlockNumber()) {
+            if (m_blockChainStatus == Killed)
+                return;
+
+            ATTRIBUTE_DB_DIRTY.setValue(1);
+            m_dbc->putAttribute(ATTRIBUTE_DB_DIRTY);
             m_memoryQueue.pop_front();
             item->commit();
             BlockStatePtr solidifyBSP = m_rollbackState.getBlock(item->getBlockNumber());
@@ -488,6 +508,9 @@ void BlockChain::onSolidifiable(BlockStatePtr bsp)
             m_dbc->putAttribute(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST);
             BlockState solidifyBS = *solidifyBSP;
             m_dbc->put(solidifyBS);
+            ATTRIBUTE_DB_DIRTY.setValue(0);
+            m_dbc->putAttribute(ATTRIBUTE_DB_DIRTY);
+
             m_rollbackState.remove(solidifyBSP->m_blockID);
             m_rollbackState.setSolidifyNumber(item->getBlockNumber());
             delete item;
@@ -508,9 +531,10 @@ void BlockChain::start()
 
 void BlockChain::stop()
 {
-    if (isWorking()) {
+    m_sync->stop();
+    if (isWorking())
         stopWorking();
-    }
+    terminate();
 }
 
 void BlockChain::doWork()
@@ -537,7 +561,9 @@ void BlockChain::doWork()
     if (block) {
         processBlock(block);
     } else {
-        sleepMilliseconds(100);
+        if (isWorking()) {
+            sleepMilliseconds(100);
+        }
     }
 }
 
@@ -787,6 +813,10 @@ void BlockChain::preProcessBlock(bi::tcp::endpoint const& from, Block& block)
 void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block)
 {
     try {
+        if (block.getNumber() > getLastBlockNumber() + 1000) {
+            return;
+        }
+
         preProcessBlock(from, block);
         {
             Guard l{x_blockCache};
@@ -846,8 +876,20 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
             if (status.getStart() < status.getEnd() && status.getEnd() <= getLastBlockNumber()) {
                 Status _status(ReplyBlocks);
                 BlockState _bs(EmptyBlockState);
+                static uint64_t maxPacketSize = 50000;
+                uint64_t realBlockSize = 0;
                 for (uint64_t i = status.getStart(); i <= status.getEnd(); i++) {
-                    _status.addBlock(getBlockByNumber(i));
+                    Block _block = getBlockByNumber(i);
+                    if (_block == EmptyBlock) {
+                        break;
+                    }
+
+                    realBlockSize += _block.getRLPData().size();
+                    if (realBlockSize >= maxPacketSize) {
+                        break;
+                    }
+
+                    _status.addBlock(_block);
                     BlockState bs;
                     if (i < 11) {
                         bs =  getBlockStateByNumber(i);
@@ -858,6 +900,7 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
                         _bs = bs;
                     }
                 }
+
                 m_messageFace->send(from, _status);
                 if (_bs != EmptyBlockState) {
                     m_messageFace->send(from, _bs);
@@ -873,7 +916,7 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
             break;
         }
         default: {
-            CINFO << "Recv status from " << from << " - Unknown type.";
+            CERROR << "Recv status from " << from << " - Unknown type.";
             break;
         }
     }
@@ -919,22 +962,22 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
                 return true;
             }
             default:
-                CINFO << "Unknown packet type - " << chain::pptToString((chain::ProtocolPacketType)type);
+                CERROR << "Unknown packet type - " << chain::pptToString((chain::ProtocolPacketType)type);
                 return false;
             }
 
         } catch (DeserializeException const& e) {
-            CINFO << "DeserializeException " <<e.what();
+            CERROR << "DeserializeException " <<e.what();
             return false;
         } catch (GSException const& e) {
-            CINFO << "GSException " << e.what();
+            CERROR << "GSException " << e.what();
             return false;
         } catch (Exception const& e) {
-            CINFO << "Exception " << e.what();
+            CERROR << "Exception " << e.what();
             return false;
         }
     } else {
-        CINFO << "Dispatch::processMsg - unknown rlp.";
+        CERROR << "Dispatch::processMsg - unknown rlp.";
         return false;
     }
 }

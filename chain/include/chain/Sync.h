@@ -23,8 +23,7 @@ public:
     Sync(BlockChain* chain): m_chain(chain), m_state(Ready), Task("GSE-Sync") {}
 
     ~Sync() {
-        stop();
-        terminate();
+
     }
 
     void start();
@@ -43,8 +42,5 @@ private:
 
     core::Mutex x_heights;
     std::map<boost::asio::ip::tcp::endpoint, uint64_t> m_heights;
-
-    // boost::asio::io_service m_io;
-    // core::Timer m_timer;
 };
 }

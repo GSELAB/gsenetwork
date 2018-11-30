@@ -39,6 +39,8 @@ public:
 
     void init();
 
+    void stop();
+
     void broadcast(char *msg);
 
     void broadcast(std::shared_ptr<core::Transaction> tMsg);
