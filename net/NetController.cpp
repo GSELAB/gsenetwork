@@ -28,10 +28,7 @@ NetController::NetController(crypto::GKey const& key, DispatchFace* dispatcher, 
 NetController::~NetController()
 {
     CINFO << "NetController::~NetController";
-    m_client->stop();
-    m_host->stop();
     delete m_host;
-    m_client.reset();
 }
 
 void NetController::init()
@@ -52,6 +49,13 @@ void NetController::init()
             for (auto i : ARGs.m_trustNeighbors)
                 addNode(NodeIPEndpoint(i.m_address, i.m_tcpPort, i.m_udpPort));
     }
+}
+
+void NetController::stop()
+{
+    m_client->stop();
+    m_host->stop();
+    m_client.reset();
 }
 
 void NetController::broadcast(char *msg)
