@@ -34,7 +34,6 @@ GKey::GKey(Secret const& sec)  : m_secret(sec), m_public(toPublic(sec))
 
 GKey GKey::create()
 {
-    CINFO << "GKey::create";
     while (true) {
         GKey _key(Secret::random());
         if (_key.getAddress())
