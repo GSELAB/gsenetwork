@@ -139,24 +139,28 @@ void doCheck()
 
 int main(int argc, char** argv)
 {
-    init(argc, argv);
-    signal(SIGABRT, &exitHandler);
-    signal(SIGTERM, &exitHandler);
-    signal(SIGINT, &exitHandler);
+    try {
+        init(argc, argv);
+        signal(SIGABRT, &exitHandler);
+        signal(SIGTERM, &exitHandler);
+        signal(SIGINT, &exitHandler);
 
-    GKey key(ARGs.m_secret);
-    CINFO << "Secret:" << toHex(key.getSecret().ref());
-    CINFO << "Public:" << toHex(key.getPublic().ref());
-    CINFO << "Address:" << toHex(key.getAddress().ref());
+        GKey key(ARGs.m_secret);
+        CINFO << "Secret:" << toHex(key.getSecret().ref());
+        CINFO << "Public:" << toHex(key.getPublic().ref());
+        CINFO << "Address:" << toHex(key.getAddress().ref());
 
-    auto& genesis = ARGs.m_genesis.m_genesisBlock;
-    chain::ChainID chainID = genesis.getBlockHeader().getChainID();
-    controller.init(key, chainID);
-    while (!shouldExit()) {
-        doCheck();
+        auto& genesis = ARGs.m_genesis.m_genesisBlock;
+        chain::ChainID chainID = genesis.getBlockHeader().getChainID();
+        controller.init(key, chainID);
+        while (!shouldExit()) {
+            doCheck();
+        }
+
+        CINFO <<  "GSE SHUTDOWN";
+        return 0;
+    } catch (...) {
+        return -1;
     }
-
-    CINFO <<  "GSE SHUTDOWN";
-    return 0;
 }
 
