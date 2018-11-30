@@ -92,6 +92,7 @@ enum BlockChainStatus {
     NormalStatus = 0x01,
     SyncStatus,
     ProducerStatus,
+    Killed,
 };
 
 struct ByTxID;
@@ -171,6 +172,8 @@ public:
     ChainID const& getChainID() const { return m_chainID; }
 
     BlockChainStatus getBlockChainStatus() const { return m_blockChainStatus; }
+
+    void setBlockChainStatus(BlockChainStatus status) { m_blockChainStatus = status; }
 
     void setChainID(ChainID const& chainID) { m_chainID = chainID; }
 
@@ -297,5 +300,9 @@ private:
     ProducerSnapshot m_currentPS;
 
     EventObserve<Object*> m_observe;
+
+    mutable Mutex x_latestBlock;
+    uint64_t m_latestBlockNumber;
+    Block m_latestBlock;
 };
 } // end namespace

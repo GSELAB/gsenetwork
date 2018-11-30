@@ -30,42 +30,48 @@ namespace chain {
 do {    \
     RLPStream rlpStream;    \
     name->streamRLP(rlpStream);     \
-    m_net->send(rlpStream.out(), type, except);  \
+    if (m_net != nullptr)   \
+        m_net->send(rlpStream.out(), type, except);  \
 } while (0)
 
 #define RLP_STREAM_SEND_EXCEPT(name, type, except) \
 do {    \
     RLPStream rlpStream;    \
     name.streamRLP(rlpStream);  \
-    m_net->send(rlpStream.out(), type, except);  \
+    if (m_net != nullptr)   \
+        m_net->send(rlpStream.out(), type, except);  \
 } while (0)
 
 #define RLP_STREAM_PTR_SEND_TO(name, type, to) \
 do {    \
     RLPStream rlpStream;    \
     name->streamRLP(rlpStream); \
-    m_net->send(rlpStream.out(), to, type); \
+    if (m_net != nullptr)   \
+        m_net->send(rlpStream.out(), to, type); \
 } while (0)
 
 #define RLP_STREAM_SEND_TO(name, type, to) \
 do {    \
     RLPStream rlpStream;    \
     name.streamRLP(rlpStream); \
-    m_net->send(rlpStream.out(), to, type); \
+    if (m_net != nullptr)   \
+        m_net->send(rlpStream.out(), to, type); \
 } while (0)
 
 #define RLP_STREAM_PTR_SEND(name, type) \
 do {    \
     RLPStream rlpStream;    \
     name->streamRLP(rlpStream);     \
-    m_net->send(rlpStream.out(), type);  \
+    if (m_net != nullptr)   \
+        m_net->send(rlpStream.out(), type);  \
 } while (0)
 
 #define RLP_STREAM_SEND(name, type) \
 do {    \
     RLPStream rlpStream;    \
     name.streamRLP(rlpStream);  \
-    m_net->send(rlpStream.out(), type);  \
+    if (m_net != nullptr)   \
+        m_net->send(rlpStream.out(), type);  \
 } while (0)
 
 Controller controller;
@@ -100,34 +106,24 @@ void Controller::init(crypto::GKey const& key, ChainID chainID)
 void Controller::exit()
 {
     CINFO << "Controller release the resource...";
-    if (ARGs.m_rpcON && m_rpcServer) {
+    m_chain->setBlockChainStatus(BlockChainStatus::Killed);
+    m_chain->stop();
+    if (ARGs.m_rpcON && m_rpcServer != nullptr) {
         delete m_rpcServer;
     }
 
-    if (ARGs.m_producerON && m_producerServer) {
+    if (ARGs.m_producerON && m_producerServer != nullptr) {
         m_producerServer->stop();
-        sleepMilliseconds(PRODUCER_SLEEP_INTERVAL * 2);
+        sleepMilliseconds(500);
         delete m_producerServer;
+        m_producerServer = nullptr;
     }
 
-    if (m_net) delete m_net;
-    if (m_chain) delete m_chain;
-    if (m_dbc) delete m_dbc;
-}
-
-std::shared_ptr<TransactionReceipt> Controller::processTransaction(Transaction const& transaction, int64_t max_timestamp)
-{
-    return nullptr;
-}
-
-void Controller::processBlock(Block const& block)
-{
-
-}
-
-void Controller::processTransaction(Transaction const& transaction)
-{
-
+    m_net->stop();
+    sleepMilliseconds(500);
+    m_net = nullptr;
+    m_chain = nullptr;
+    m_dbc = nullptr;
 }
 
 chain::ChainID Controller::getChainID() const
@@ -143,6 +139,10 @@ void Controller::setChainID(chain::ChainID chainID)
 /// Producer interface
 void Controller::broadcast(std::shared_ptr<Block> block)
 {
+    if (m_chain == nullptr) {
+        return;
+    }
+
     m_chain->processProducerBlock(block);
     m_net->broadcast(block);
 }
@@ -156,6 +156,10 @@ void Controller::processProducerEvent()
 // RPC
 void Controller::broadcast(Transaction& tx)
 {
+    if (m_chain == nullptr) {
+        return;
+    }
+
     if (!m_chain->addRPCTx(tx)) {
         CINFO << "Pre process failed!";
         return;
@@ -166,6 +170,10 @@ void Controller::broadcast(Transaction& tx)
 
 Block Controller::getBlockByNumber(uint64_t number)
 {
+    if (m_chain == nullptr) {
+        return EmptyBlock;
+    }
+
     return m_chain->getBlockByNumber(number);
 }
 
