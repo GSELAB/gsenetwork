@@ -67,7 +67,7 @@ void Sync::doWork()
         std::sort(heights.begin(), heights.end(), heightCompare);
     }
 
-#define COUNT_PER_ROUND 100
+#define COUNT_PER_ROUND 15
     unsigned idx = 0;
     bool needSync = false;
     uint64_t requestStart, requestEnd;
