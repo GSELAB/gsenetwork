@@ -46,7 +46,7 @@ public:
 
     Producer getProducer(Address const& address) const;
 
-    std::vector<Producer> getProducerList() const;
+    std::map<Address, Producer> getProducerList() const;
 
     void put(Producer& producer);
 

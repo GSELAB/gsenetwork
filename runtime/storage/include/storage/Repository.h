@@ -28,10 +28,10 @@ namespace runtime {
 namespace storage {
 class Repository { //: public std::enable_shared_from_this<Repository> {
 public:
-    Repository(Block& block, DatabaseController *dbc): m_block(block), m_dbc(dbc) { m_producerList = getProducerList(); }
+    Repository(Block& block, DatabaseController *dbc): m_block(block), m_dbc(dbc) {}
 
     Repository(Block& block, std::shared_ptr<Repository> parent, DatabaseController *dbc):
-        m_block(block), m_parent(parent), m_dbc(dbc) { m_producerList = getProducerList(); }
+        m_block(block), m_parent(parent), m_dbc(dbc) {}
 
     ~Repository() { if (m_parent) m_parent.reset(); }
 
@@ -53,7 +53,7 @@ public:
 
     Producer getProducer(Address const& address);
 
-    std::vector<Producer> getProducerList() const;
+    std::map<Address, Producer> getProducerList() const;
 
     void put(Producer const& producer);
 
@@ -83,8 +83,6 @@ private:
     std::map<TxID, Transaction> m_cacheTransaction;
 
     Block m_block;
-
-    std::vector<Producer> m_producerList;
 };
 } // end namespace storage
 } // end namespace of runtime
