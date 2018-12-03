@@ -248,6 +248,11 @@ bool BlockChain::checkBifurcation(BlockPtr block)
             CWARN << "checkBifurcation - current head hash:" << m_head->m_blockID;
             auto branches = m_rollbackState.fetchBranchFrom(newItem->m_blockID, m_head->m_blockID);
             for (auto itr = branches.second.begin(); itr != branches.second.end(); itr++) {
+                {
+                    Guard l{x_latestBlock};
+                    m_latestBlockNumber = (*itr)->m_blockNumber - 1;
+                }
+
                 m_rollbackState.remove((*itr)->m_blockNumber);
                 popBlockState();
             }
