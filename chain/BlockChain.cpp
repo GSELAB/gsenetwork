@@ -805,6 +805,16 @@ void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block
             return;
         }
 
+        {
+            Guard l{x_historyBroadcastBlockCache};
+            BlockID blockID = block.getHash();
+            if (m_historyBroadcastBlockCache.isExist(blockID)) {
+                return;
+            } else {
+                m_historyBroadcastBlockCache.push(blockID);
+            }
+        }
+
         preProcessBlock(from, block);
         {
             Guard l{x_blockCache};
@@ -864,7 +874,7 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
             if (status.getStart() < status.getEnd() && status.getEnd() <= getLastBlockNumber()) {
                 Status _status(ReplyBlocks);
                 BlockState _bs(EmptyBlockState);
-                static uint64_t maxPacketSize = 50000;
+                static uint64_t maxPacketSize = 55000;
                 uint64_t realBlockSize = 0;
                 for (uint64_t i = status.getStart(); i <= status.getEnd(); i++) {
                     Block _block = getBlockByNumber(i);
