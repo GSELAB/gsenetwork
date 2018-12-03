@@ -229,7 +229,7 @@ void Repository::clearVote(Address const& address)
             throw RepositoryException("Producer (" + toString(i.first) + ") not exist");
         }
 
-        producer.eraseVoter(i.first);
+        producer.eraseVoter(address);
         put(producer);
     }
 
