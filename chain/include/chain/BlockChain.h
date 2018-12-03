@@ -288,6 +288,9 @@ private:
     mutable Mutex x_historyTxCache;
     FixedQueue<TxID, 4096> m_historyTxCache;
 
+    mutable Mutex x_historyBroadcastBlockCache;
+    FixedQueue<BlockID, 8> m_historyBroadcastBlockCache;
+
     mutable Mutex x_txCache;
     TxCacheMultiIndexType m_txCache;
 
