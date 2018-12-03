@@ -315,24 +315,34 @@ bool BlockChain::processBlock(BlockPtr block)
 
 Producers BlockChain::getProducerListFromRepo() const
 {
-    Guard l(x_memoryQueue);
+    bool memoryNotEmpty = true;
     Producers ret;
     std::map<Address, Producer> producerMap;
-    if (m_memoryQueue.empty()) {
-        CINFO << "getProducerListFromRepo - database";
-        producerMap =m_dbc->getProducerList();
-        for (auto i : producerMap) {
-            ret.push_back(i.second);
+    {
+        Guard l(x_memoryQueue);
+        if (m_memoryQueue.empty()) {
+            memoryNotEmpty = false;
         }
-        return ret;
-    } else {
-        CINFO << "getProducerListFromRepo - repository";
-        producerMap = m_memoryQueue.back()->getRepository()->getProducerList();
-        for (auto i : producerMap) {
-            ret.push_back(i.second);
-        }
-        return ret;
     }
+
+    if (memoryNotEmpty) {
+        {
+            Guard l(x_memoryQueue);
+            producerMap = m_memoryQueue.back()->getRepository()->getProducerList();
+        }
+
+        for (auto i : producerMap) {
+            ret.push_back(i.second);
+        }
+
+    } else {
+        producerMap = m_dbc->getProducerList();
+        for (auto i : producerMap) {
+            ret.push_back(i.second);
+        }
+    }
+
+    return ret;
 }
 
 void BlockChain::schedule(int64_t timestamp) {
