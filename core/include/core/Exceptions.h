@@ -135,6 +135,12 @@ struct name##Exception: virtual GSException { \
         GSException(message, number) {} \
 }
 
+#define PRODUCERSERVER_TEMPLATE_EXCEPTION(name) \
+struct name##Exception: virtual GSException { \
+    explicit name##Exception(std::string const& message, int number = 0): \
+        GSException(message, number) {} \
+}
+
 CORE_TEMPLATE_EXCEPTION(Deserialize);
 CORE_TEMPLATE_EXCEPTION(Serialize);
 CORE_TEMPLATE_EXCEPTION(VoteNotExistProducer);
@@ -154,4 +160,6 @@ PRODUCER_TEMPLATE_EXCEPTION(Producer);
 NET_TEMPLATE_EXCEPTION(NetController);
 
 RPC_TEMPLATE_EXCEPTION(RPC);
+
+PRODUCERSERVER_TEMPLATE_EXCEPTION(ProducerServer);
 }

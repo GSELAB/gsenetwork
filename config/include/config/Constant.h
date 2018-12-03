@@ -35,7 +35,8 @@ namespace config {
 // Max transaction size 512 Bytes (0.5 KB)
 #define MAX_TRANSACTION_SIZE (512)
 
-// Maximum 750 transactions per block
+
+// Maximum 400 transactions per block
 #define MAX_TRANSACTIONS_PER_BLOCK (400)
 
 // Max block size 1024 KB (1 M)

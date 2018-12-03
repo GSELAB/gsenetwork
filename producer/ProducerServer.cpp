@@ -64,13 +64,36 @@ void ProducerServer::stop()
     m_state = Stop;
 }
 
+bool ProducerServer::checkTimestamp(int64_t timestamp) const
+{
+    int64_t lastBlockTimestamp = m_eventHandle->getLastBlock().getTimestamp();
+
+    if (((timestamp - GENESIS_TIMESTAMP) / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= (m_prevTimestamp - GENESIS_TIMESTAMP)) {
+        return false;
+    }
+
+    if (((timestamp - GENESIS_TIMESTAMP) / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= (lastBlockTimestamp - GENESIS_TIMESTAMP)) {
+        return false;
+    }
+
+    return true;
+}
+
 bool ProducerServer::checkProducer(int64_t timestamp) const
 {
+    try {
+        if (m_prevTimestamp > timestamp) {
+            throw ProducerServerException("The previous timestamp is larger than current timestamp!");
+        }
+    } catch (ProducerServerException& e) {
+        CWARN << e.what();
+        return false;
+    }
+
     unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) %
                 (TIME_PER_ROUND)) / (PRODUCER_INTERVAL);
     if (m_key.getAddress() == m_schedule.getAddress(producerPosition)) {
-        if (((timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL > m_prevTimestamp) ||
-            ((1 + timestamp / PRODUCER_INTERVAL) * PRODUCER_INTERVAL <= m_prevTimestamp)) {
+        if (checkTimestamp(timestamp)) {
             if (m_eventHandle->getBlockChainStatus() == chain::ProducerStatus) {
                 return true;
             }
@@ -116,7 +139,7 @@ void ProducerServer::doWork()
             block->addTransaction(*transaction);
         }
     }
-    
+
     uint64_t timestampEnd = currentTimestamp();
 
     block->setRoots();
