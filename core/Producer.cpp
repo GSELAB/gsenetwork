@@ -21,6 +21,17 @@ Producer::Producer(Address const& address, int64_t timestamp): m_address(address
     // TODO: CREATE A NEW PRODUCER
 }
 
+Producer::Producer(Producer const& producer)
+{
+    m_address = producer.getAddress();
+    m_timestamp = producer.getTimestamp();
+    m_votes = producer.getVotes();
+    m_voters.clear();
+    for (auto& i : producer.getVoters()) {
+        m_voters[i.first] = i.second;
+    }
+}
+
 Producer::Producer(bytesConstRef data)
 {
     try {

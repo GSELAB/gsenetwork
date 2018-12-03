@@ -161,7 +161,7 @@ void Controller::broadcast(Transaction& tx)
     }
 
     if (!m_chain->addRPCTx(tx)) {
-        CINFO << "Pre process failed!";
+        // CINFO << "Pre process failed!";
         return;
     }
 
