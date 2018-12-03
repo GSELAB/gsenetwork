@@ -25,6 +25,8 @@ class Producer: public Object {
 public:
     Producer() {}
 
+    Producer(Producer const& producer);
+
     Producer(Address const& address, int64_t timestamp);
 
     Producer(bytesConstRef data);
