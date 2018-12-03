@@ -82,7 +82,7 @@ void init(int argc, char **argv)
         ARGs.m_configFile = "./testnet_config";
     }
 
-    printFlag();
+    /// printFlag();
     toPublic({});
     initArgument();
 

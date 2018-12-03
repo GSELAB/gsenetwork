@@ -76,6 +76,8 @@ public:
 
     void doWork();
 
+    bool checkTimestamp(int64_t timestamp) const;
+
     bool checkProducer(int64_t timestamp) const;
 
 public:

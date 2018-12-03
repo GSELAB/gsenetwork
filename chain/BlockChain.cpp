@@ -45,15 +45,6 @@ BlockChain::~BlockChain()
         delete m_sync;
     }
 
-    {
-        Guard l{x_memoryQueue};
-        while (!m_memoryQueue.empty()) {
-            auto i = m_memoryQueue.back();
-            m_memoryQueue.pop_back();
-            delete i;
-        }
-    }
-
     if (m_dispatcher)
         delete m_dispatcher;
 }
@@ -112,9 +103,9 @@ void BlockChain::pushSchedule()
     m_messageFace->schedule(m_currentPS.getProducers(), m_currentPS.getTimestamp());
 }
 
-BlockChain::MemoryItem* BlockChain::addMemoryItem(BlockPtr block)
+ std::shared_ptr<BlockChain::MemoryItem> BlockChain::addMemoryItem(BlockPtr block)
 {
-    MemoryItem* mItem = new MemoryItem();
+    std::shared_ptr<MemoryItem> mItem = std::make_shared<MemoryItem>();;
     Block repoBlock = *block;
     {
         Guard g(x_memoryQueue);
@@ -135,9 +126,7 @@ BlockChain::MemoryItem* BlockChain::addMemoryItem(BlockPtr block)
 void BlockChain::cancelMemoryItem()
 {
     Guard g(x_memoryQueue);
-    auto i = m_memoryQueue.back();
     m_memoryQueue.pop_back();
-    delete i;
 }
 
 void BlockChain::popBlockState()
@@ -179,7 +168,7 @@ void BlockChain::processTransaction(BlockPtr block, Transaction const& transacti
 void BlockChain::doProcessBlock(BlockPtr block)
 {
     bool needCancel;
-    MemoryItem* item;
+     std::shared_ptr<MemoryItem> item;
     try {
         updateActiveProducers(block);
         item = addMemoryItem(block);
@@ -199,7 +188,9 @@ void BlockChain::doProcessBlock(BlockPtr block)
             m_messageFace->send(hc);
         }
 
-        if (((timestamp - GENESIS_TIMESTAMP) % (SCHEDULE_UPDATE_INTERVAL)) / (TIME_PER_ROUND) >= (SCHEDULE_UPDATE_ROUNDS - 1)) {
+        unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) % TIME_PER_ROUND) / PRODUCER_INTERVAL;
+        if ((((timestamp - GENESIS_TIMESTAMP) % SCHEDULE_UPDATE_INTERVAL) / TIME_PER_ROUND >= (SCHEDULE_UPDATE_ROUNDS - 1)) &&
+                producerPosition == (NUM_DELEGATED_BLOCKS - 1)) {
             schedule(timestamp);
             m_currentActiveProducers.clear();
         }
@@ -266,7 +257,7 @@ bool BlockChain::checkBifurcation(BlockPtr block)
             }
 
         } catch (RollbackStateAncestorException& e) {
-            /// Do nothing, not valid block for curent chain
+            /// Do nothing, not valid block for current chain
             CWARN << e.what();
         } catch (BlockChainException& e) {
             CWARN << e.what();
@@ -313,12 +304,34 @@ bool BlockChain::processBlock(BlockPtr block)
 
 Producers BlockChain::getProducerListFromRepo() const
 {
-    Guard l(x_memoryQueue);
-    if (m_memoryQueue.empty()) {
-        return m_dbc->getProducerList();
-    } else {
-        return m_memoryQueue.back()->getRepository()->getProducerList();
+    bool memoryNotEmpty = true;
+    Producers ret;
+    std::map<Address, Producer> producerMap;
+    {
+        Guard l(x_memoryQueue);
+        if (m_memoryQueue.empty()) {
+            memoryNotEmpty = false;
+        }
     }
+
+    if (memoryNotEmpty) {
+        {
+            Guard l(x_memoryQueue);
+            producerMap = m_memoryQueue.back()->getRepository()->getProducerList();
+        }
+
+        for (auto i : producerMap) {
+            ret.push_back(i.second);
+        }
+
+    } else {
+        producerMap = m_dbc->getProducerList();
+        for (auto i : producerMap) {
+            ret.push_back(i.second);
+        }
+    }
+
+    return ret;
 }
 
 void BlockChain::schedule(int64_t timestamp) {
@@ -488,7 +501,7 @@ void BlockChain::onSolidifiable(BlockStatePtr bsp)
     m_observe.notify(&height);
     {
         Guard l(x_memoryQueue);
-        MemoryItem* item = m_memoryQueue.front();
+         std::shared_ptr<MemoryItem> item = m_memoryQueue.front();
         while (item && bsp->m_blockNumber >= item->getBlockNumber()) {
             if (m_blockChainStatus == Killed)
                 return;
@@ -513,7 +526,6 @@ void BlockChain::onSolidifiable(BlockStatePtr bsp)
 
             m_rollbackState.remove(solidifyBSP->m_blockID);
             m_rollbackState.setSolidifyNumber(item->getBlockNumber());
-            delete item;
 
             if (!m_memoryQueue.empty())
                 m_memoryQueue.front()->setParentEmpty();
@@ -817,6 +829,16 @@ void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block
             return;
         }
 
+        {
+            Guard l{x_historyBroadcastBlockCache};
+            BlockID blockID = block.getHash();
+            if (m_historyBroadcastBlockCache.isExist(blockID)) {
+                return;
+            } else {
+                m_historyBroadcastBlockCache.push(blockID);
+            }
+        }
+
         preProcessBlock(from, block);
         {
             Guard l{x_blockCache};
@@ -876,7 +898,7 @@ void BlockChain::processStatusMessage(bi::tcp::endpoint const& from, Status& sta
             if (status.getStart() < status.getEnd() && status.getEnd() <= getLastBlockNumber()) {
                 Status _status(ReplyBlocks);
                 BlockState _bs(EmptyBlockState);
-                static uint64_t maxPacketSize = 50000;
+                static uint64_t maxPacketSize = 55000;
                 uint64_t realBlockSize = 0;
                 for (uint64_t i = status.getStart(); i <= status.getEnd(); i++) {
                     Block _block = getBlockByNumber(i);
