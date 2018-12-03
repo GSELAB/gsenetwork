@@ -150,7 +150,7 @@ public:
         std::shared_ptr<runtime::storage::Repository> m_repository;
     };
 
-    typedef core::Queue<MemoryItem*> Queue_t;
+    typedef core::Queue<std::shared_ptr<MemoryItem>> Queue_t;
 
 public:
     BlockChain(crypto::GKey const& key, DatabaseController* dbc, BlockChainMessageFace *messageFace, ChainID chainID = GSE_UNKNOWN_NETWORK);
@@ -249,7 +249,7 @@ public: /// Used by network
     bool isExist(Block& block);
 
 protected:
-    MemoryItem* addMemoryItem(BlockPtr block);
+    std::shared_ptr<MemoryItem> addMemoryItem(BlockPtr block);
 
     void cancelMemoryItem();
 
