@@ -123,15 +123,23 @@ Producer Repository::getProducer(Address const& address)
     return EmptyProducer;
 }
 
-std::vector<Producer> Repository::getProducerList() const
+std::map<Address, Producer> Repository::getProducerList() const
 {
-    if (!m_producerList.empty())
-        return m_producerList;
+    std::map<Address, Producer> ret;
+    if (m_parent != nullptr) {
+        ret = m_parent->getProducerList();
+    } else {
+        ret = m_dbc->getProducerList();
+    }
 
-    if (m_parent != nullptr)
-        return m_parent->getProducerList();
+    {
+        Guard l{x_mutexProducer};
+        for (auto const& i : m_cacheProducer) {
+            ret[i.first] = i.second;
+        }
+    }
 
-    return m_dbc->getProducerList();
+    return ret;
 }
 
 void Repository::put(Producer const& producer)
