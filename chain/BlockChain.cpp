@@ -171,6 +171,7 @@ void BlockChain::doProcessBlock(BlockPtr block)
      std::shared_ptr<MemoryItem> item;
     try {
         updateActiveProducers(block);
+
         item = addMemoryItem(block);
         needCancel = true;
         /*
@@ -188,9 +189,7 @@ void BlockChain::doProcessBlock(BlockPtr block)
             m_messageFace->send(hc);
         }
 
-        unsigned producerPosition = ((timestamp - GENESIS_TIMESTAMP) % TIME_PER_ROUND) / PRODUCER_INTERVAL;
-        if ((((timestamp - GENESIS_TIMESTAMP) % SCHEDULE_UPDATE_INTERVAL) / TIME_PER_ROUND >= (SCHEDULE_UPDATE_ROUNDS - 1)) &&
-                producerPosition == (NUM_DELEGATED_BLOCKS - 1)) {
+        if (block->getNumber() % (NUM_DELEGATED_BLOCKS * SCHEDULE_UPDATE_ROUNDS) == 0) {
             schedule(timestamp);
             m_currentActiveProducers.clear();
         }
