@@ -57,9 +57,6 @@ namespace config {
 // Schedule list gets updated every 500 rounds
 #define SCHEDULE_UPDATE_ROUNDS (20) //500
 
-// Time period that schedule gets updated
-#define SCHEDULE_UPDATE_INTERVAL ((SCHEDULE_UPDATE_ROUNDS) * (TIME_PER_ROUND))
-
 // Transaction fee is 0.5 GSE (10^6)
 #define TRANSACTION_FEE (500000L)
 
