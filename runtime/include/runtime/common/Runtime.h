@@ -32,7 +32,7 @@ public:
 
     // @just for pre execute
     Runtime(Transaction const& transaction, std::shared_ptr<storage::Repository> repo):
-        m_block(EmptyBlockPtr), m_transaction(transaction), m_repo(repo), m_type(PreType) {}
+        m_block(std::make_shared<Block>()), m_transaction(transaction), m_repo(repo), m_type(PreType) {}
 
     void init();
 
