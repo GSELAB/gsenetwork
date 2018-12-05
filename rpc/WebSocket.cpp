@@ -318,6 +318,7 @@ void WebSocket::startService()
 
 bool WebSocket::shutdown()
 {
+    m_rpcServer.stop();
     return true;
 }
 
