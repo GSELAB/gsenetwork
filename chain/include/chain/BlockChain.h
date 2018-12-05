@@ -83,7 +83,7 @@ public:
 
     virtual Address getProducerAddress(unsigned idx) const = 0;
 
-    virtual ProducersConstRef getSortedProducerList() const = 0;
+    virtual Producers getSortedProducerList() const = 0;
 
     virtual ProducerSnapshot getProducerSnapshot() const = 0;
 };
