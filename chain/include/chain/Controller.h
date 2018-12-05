@@ -119,7 +119,7 @@ public: // used by block chain
 
     virtual Address getProducerAddress(unsigned idx) const override { return m_producerServer->getProducerAddress(idx); }
 
-    virtual ProducersConstRef getSortedProducerList() const override { return m_producerServer->getSchedule(); }
+    virtual Producers getSortedProducerList() const override { return m_producerServer->getCurrentProducerList(); }
 
     virtual ProducerSnapshot getProducerSnapshot() const override { return m_producerServer->getProducerSnapshot(); }
 

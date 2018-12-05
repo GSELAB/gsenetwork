@@ -107,8 +107,12 @@ ProducerSnapshot Schedule::getProducerSnapshot() const
     Guard l{x_producerList};
     ProducerSnapshot ps;
     ps.setTimestamp(m_currentTimestamp);
+    int count = 0;
     for (auto& producer : m_currentProducerList) {
-        ps.addProducer(producer);
+        if (count < NUM_DELEGATED_BLOCKS) {
+            ps.addProducer(producer);
+            count++;
+        }
     }
 
     return ps;
@@ -117,7 +121,7 @@ ProducerSnapshot Schedule::getProducerSnapshot() const
 Address Schedule::getAddress(unsigned idx) const
 {
     Guard l{x_producerList};
-    if (idx >= m_currentProducerList.size())
+    if (idx >= m_currentProducerList.size() || idx >= NUM_DELEGATED_BLOCKS)
         return ZeroAddress;
     return m_currentProducerList[idx].getAddress();
 }
@@ -161,10 +165,6 @@ void Schedule::schedule(ProducersConstRef producerList, int64_t timestamp)
     }
 
     for (auto producer : producerList) {
-        if (m_currentProducerList.size() >= NUM_DELEGATED_BLOCKS) {
-            break;
-        }
-
         m_currentTimestamp = timestamp;
         m_currentProducerList.push_back(producer);
     }
