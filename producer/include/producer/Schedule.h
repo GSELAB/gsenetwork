@@ -72,8 +72,6 @@ public: // used by producer or block chain
 
     void producerSort();
 
-    ProducersConstRef getProducerList() const { return m_currentProducerList; }
-
     Producers getCurrentProducerList() const;
 
     ProducerSnapshot getProducerSnapshot() const;

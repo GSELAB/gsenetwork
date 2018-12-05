@@ -83,8 +83,6 @@ public:
 public:
     void schedule(ProducersConstRef producerList, int64_t timestamp) { m_schedule.schedule(producerList, timestamp); }
 
-    ProducersConstRef getSchedule() { return m_schedule.getProducerList(); }
-
     Producers getCurrentProducerList() const { return m_schedule.getCurrentProducerList(); }
 
     Address getProducerAddress(unsigned idx) const { return m_schedule.getAddress(idx); }
