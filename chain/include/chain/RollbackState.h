@@ -80,6 +80,8 @@ public:
 
     std::pair<BranchType, BranchType> fetchBranchFrom(BlockID const& first, BlockID const& second) const;
 
+    bool rollbackTo(BlockStatePtr first, BlockStatePtr second, BranchType& branch) const;
+
     void solidifiable(BlockStatePtr const& bsp);
 
     void setBFTSolidify(BlockID blockID);
