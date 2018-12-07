@@ -249,6 +249,35 @@ std::pair<BranchType, BranchType> RollbackState::fetchBranchFrom(BlockID const& 
     return result;
 }
 
+bool RollbackState::rollbackTo(BlockStatePtr first, BlockStatePtr second, BranchType& branch) const
+{
+    BlockStatePtr prevItem = second;
+    while (first && prevItem && first->m_blockNumber < prevItem->m_blockNumber) {
+        branch.push_back(prevItem);
+        BlockID id = prevItem->getPrev();
+        prevItem = getBlock(id);
+        if (!prevItem) {
+            CWARN << "Block id(" << id << ") not exist in rollback state";
+            branch.clear();
+            return false;
+        }
+    }
+
+    if (first->m_blockNumber != prevItem->m_blockNumber) {
+        CWARN << "Not find the same number(" << first->m_blockNumber << ")";
+        branch.clear();
+        return false;
+    }
+
+    if (first->getPrev() != prevItem->getPrev()) {
+        CWARN << "Not find the same prev Block ID(" << first->getPrev() << ")";
+        branch.clear();
+        return false;
+    }
+
+    return true;
+}
+
 void RollbackState::setBFTSolidify(BlockID blockID)
 {
     Guard l{x_index};

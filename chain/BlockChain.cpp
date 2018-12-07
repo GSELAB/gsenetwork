@@ -245,6 +245,7 @@ bool BlockChain::checkBifurcation(BlockPtr block)
             CWARN << "Switch branch - current number:" << m_head->m_blockNumber << "\t new number:" << newItem->m_blockNumber;
             CWARN << "checkBifurcation - new item's prev hash:" << newItem->getPrev();
             CWARN << "checkBifurcation - current head hash:" << m_head->m_blockID;
+            /*
             auto branches = m_rollbackState.fetchBranchFrom(newItem->m_blockID, m_head->m_blockID);
             for (auto itr = branches.second.begin(); itr != branches.second.end(); itr++) {
                 {
@@ -259,6 +260,25 @@ bool BlockChain::checkBifurcation(BlockPtr block)
             if (m_head->m_blockID != branches.second.back()->getPrev()) {
                 throw BlockChainException("checkBifurcation - the head is not the second chain's parent block");
             }
+            */
+            BranchType branch;
+            if (m_rollbackState.rollbackTo(newItem, m_head, branch)) {
+                for (auto itr = branch.begin(); itr != branch.end(); itr++) {
+                    {
+                        Guard l{x_latestBlock};
+                        m_latestBlockNumber = (*itr)->m_blockNumber - 1;
+                    }
+
+                    m_rollbackState.remove((*itr)->m_blockNumber);
+                    popBlockState();
+                }
+
+                if (!branch.empty() && m_head->m_blockID != branch.back()->getPrev()) {
+                    throw BlockChainException("checkBifurcation - the head is not the second chain's parent block");
+                }
+            }
+
+
 
         } catch (RollbackStateAncestorException& e) {
             /// Do nothing, not valid block for current chain
@@ -829,7 +849,10 @@ void BlockChain::preProcessBlock(bi::tcp::endpoint const& from, Block& block)
 void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block)
 {
     try {
-        if (block.getNumber() > getLastBlockNumber() + 1000) {
+        uint64_t number = block.getNumber();
+        uint64_t lastNunber = getLastBlockNumber();
+        uint64_t solidifyNumber = m_rollbackState.getSolidifyNumber();
+        if ((number > lastNunber + 1000) || (number <= solidifyNumber)) {
             return;
         }
 
