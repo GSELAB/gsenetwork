@@ -167,7 +167,7 @@ void BlockChain::processTransaction(BlockPtr block, Transaction const& transacti
 
 void BlockChain::doProcessBlock(BlockPtr block)
 {
-    bool needCancel;
+    bool needCancel = false;
      std::shared_ptr<MemoryItem> item;
     try {
         for (auto tx : block->getTransactions()) {
@@ -233,6 +233,12 @@ void BlockChain::doProcessBlock(BlockPtr block)
         }
     } catch (RollbackStateException& e) {
         CERROR << "RollbackStateException - " << e.what();
+        if (needCancel) {
+            needCancel = false;
+            cancelMemoryItem();
+        }
+    } catch (BlockChainException& e) {
+        CERROR << "BlockChainException - " << e.what();
         if (needCancel) {
             needCancel = false;
             cancelMemoryItem();
