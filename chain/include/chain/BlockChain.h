@@ -213,6 +213,12 @@ public:
 
     void registerObserver(Observer<Object*> const& observer) { m_observe.add(observer); }
 
+    bool checkProducer(BlockPtr block) const;
+
+    bool checkDuplicateTx(Block const& block) const;
+
+    void updateProducerRecord();
+
 public: /// used by rpc
     bool addRPCTx(Transaction& tx);
 
@@ -245,6 +251,8 @@ public: /// Used by network
     void processBlockStateMessage(bi::tcp::endpoint const& from, BlockState const& bs);
 
     bool isExist(Transaction& tx);
+
+    bool isExistInRepo(Transaction& tx);
 
     bool isExist(Block& block);
 
@@ -307,5 +315,9 @@ private:
     mutable Mutex x_latestBlock;
     uint64_t m_latestBlockNumber;
     Block m_latestBlock;
+
+    std::map<Address, int64_t> m_producerRecord;
+
+    int64_t m_scheduleUpdateBlockTimestamp = 0;
 };
 } // end namespace

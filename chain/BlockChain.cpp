@@ -170,7 +170,16 @@ void BlockChain::doProcessBlock(BlockPtr block)
     bool needCancel;
      std::shared_ptr<MemoryItem> item;
     try {
+        for (auto tx : block->getTransactions()) {
+            if (isExistInRepo(tx)) {
+                throw BlockChainException("Transaction(" + toString(tx.getHash()) + ") has exist.");
+            }
+        }
+
         updateActiveProducers(block);
+
+        Address producer = block->getProducer();
+        m_producerRecord[producer] = block->getBlockHeader().getTimestamp();
 
         item = addMemoryItem(block);
         needCancel = true;
@@ -192,6 +201,8 @@ void BlockChain::doProcessBlock(BlockPtr block)
         if (block->getNumber() % (NUM_DELEGATED_BLOCKS * SCHEDULE_UPDATE_ROUNDS) == 0) {
             schedule(timestamp);
             m_currentActiveProducers.clear();
+            updateProducerRecord();
+            m_scheduleUpdateBlockTimestamp = timestamp;
         }
 
         unsigned bonusFactor = (block->getBlockHeader().getTimestamp() - GENESIS_TIMESTAMP) / MILLISECONDS_PER_YEAR;
@@ -263,6 +274,8 @@ bool BlockChain::checkBifurcation(BlockPtr block)
             */
             BranchType branch;
             if (m_rollbackState.rollbackTo(newItem, m_head, branch)) {
+                m_blockChainStatus = SyncStatus;
+
                 for (auto itr = branch.begin(); itr != branch.end(); itr++) {
                     {
                         Guard l{x_latestBlock};
@@ -298,8 +311,7 @@ bool BlockChain::checkBifurcation(BlockPtr block)
 bool BlockChain::processBlock(BlockPtr block)
 {
     try {
-        int64_t timestamp = block->getBlockHeader().getTimestamp();
-        if (block->getProducer() != getExpectedProducer(timestamp)) {
+        if (!checkProducer(block)) {
             throw InvalidProducerException("Invalid block producer!");
         }
 
@@ -639,6 +651,30 @@ uint64_t BlockChain::getSolidifyHeight() const
     return ATTRIBUTE_CURRENT_BLOCK_HEIGHT.getValue();
 }
 
+bool BlockChain::isExistInRepo(Transaction& tx)
+{
+    std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
+    {
+        Guard g(x_memoryQueue);
+        if (!m_memoryQueue.empty())
+            backItem = m_memoryQueue.back()->getRepository();
+    }
+
+    if (backItem) {
+        Transaction item = backItem->getTransaction(tx.getHash());
+        if (item == EmptyTransaction) {} else {
+            return true;
+        }
+    } else {
+        Transaction item = m_dbc->getTransaction(tx.getHash());
+        if (item == EmptyTransaction) {} else {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool BlockChain::isExist(Transaction& tx)
 {
     Guard l{x_txCache};
@@ -822,6 +858,10 @@ void BlockChain::preProcessBlock(bi::tcp::endpoint const& from, Block& block)
 
     if (isExist(block)) {
         throw BlockChainException("Block(number:" + toString(block.getNumber()) + " hash:" + toString(block.getHash()) + ") has exist.");
+    }
+
+    if (!checkDuplicateTx(block)) {
+        throw BlockChainException("Block(number:" + toString(block.getNumber()) + " hash:" + toString(block.getHash()) + ") has duplicate transactions.");
     }
 
     std::shared_ptr<runtime::storage::Repository> backItem = nullptr;
@@ -1029,5 +1069,55 @@ bool Dispatch::processMsg(bi::tcp::endpoint const& from, unsigned type, RLP cons
         CERROR << "Dispatch::processMsg - unknown rlp.";
         return false;
     }
+}
+
+void BlockChain::updateProducerRecord()
+{
+    Producers producers = m_messageFace->getSortedProducerList();
+    std::map<Address, int64_t> producerRecord;
+    for (auto i : producers) {
+        Address address = i.getAddress();
+        producerRecord[address] = m_producerRecord[address];
+    }
+    m_producerRecord.clear();
+    m_producerRecord = producerRecord;
+}
+
+bool BlockChain::checkProducer(BlockPtr block) const
+{
+    int64_t timestamp = block->getBlockHeader().getTimestamp();
+    int64_t blockSlice = ((timestamp - GENESIS_TIMESTAMP) / PRODUCER_INTERVAL) * PRODUCER_INTERVAL;
+    Address producer = block->getProducer();
+    if (producer != getExpectedProducer(timestamp)) {
+        return false;
+    }
+
+    if (m_producerRecord.find(producer) != m_producerRecord.end()) {
+        if (blockSlice <= (m_producerRecord.at(producer) - GENESIS_TIMESTAMP)) {
+            return false;
+        }
+    }
+
+    if (blockSlice <= (m_scheduleUpdateBlockTimestamp - GENESIS_TIMESTAMP)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool BlockChain::checkDuplicateTx(Block const& block) const
+{
+    std::set<h256> trxHashes;
+    Transactions transactions = block.getTransactions();
+
+    for (auto i : transactions) {
+        trxHashes.insert(i.getHash());
+    }
+
+    if (trxHashes.size() == transactions.size()) {
+        return true;
+    }
+
+    return false;
 }
 }
