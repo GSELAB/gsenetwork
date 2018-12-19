@@ -118,12 +118,12 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
 
     if (nextBSP->m_block.isSyncBlock()) {
         CWARN << "Received [s] block:" << nextBSP->m_blockNumber
-              << "\ttxns:" << nextBSP->m_block.getTransactionsSize()
-              << "\t\tsolidify:" << m_solidifyNumber;
+              << "\ttxns:" << std::setw(5) << std::left << nextBSP->m_block.getTransactionsSize()
+              << "\tsolidify:" << m_solidifyNumber;
     } else {
         CWARN << "Received [b] block:" << nextBSP->m_blockNumber
-              << "\ttxns:" << nextBSP->m_block.getTransactionsSize()
-              << "\t\tsolidify:" << m_solidifyNumber;
+              << "\ttxns:" << std::setw(5) << std::left << nextBSP->m_block.getTransactionsSize()
+              << "\tsolidify:" << m_solidifyNumber;
     }
 
     if (oldest->m_blockNumber < solidifyNumber) {
