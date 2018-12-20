@@ -16,7 +16,7 @@ namespace core {
 
 Producer EmptyProducer;
 
-Producer::Producer(Address const& address, int64_t timestamp): m_address(address), m_timestamp(timestamp)
+Producer::Producer(Address const& address, int64_t timestamp): m_address(address), m_timestamp(timestamp), m_votes(0) 
 {
     // TODO: CREATE A NEW PRODUCER
 }

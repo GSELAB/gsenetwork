@@ -30,12 +30,12 @@ Account::Account(Account const& account)
     m_votes = account.getVotes();
 }
 
-Account::Account(int64_t timestamp): m_timestamp(timestamp), m_balance(0), m_alive(true)
+Account::Account(int64_t timestamp): m_timestamp(timestamp), m_balance(0), m_alive(true), m_votes(0) 
 {
     // TODO: CREATE A NEW ACCOUNT
 }
 
-Account::Account(Address const& address, uint64_t balance, int64_t timestamp): m_address(address), m_balance(balance), m_timestamp(timestamp), m_alive(true)
+Account::Account(Address const& address, uint64_t balance, int64_t timestamp): m_address(address), m_balance(balance), m_timestamp(timestamp), m_alive(true), m_votes(0) 
 {
 
 }
