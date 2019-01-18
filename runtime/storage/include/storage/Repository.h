@@ -69,6 +69,11 @@ public:
 
     void commit();
 
+public:
+    bool isAddressExist(Address const& address);
+
+    bool isContractAddress(Address const& address);
+
 private:
     DatabaseController *m_dbc;
     std::shared_ptr<Repository> m_parent = nullptr;

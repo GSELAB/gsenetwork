@@ -272,5 +272,29 @@ void Repository::commit()
         m_dbc->put(getBlock());
 }
 
+bool Repository::isAddressExist(Address const& address)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Repository::isContractAddress(Address const& address)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount) {
+        return false;
+    }
+
+    if (account.getAccountType() == Account::ContractType) {
+        return true;
+    }
+
+    return false;
+}
+
 } // end namespace storage
 } // end namespace runtime
