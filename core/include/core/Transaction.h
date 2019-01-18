@@ -34,9 +34,11 @@ public:
     static const uint32_t ContractCall;
 
     enum Type {
-        VoteType = 0x0,
-        TransferType = 0x01,
-        BeenProducerType = 0x02,
+        VoteType            = 0x0,
+        TransferType        = 0x01,
+        BeenProducerType    = 0x02,
+        CreationType        = 0x10,
+        CallType            = 0x11,
         UnknownType = 0xFFFFFFFF,
     };
 

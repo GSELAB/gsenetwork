@@ -21,15 +21,22 @@ using namespace config;
 
 namespace core {
 
-#define ACCOUNT_COMMON_FIELDS (7)
+#define ACCOUNT_COMMON_FIELDS (9)
 
 class Account: public Object {
 public:
-    Account() {}
+    enum AccountType: uint32_t {
+        ExternalType = 0x01,
+        ContractType = 0x02,
+    };
+
+    Account() = default;
 
     Account(Account const& account);
 
     Account(Address const& address, uint64_t balance, int64_t timestamp = GENESIS_TIMESTAMP);
+
+    Account(Address const& contractAddress, AccountType type, int64_t timestamp = GENESIS_TIMESTAMP);
 
     Account(int64_t timestamp);
 
@@ -59,6 +66,14 @@ public:
 
     Address const& getAddress() const { return m_address; }
 
+    AccountType getAccountType() const { return m_type; }
+
+    void setAccountType(AccountType type) { m_type = type; }
+
+    bytes const& getCode() const { return m_code; }
+
+    void setCode(bytes const& code) { m_code = code; }
+
     bool isAlive() const { return m_alive; }
 
     uint64_t getBalance() const { return m_balance; }
@@ -79,6 +94,10 @@ public:
 
 private:
     Address m_address;
+
+    AccountType m_type = ExternalType;
+
+    bytes m_code;
 
     bool m_alive = false;
 
