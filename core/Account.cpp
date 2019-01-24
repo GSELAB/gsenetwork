@@ -22,9 +22,15 @@ Account EmptyAccount;
 Account::Account(Account const& account)
 {
     m_address = account.getAddress();
+    m_type = account.getAccountType();
+    m_code = account.getCode();
     m_alive = account.isAlive();
     m_balance = account.getBalance();
     m_timestamp = account.getTimestamp();
+    for (auto& i : account.getContractAddresses()) {
+        m_contractAddresses.push_back(i);
+    }
+
     for (auto i : account.getCandidates())
         m_candidates[i.first] = i.second;
     m_votes = account.getVotes();
@@ -33,6 +39,12 @@ Account::Account(Account const& account)
 Account::Account(int64_t timestamp): m_timestamp(timestamp), m_balance(0), m_alive(true), m_votes(0)
 {
     // TODO: CREATE A NEW ACCOUNT
+}
+
+Account::Account(Address const& contractAddress, AccountType type, int64_t timestamp):
+    m_address(contractAddress), m_type(type), m_timestamp(timestamp), m_balance(0), m_alive(true), m_votes(0)
+{
+
 }
 
 Account::Account(Address const& address, uint64_t balance, int64_t timestamp): m_address(address), m_balance(balance), m_timestamp(timestamp), m_alive(true), m_votes(0)
@@ -46,17 +58,19 @@ Account::Account(bytesConstRef data)
         RLP rlp(data);
         if (rlp.isList() && rlp.itemCount() == ACCOUNT_COMMON_FIELDS) {
             m_address = rlp[0].toHash<Address>(RLP::VeryStrict);
-            m_alive = rlp[1].toInt<uint8_t>();
-            m_balance = rlp[2].toPositiveInt64();
-            m_timestamp = rlp[3].toInt<int64_t>();
-            bytesConstRef casBytes = rlp[4].data();
+            m_type = (AccountType)rlp[1].toInt<uint32_t>();
+            m_code = rlp[2].data().toBytes();
+            m_alive = rlp[3].toInt<uint8_t>();
+            m_balance = rlp[4].toPositiveInt64();
+            m_timestamp = rlp[5].toInt<int64_t>();
+            bytesConstRef casBytes = rlp[6].data();
             RLP rlpAddresses(casBytes);
             if (rlpAddresses.isList() && rlpAddresses.itemCount() > 0) {
                 for (unsigned i = 0; i < rlpAddresses.itemCount(); i++)
                     m_contractAddresses.push_back(rlpAddresses[i].toHash<Address>(RLP::VeryStrict));
             }
-            m_votes = rlp[5].toPositiveInt64();
-            bytesConstRef csBytes = rlp[6].data();
+            m_votes = rlp[7].toPositiveInt64();
+            bytesConstRef csBytes = rlp[8].data();
             RLP rlpCandidates(csBytes);
             if (rlpCandidates.isList() && rlpCandidates.itemCount() > 0) {
                 for (unsigned i = 0; i < rlpCandidates.itemCount(); ) {
@@ -82,6 +96,8 @@ Account& Account::operator=(Account const& account)
 {
     if (this == &account) return *this;
     m_address = account.getAddress();
+    m_type = account.getAccountType();
+    m_code = account.getCode();
     m_alive = account.isAlive();
     m_balance = account.getBalance();
     m_timestamp = account.getTimestamp();
@@ -95,6 +111,7 @@ Account& Account::operator=(Account const& account)
 bool Account::operator==(Account const& account) const
 {
     return (m_address == account.getAddress()) &&
+        (m_type == account.getAccountType()) &&
         (m_alive == account.isAlive()) &&
         (m_balance == account.getBalance()) &&
         (m_timestamp == account.getTimestamp());
@@ -103,6 +120,7 @@ bool Account::operator==(Account const& account) const
 bool Account::equal(Account const& account) const
 {
     return (m_address == account.getAddress()) &&
+        (m_type == account.getAccountType()) &&
         (m_alive == account.isAlive()) &&
         (m_balance == account.getBalance()) &&
         (m_timestamp == account.getTimestamp());
@@ -124,7 +142,9 @@ void Account::streamRLP(RLPStream& rlpStream) const
 {
     rlpStream.appendList(ACCOUNT_COMMON_FIELDS);
     rlpStream << m_address
-              << m_alive
+              << m_type;
+    rlpStream.appendRaw(m_code);
+    rlpStream << m_alive
               << (bigint)m_balance
               << (bigint)m_timestamp;
     RLPStream contractRLPStream;
