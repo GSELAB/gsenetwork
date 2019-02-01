@@ -1,6 +1,10 @@
 SET(vm_sources
     Instruction.cpp
     State.cpp
+    Memory.cpp
+    Stack.cpp
+    VMInterface.cpp
+    VM.cpp
     Runtime.cpp)
 
 ADD_LIBRARY(vm ${vm_sources})
