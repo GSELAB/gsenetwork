@@ -1,4 +1,5 @@
 SET(runtime_common_source
+    ExtVM.cpp
     GVMThread.cpp
     Runtime.cpp)
 

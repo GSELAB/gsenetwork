@@ -11,6 +11,7 @@
 
 #include <storage/Repository.h>
 #include <core/Log.h>
+#include <crypto/SHA3.h>
 
 using namespace core;
 
@@ -51,6 +52,53 @@ Account Repository::getAccount(Address const& address)
     GET_FROM_PARENT_RETURN(Account, address, account);
     GET_FROM_DBC_RETURN(Account, address, account);
     return account;
+}
+
+uint64_t Repository::getBalance(Address const& address)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount) return 0;
+    return account.getBalance();
+}
+
+void Repository::addBalance(Address const& address, uint64_t amount)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount) {
+        Account temp(address, 0, m_block.getBlockHeader().getTimestamp());
+        account = temp;
+    }
+
+    if (account.getBalance() + amount < amount) {
+        //throw RepositoryException("addBalance - account:" + toString(account) + " overflow.");
+        throw RepositoryException("addBalance - account overflow.");
+    }
+
+    account.setBalance(account.getBalance() + amount);
+    put(account);
+}
+
+void Repository::subBalance(Address const& address, uint64_t amount)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount || account.getBalance() < amount) {
+        throw RepositoryException("subBalance - account is empty or not enough balance.");
+    }
+
+    account.setBalance(account.getBalance() - amount);
+    put(account);
+}
+
+void Repository::setBalance(Address const& address, uint64_t value)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount) {
+        Account temp(address, 0, m_block.getBlockHeader().getTimestamp());
+        account = temp;
+    }
+
+    account.setBalance(value);
+    put(account);
 }
 
 void Repository::put(Account const& account)
@@ -270,6 +318,52 @@ void Repository::commit()
     COMMIT_REPO(Transaction);
     if (!m_parent)
         m_dbc->put(getBlock());
+}
+
+bool Repository::isAddressExist(Address const& address)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount) return false;
+    return true;
+}
+
+bool Repository::isContractAddress(Address const& address)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount) return false;
+    if (account.getAccountType() == Account::ContractType) return true;
+    return false;
+}
+
+size_t Repository::codeSize(Address const& address)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount || account.getAccountType() != Account::ContractType) return 0;
+    return account.getCode().size();
+}
+
+h256 Repository::codeHash(Address const& address)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount || account.getAccountType() != Account::ContractType) return h256();
+    return crypto::sha3(account.getCode());
+}
+
+bytes Repository::code(Address const& address)
+{
+    Account account = getAccount(address);
+    if (account == EmptyAccount || account.getAccountType() != Account::ContractType) return bytes{};
+    return account.getCode();
+}
+
+u256 Repository::getStorageValue(Address const& address, u256 const& key)
+{
+
+}
+
+void Repository::setStorageValue(Address const& address, u256 const& key, u256 const& value)
+{
+
 }
 
 } // end namespace storage

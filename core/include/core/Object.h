@@ -46,6 +46,7 @@ public:
         BlockHeightType             = 0x10,
         SolidifyBlockHeightType     = 0x11,
         ActiveProducerSnapshotType  = 0x12,
+        StorageType                 = 0x13,
         /* Add new type */
 
         UnknownType = 0xFFFF,
