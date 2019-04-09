@@ -80,7 +80,7 @@ std::map<h256, std::pair<u256, u256>> State::storage(Address const& contract)
 
 bytes State::code(Address const& address)
 {
-    return m_repo->code();
+    return m_repo->code(address);
 }
 
 h256 State::codeHash(Address const& address)
@@ -90,7 +90,7 @@ h256 State::codeHash(Address const& address)
 
 size_t State::codeSize(Address const& address)
 {
-    return m_repo->codeSize();
+    return m_repo->codeSize(address);
 }
 
 Account State::getAccount(Address const& address)
