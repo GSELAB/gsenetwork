@@ -20,6 +20,7 @@
 #include <core/Guards.h>
 #include <database/DatabaseController.h>
 #include <core/Producer.h>
+#include <core/Storage.h>
 
 using namespace database;
 using namespace core;
@@ -38,6 +39,14 @@ public:
     void setParentNULL() { m_parent.reset(); }
 
     Account getAccount(Address const& address);
+
+    uint64_t getBalance(Address const& address);
+
+    void addBalance(Address const& address, uint64_t amount);
+
+    void subBalance(Address const& address, uint64_t amount);
+
+    void setBalance(Address const& address, uint64_t value);
 
     void transfer(Address const& from, Address const& to, uint64_t value);
 
@@ -67,7 +76,22 @@ public:
 
     Block getBlock(BlockID const& blockID);
 
+    size_t codeSize(Address const& address);
+
+    h256 codeHash(Address const& address);
+
+    bytes code(Address const& address);
+
+    u256 getStorageValue(Address const& address, u256 const& key);
+
+    void setStorageValue(Address const& address, u256 const& key, u256 const& value);
+
     void commit();
+
+public:
+    bool isAddressExist(Address const& address);
+
+    bool isContractAddress(Address const& address);
 
 private:
     DatabaseController *m_dbc;
@@ -81,6 +105,9 @@ private:
 
     mutable Mutex x_mutexTransaction;
     std::map<TxID, Transaction> m_cacheTransaction;
+
+    mutable Mutex x_mutexStorage;
+    std::map<Address, Storage> m_cacheStorage;
 
     Block m_block;
 };
