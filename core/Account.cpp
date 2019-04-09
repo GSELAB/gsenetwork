@@ -36,7 +36,7 @@ Account::Account(Account const& account)
     m_votes = account.getVotes();
 }
 
-Account::Account(int64_t timestamp): m_timestamp(timestamp), m_balance(0), m_alive(true), m_votes(0) 
+Account::Account(int64_t timestamp): m_timestamp(timestamp), m_balance(0), m_alive(true), m_votes(0)
 {
     // TODO: CREATE A NEW ACCOUNT
 }
@@ -47,7 +47,7 @@ Account::Account(Address const& contractAddress, AccountType type, int64_t times
 
 }
 
-Account::Account(Address const& address, uint64_t balance, int64_t timestamp): m_address(address), m_balance(balance), m_timestamp(timestamp), m_alive(true), m_votes(0) 
+Account::Account(Address const& address, uint64_t balance, int64_t timestamp): m_address(address), m_balance(balance), m_timestamp(timestamp), m_alive(true), m_votes(0)
 {
 
 }
@@ -143,7 +143,7 @@ void Account::streamRLP(RLPStream& rlpStream) const
     rlpStream.appendList(ACCOUNT_COMMON_FIELDS);
     rlpStream << m_address
               << m_type;
-    rlpStream.appendRaw(m_code);
+    rlpStream << m_code;
     rlpStream << m_alive
               << (bigint)m_balance
               << (bigint)m_timestamp;
