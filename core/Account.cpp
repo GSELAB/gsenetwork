@@ -143,7 +143,7 @@ void Account::streamRLP(RLPStream& rlpStream) const
     rlpStream.appendList(ACCOUNT_COMMON_FIELDS);
     rlpStream << m_address
               << m_type;
-    rlpStream.appendRaw(m_code);
+    rlpStream << m_code;
     rlpStream << m_alive
               << (bigint)m_balance
               << (bigint)m_timestamp;
