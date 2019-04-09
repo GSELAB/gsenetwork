@@ -1,5 +1,6 @@
 #include <core/Object.h>
 #include <core/Address.h>
+#include <core/RLP.h>
 
 namespace core {
 
@@ -13,9 +14,9 @@ public:
 
     Storage(bytesConstRef data);
 
-    ~Storage();
+    virtual ~Storage();
 
-    Storage& oprator=(Storage const& storage);
+    Storage& operator=(Storage const& storage);
 
     bool operator==(Storage const& storage) const;
 
@@ -27,7 +28,7 @@ public:
 
     u256 getStorageValue(u256 const& key) const;
 
-    std::map<u256, u256> const& getStorage() const { return m_storage; }
+    std::map<u256, u256> const& getStorages() const { return m_storages; }
 
     void setStorageValue(u256 const& key, u256 const& value);
 
@@ -39,6 +40,6 @@ public:
 
 private:
     Address m_address;
-    std::map<u256, u256> m_storage;
+    std::map<u256, u256> m_storages;
 };
 }
