@@ -66,7 +66,7 @@ void init(int argc, char **argv)
     try {
         bpo::store(bpo::parse_command_line(argc, argv, opts), vm);
     } catch (...) {
-        std::cout << "Imput unknown cmd" << std::endl;
+        std::cout << "Input unknown cmd" << std::endl;
         exit(0);
     }
 
