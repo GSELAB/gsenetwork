@@ -96,7 +96,7 @@ private:
 
     ProducerState m_state;
 
-    std::shared_ptr<Account> m_currentAccout;
+    std::shared_ptr<Account> m_currentAccount;
 
     ProcuderEventHandleFace* m_eventHandle;
 
