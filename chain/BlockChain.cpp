@@ -919,7 +919,7 @@ void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block
         }
         m_messageFace->broadcast(from, block);
     } catch (BlockChainException& e) {
-        // CERROR << "BlockChainException - " << e.what();
+        CERROR << "BlockChainException - " << e.what();
     } catch (RepositoryException& e) {
         CERROR << "RepositoryException - " << e.what();
     } catch (Exception& e) {
