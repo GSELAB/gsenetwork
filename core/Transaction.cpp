@@ -36,12 +36,14 @@ Transaction::Transaction(Transaction const& transaction)
     m_recipient = transaction.getRecipient();
     m_timestamp = transaction.getTimestamp();
     m_data = transaction.getData();
+    m_gas = transaction.getGas();
+    m_gasprice = transaction.getGasPrice();
     m_value = transaction.getValue();
     m_signature = transaction.getSignature();
 }
 
 Transaction::Transaction(chain::ChainID chainID, uint32_t type, Address const& sender, Address const& recipient,
-    uint64_t timestamp, bytes const& data, uint64_t value)
+    uint64_t timestamp, bytes const& data, uint64_t gas,  uint64_t value)
 {
     m_chainID = chainID;
     m_type = type;
@@ -49,6 +51,8 @@ Transaction::Transaction(chain::ChainID chainID, uint32_t type, Address const& s
     m_recipient = recipient;
     m_timestamp = timestamp;
     m_data = data;
+    m_gas = gas;
+    //m_gasprice = gasprice;
     m_value = value;
 }
 
@@ -67,7 +71,9 @@ Transaction::Transaction(bytesConstRef data)
         m_recipient = rlp[index = 3].toHash<Address>(RLP::VeryStrict);
         m_timestamp = rlp[index = 4].toInt<int64_t>();
         m_data = rlp[index = 5].toBytes();
-        m_value = rlp[index = 6].toInt<uint64_t>();
+        m_gas = rlp[index = 6].toInt<uint64_t>();
+        m_gasprice = rlp[index = 7].toInt<uint64_t>();
+        m_value = rlp[index = 8].toInt<uint64_t>();
 
         Signature sig = rlp[7].toHash<Signature>(RLP::VeryStrict);
         m_signature = *(SignatureStruct*)&sig;
@@ -90,7 +96,9 @@ void Transaction::streamRLP(RLPStream& rlpStream) const
               << m_recipient
               << (bigint) m_timestamp
               << m_data
-              << (bigint) m_value;
+              << (bigint) m_gas
+              << (bigint) m_gasprice
+            << (bigint) m_value;
     rlpStream << *(Signature*)&m_signature;
 }
 
@@ -103,6 +111,8 @@ void Transaction::streamRLPContent(RLPStream& rlpStream) const
               << m_recipient
               << (bigint) m_timestamp
               << m_data
+              << (bigint) m_gas
+              << (bigint) m_gasprice
               << (bigint) m_value;
 }
 
@@ -134,6 +144,8 @@ Transaction& Transaction::operator=(Transaction const& transaction)
     m_recipient = transaction.getRecipient();
     m_timestamp = transaction.getTimestamp();
     m_data = transaction.getData();
+    m_gas = transaction.getGas();
+    m_gasprice = transaction.getGasPrice();
     m_value = transaction.getValue();
     m_signature = transaction.getSignature();
     return *this;
