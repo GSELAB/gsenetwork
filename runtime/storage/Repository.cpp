@@ -312,7 +312,6 @@ void Repository::voteIncrease(Address const& voter, Address const& candidate, ui
 
 void Repository::commit()
 {
-    // commit to db?
     COMMIT_REPO(Account);
     COMMIT_REPO(Producer);
     COMMIT_REPO(Transaction);

@@ -102,7 +102,7 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
         Guard l{x_index};
         auto ret = m_index.insert(nextBSP);
         if (!ret.second) {
-            throw RollbackStateException("Duplicate block state add!");
+            throw RollbackStateException("Duplicate block state added!");
         }
 
         m_head = *m_index.get<ByBlockNumber>().begin();
@@ -129,7 +129,7 @@ BlockStatePtr RollbackState::add(BlockStatePtr nextBSP)
     if (oldest->m_blockNumber < solidifyNumber) {
         auto solidifyBSP = getBlock(solidifyNumber);
         if (!solidifyBSP) {
-            CWARN << "Error occur when to silidify block:"
+            CWARN << "Error occurred while trying to solidify block:"
                   << solidifyNumber
                   << ", the block state could not be found.";
             return nextBSP;
