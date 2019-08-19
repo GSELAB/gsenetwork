@@ -70,7 +70,7 @@ void BlockChain::init()
 
     ATTRIBUTE_DB_DIRTY = m_dbc->getAttribute(ATTRIBUTE_DB_DIRTY.getKey());
     if (ATTRIBUTE_DB_DIRTY.getValue() == 1) {
-        throw BlockChainException("Database corruption, please delete database ans sync again!");
+        throw BlockChainException("Database corruption, please delete database and sync again!");
     }
 
     m_currentActiveProducers.populate(ATTRIBUTE_SOLIDIFY_ACTIVE_PRODUCER_LIST.getData());
@@ -103,7 +103,7 @@ void BlockChain::pushSchedule()
     m_messageFace->schedule(m_currentPS.getProducers(), m_currentPS.getTimestamp());
 }
 
- std::shared_ptr<BlockChain::MemoryItem> BlockChain::addMemoryItem(BlockPtr block)
+std::shared_ptr<BlockChain::MemoryItem> BlockChain::addMemoryItem(BlockPtr block)
 {
     std::shared_ptr<MemoryItem> mItem = std::make_shared<MemoryItem>();;
     Block repoBlock = *block;
@@ -168,7 +168,7 @@ void BlockChain::processTransaction(BlockPtr block, Transaction const& transacti
 void BlockChain::doProcessBlock(BlockPtr block)
 {
     bool needCancel = false;
-     std::shared_ptr<MemoryItem> item;
+    std::shared_ptr<MemoryItem> item;
     try {
         for (auto tx : block->getTransactions()) {
             if (isExistInRepo(tx)) {
@@ -543,7 +543,7 @@ void BlockChain::onSolidifiable(BlockStatePtr bsp)
     m_observe.notify(&height);
     {
         Guard l(x_memoryQueue);
-         std::shared_ptr<MemoryItem> item = m_memoryQueue.front();
+        std::shared_ptr<MemoryItem> item = m_memoryQueue.front();
         while (item && bsp->m_blockNumber >= item->getBlockNumber()) {
             if (m_blockChainStatus == Killed)
                 return;
@@ -896,9 +896,9 @@ void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block
 {
     try {
         uint64_t number = block.getNumber();
-        uint64_t lastNunber = getLastBlockNumber();
+        uint64_t lastNumber = getLastBlockNumber();
         uint64_t solidifyNumber = m_rollbackState.getSolidifyNumber();
-        if ((number > lastNunber + 1000) || (number <= solidifyNumber)) {
+        if ((number > lastNumber + 1000) || (number <= solidifyNumber)) {
             return;
         }
 
@@ -919,7 +919,7 @@ void BlockChain::processBlockMessage(bi::tcp::endpoint const& from, Block& block
         }
         m_messageFace->broadcast(from, block);
     } catch (BlockChainException& e) {
-        CERROR << "BlockChainException - " << e.what();
+        //CERROR << "BlockChainException - " << e.what();
     } catch (RepositoryException& e) {
         CERROR << "RepositoryException - " << e.what();
     } catch (Exception& e) {
