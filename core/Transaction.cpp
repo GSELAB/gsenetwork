@@ -52,7 +52,7 @@ Transaction::Transaction(chain::ChainID chainID, uint32_t type, Address const& s
     m_timestamp = timestamp;
     m_data = data;
     m_gas = gas;
-    //m_gasprice = gasprice;
+    m_gasprice = 100;
     m_value = value;
 }
 
